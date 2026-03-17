@@ -2,12 +2,13 @@
 
 import { login } from "@/app/(auth)/action";
 import { useActionState } from "react";
-import { AuthForm } from "./form/Form";
+
 import { SubmitButton } from "./buttons/SubmitButton";
 import { ErrorMessage } from "./form/ErrorMessage";
 import { FormRow } from "./form/FormRow";
 import { Input } from "./form/Input";
 import Link from "next/link";
+import { AuthForm } from "./form/Form";
 
 const initialState = {
   error: "",
