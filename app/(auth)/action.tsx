@@ -46,6 +46,7 @@ export async function signUpNewUser(
     formData.get("password_confirmation") ?? "",
   );
 
+  //validate fields
   const validatedFields = schema.safeParse({
     name,
     email,
@@ -66,6 +67,7 @@ export async function signUpNewUser(
     };
   }
 
+  //sign up with supabase
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -87,10 +89,12 @@ export async function signUpNewUser(
     };
   }
 
+  //insert profile into database
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .insert({
       name,
+      email,
       user_id: data.user?.id,
     })
     .select()
