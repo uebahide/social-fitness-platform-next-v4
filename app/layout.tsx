@@ -7,6 +7,8 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import Main from "@/components/Main";
 import { UserProvider } from "@/contexts/UserProvider";
+import { createClient } from "@/lib/supabase/server";
+import { User } from "@/types/api/user";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,6 +30,22 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const supabase = await createClient();
+  const { data: userData } = await supabase.auth.getUser();
+  const user = userData?.user;
+  let profile: User | null = null;
+
+  if (user) {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", user?.id);
+    if (error) {
+      throw new Error(error.message);
+    }
+    profile = data?.[0];
+    console.log(profile);
+  }
   return (
     <html lang="en">
       <body
@@ -35,7 +53,7 @@ export default async function RootLayout({
       >
         <SidebarProvider>
           <TooltipProvider>
-            <UserProvider initialUser={null}>
+            <UserProvider initialUser={profile as User | null}>
               {/* <CategoriesProvider initialCategories={categories}> */}
               <AppSidebar />
               <Main>

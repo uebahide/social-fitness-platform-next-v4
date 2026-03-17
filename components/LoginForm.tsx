@@ -1,6 +1,6 @@
 "use client";
 
-import { login } from "@/app/(auth)/action";
+import { signInWithEmailState, signInWithEmail } from "@/app/(auth)/action";
 import { useActionState } from "react";
 import { SubmitButton } from "./buttons/SubmitButton";
 import { ErrorMessage } from "./form/ErrorMessage";
@@ -9,7 +9,8 @@ import { Input } from "./form/Input";
 import Link from "next/link";
 import { AuthForm } from "./form/AuthForm";
 
-const initialState = {
+const initialState: signInWithEmailState = {
+  errors: {},
   error: "",
   data: {
     email: "",
@@ -18,7 +19,7 @@ const initialState = {
 };
 
 export const LoginForm = () => {
-  const [state, formAction] = useActionState(login, initialState);
+  const [state, formAction] = useActionState(signInWithEmail, initialState);
 
   return (
     <AuthForm

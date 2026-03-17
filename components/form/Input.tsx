@@ -8,15 +8,17 @@ export const Input = ({
   type = "text",
   placeholder,
   required = false,
+  readOnly = false,
   className,
 }: {
   defaultValue?: string;
-  id: string;
-  name: string;
+  id?: string;
+  name?: string;
   type?: HTMLInputTypeAttribute | undefined;
   placeholder?: string;
   required?: boolean;
   className?: string;
+  readOnly?: boolean;
 }) => {
   return (
     <input
@@ -30,6 +32,7 @@ export const Input = ({
       defaultValue={defaultValue}
       id={id}
       name={name}
+      readOnly={readOnly}
     />
   );
 };
