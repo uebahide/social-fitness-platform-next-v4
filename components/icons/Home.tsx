@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 export default function HomeIcon({ className }: { className?: string }) {
   return (
@@ -8,7 +8,7 @@ export default function HomeIcon({ className }: { className?: string }) {
       viewBox="0 0 24 24"
       strokeWidth="1.5"
       stroke="currentColor"
-      className={cn('text-foreground size-6', className)}
+      className={cn("text-foreground size-6", className)}
     >
       <path
         strokeLinecap="round"

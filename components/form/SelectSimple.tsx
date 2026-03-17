@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Select,
@@ -7,9 +7,9 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import React, { useState } from 'react';
-import { CategoryIcon } from '../CategoryIcon';
+} from "@/components/ui/select";
+import React, { useState } from "react";
+import { CategoryIcon } from "../CategoryIcon";
 
 export function SelectSimple({
   id,
@@ -28,7 +28,7 @@ export function SelectSimple({
   required?: boolean;
   readonly?: boolean;
 }) {
-  const [value, setValue] = useState<string | undefined>(defaultValue ?? '');
+  const [value, setValue] = useState<string | undefined>(defaultValue ?? "");
   const handleValueChange = (value: string) => {
     setValue(value);
     onValueChange(value);
@@ -60,7 +60,7 @@ export function SelectSimple({
           </SelectGroup>
         </SelectContent>
       </Select>
-      <input type="hidden" name={name} value={value ?? 'running'} id={id} />
+      <input type="hidden" name={name} value={value ?? "running"} id={id} />
     </>
   );
 }

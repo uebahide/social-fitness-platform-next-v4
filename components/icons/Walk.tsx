@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 export default function WalkIcon({ className }: { className?: string }) {
   return (
@@ -12,7 +12,10 @@ export default function WalkIcon({ className }: { className?: string }) {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={cn('icon icon-tabler icons-tabler-outline icon-tabler-walk', className)}
+      className={cn(
+        "icon icon-tabler icons-tabler-outline icon-tabler-walk",
+        className,
+      )}
     >
       <path stroke="none" d="M0 0h24v24H0z" fill="none" />
       <path d="M12 4a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />

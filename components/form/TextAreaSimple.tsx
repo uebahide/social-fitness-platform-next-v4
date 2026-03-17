@@ -1,5 +1,4 @@
-import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
+import { Textarea } from "@/components/ui/textarea";
 
 export function TextareaSimple({
   placeholder,

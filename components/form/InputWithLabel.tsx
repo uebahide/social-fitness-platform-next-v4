@@ -1,5 +1,5 @@
-import { cn } from '@/lib/utils';
-import React from 'react';
+import { cn } from "@/lib/utils";
+import React from "react";
 
 export const InputWithLabel = ({
   children,
@@ -15,8 +15,12 @@ export const InputWithLabel = ({
   unit?: string;
 }) => {
   return (
-    <div className={cn('space-y-2', className)}>
-      <label className={cn('text-sm font-medium text-neutral-700', labelClassName)}>{label}</label>
+    <div className={cn("space-y-2", className)}>
+      <label
+        className={cn("text-sm font-medium text-neutral-700", labelClassName)}
+      >
+        {label}
+      </label>
       <div className="relative">
         {children}
         <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-neutral-400">

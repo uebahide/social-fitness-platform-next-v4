@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 
 export default function CycleIcon({ className }: { className?: string }) {
   return (
@@ -12,7 +12,10 @@ export default function CycleIcon({ className }: { className?: string }) {
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={cn('icon icon-tabler icons-tabler-outline icon-tabler-bike', className)}
+      className={cn(
+        "icon icon-tabler icons-tabler-outline icon-tabler-bike",
+        className,
+      )}
     >
       <path stroke="none" d="M0 0h24v24H0z" fill="none" />
       <path d="M2 18a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />

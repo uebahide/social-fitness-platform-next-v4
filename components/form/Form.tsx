@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export const AuthForm = ({
   title,
@@ -12,7 +12,10 @@ export const AuthForm = ({
   children: React.ReactNode;
 }) => {
   return (
-    <form action={action} className="w-[500px] space-y-5 rounded-lg bg-white px-15 py-3 shadow-lg">
+    <form
+      action={action}
+      className="w-[500px] space-y-5 rounded-lg bg-white px-15 py-3 shadow-lg"
+    >
       <div className="my-8 text-center text-2xl">
         <p>{title}</p>
       </div>
