@@ -4,7 +4,7 @@ import { register } from "@/app/(auth)/action";
 import { useActionState } from "react";
 import { SubmitButton } from "./buttons/SubmitButton";
 import Link from "next/link";
-import { AuthForm } from "./form/Form";
+import { AuthForm } from "./form/AuthForm";
 import { FormRow } from "./form/FormRow";
 import { Input } from "./form/Input";
 import { ErrorMessage } from "./form/ErrorMessage";

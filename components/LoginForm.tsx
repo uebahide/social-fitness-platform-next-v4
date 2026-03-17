@@ -7,7 +7,7 @@ import { ErrorMessage } from "./form/ErrorMessage";
 import { FormRow } from "./form/FormRow";
 import { Input } from "./form/Input";
 import Link from "next/link";
-import { AuthForm } from "./form/Form";
+import { AuthForm } from "./form/AuthForm";
 
 const initialState = {
   error: "",
@@ -37,6 +37,7 @@ export const LoginForm = () => {
       }
     >
       <ErrorMessage>{state.error}</ErrorMessage>
+
       <FormRow>
         <label htmlFor="email">Email</label>
         <Input
