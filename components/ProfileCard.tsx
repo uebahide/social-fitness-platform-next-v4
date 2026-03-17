@@ -115,10 +115,8 @@ const ProfileForm = ({ user }: { user: User | null }) => {
         <Input
           defaultValue={state.data.email || user?.email || ""}
           type="email"
-          name="email"
-          id="email"
           className="h-10"
-          required
+          readOnly
         />
         <ErrorMessage>{state.errors.email}</ErrorMessage>
       </FormRow>

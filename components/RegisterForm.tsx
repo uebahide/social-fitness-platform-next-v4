@@ -8,10 +8,12 @@ import { AuthForm } from "./form/AuthForm";
 import { FormRow } from "./form/FormRow";
 import { Input } from "./form/Input";
 import { ErrorMessage } from "./form/ErrorMessage";
+import { SuccessMessage } from "./form/SuccessMessage";
 
 const initialState: signUpNewUserState = {
   errors: {},
   error: "",
+  success: "",
   data: {
     name: "",
     email: "",
@@ -37,6 +39,9 @@ export const RegisterForm = () => {
         </div>
       }
     >
+      <ErrorMessage>{state.error}</ErrorMessage>
+      <SuccessMessage>{state.success}</SuccessMessage>
+
       <FormRow>
         <label htmlFor="name">Name</label>
         <Input
@@ -48,8 +53,6 @@ export const RegisterForm = () => {
         />
         <ErrorMessage>{state.errors["name"]}</ErrorMessage>
       </FormRow>
-
-      <ErrorMessage>{state.error}</ErrorMessage>
 
       <FormRow>
         <label htmlFor="email">Email</label>

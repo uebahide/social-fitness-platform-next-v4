@@ -26,6 +26,7 @@ export type signUpNewUserState = {
     password_confirmation?: string[];
   };
   error?: string;
+  success: string;
   data: {
     name?: string;
     email?: string;
@@ -58,6 +59,7 @@ export async function signUpNewUser(
     return {
       errors: validatedFields.error.flatten().fieldErrors,
       error: "",
+      success: "",
       data: {
         name,
         email,
@@ -76,15 +78,52 @@ export async function signUpNewUser(
     },
   });
 
+  console.log(data);
+
   if (error) {
     return {
       errors: {},
       error: error.message ?? "An unknown error occurred",
+      success: "",
       data: {
         name,
         email,
         password,
         password_confirmation,
+      },
+    };
+  }
+
+  //check if profile already exists
+  const { data: profile_check, error: profile_check_error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("email", email);
+  if (profile_check_error) {
+    return {
+      errors: {},
+      error: profile_check_error.message ?? "An unknown error occurred",
+      success: "",
+      data: {
+        name: "",
+        email: "",
+        password: "",
+        password_confirmation: "",
+      },
+    };
+  }
+
+  //if profile already exists, return error message instead of creating new profile
+  if (profile_check.length > 0) {
+    return {
+      errors: {},
+      error: "This email is already in use.",
+      success: "",
+      data: {
+        name: "",
+        email: "",
+        password: "",
+        password_confirmation: "",
       },
     };
   }
@@ -104,6 +143,7 @@ export async function signUpNewUser(
     return {
       errors: {},
       error: profileError.message ?? "An unknown error occurred",
+      success: "",
       data: {
         name,
         email,
@@ -116,11 +156,12 @@ export async function signUpNewUser(
   return {
     errors: {},
     error: "",
+    success: "Please check your email for verification.",
     data: {
-      name,
-      email,
-      password,
-      password_confirmation,
+      name: "",
+      email: "",
+      password: "",
+      password_confirmation: "",
     },
   };
 }
