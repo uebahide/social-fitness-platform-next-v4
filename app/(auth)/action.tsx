@@ -173,22 +173,17 @@ export async function signInWithEmail(
   };
 }
 
-export async function logout(prevState: any, formData: FormData) {
-  const cookiesStore = await cookies();
-  const token = cookiesStore.get("token")?.value;
-  let res: Response;
+export type signOutState = {
+  error: string;
+};
 
-  try {
-    res = await fetch(`${process.env.API_URL}/api/logout`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-  } catch (e) {
-    throw new Error(`Network error while logout : ${String(e)}`);
+export async function signOut(prevState: signOutState, formData?: FormData) {
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    return {
+      error: error.message ?? "An unknown error occurred",
+    };
   }
-
-  revalidatePath("/", "layout");
   redirect("/");
 }
