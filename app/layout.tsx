@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Main from "@/components/Main";
+
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/AppSidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import Main from "@/components/Main";
+import { UserProvider } from "@/contexts/UserProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,15 +35,15 @@ export default async function RootLayout({
       >
         <SidebarProvider>
           <TooltipProvider>
-            {/* <UserProvider initialUser={userJson.user}> */}
-            {/* <CategoriesProvider initialCategories={categories}> */}
-            <AppSidebar />
-            <Main>
-              <SidebarTrigger />
-              {children}
-            </Main>
-            {/* </CategoriesProvider> */}
-            {/* </UserProvider> */}
+            <UserProvider initialUser={null}>
+              {/* <CategoriesProvider initialCategories={categories}> */}
+              <AppSidebar />
+              <Main>
+                <SidebarTrigger />
+                {children}
+              </Main>
+              {/* </CategoriesProvider> */}
+            </UserProvider>
           </TooltipProvider>
         </SidebarProvider>
       </body>
