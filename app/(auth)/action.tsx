@@ -1,126 +1,182 @@
-'use server';
+"use server";
 
-import { revalidatePath } from 'next/cache';
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
-import z from 'zod';
+import { createClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import z from "zod";
 
 const schema = z
   .object({
-    name: z.string().min(1, 'Name is required'),
-    email: z.email('Invalid email'),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
+    name: z.string().min(1, "Name is required"),
+    email: z.email("Invalid email"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
     password_confirmation: z.string(),
   })
   .refine((data) => data.password === data.password_confirmation, {
-    message: 'This field should have the same value as password',
-    path: ['password_confirmation'],
+    message: "This field should have the same value as password",
+    path: ["password_confirmation"],
   });
 
-export async function register(prevState: any, formData: FormData) {
-  const name = String(formData.get('name') ?? '');
-  const email = String(formData.get('email') ?? '');
-  const password = String(formData.get('password') ?? '');
-  const password_confirmation = String(formData.get('password_confirmation') ?? '');
-  const data = { name, email, password, password_confirmation };
-  const validatedFields = schema.safeParse(data);
+export type signUpNewUserState = {
+  errors: {
+    name?: string[];
+    email?: string[];
+    password?: string[];
+    password_confirmation?: string[];
+  };
+  error?: string;
+  data: {
+    name?: string;
+    email?: string;
+    password?: string;
+    password_confirmation?: string;
+  };
+};
+
+export async function signUpNewUser(
+  prevState: signUpNewUserState,
+  formData: FormData,
+) {
+  const supabase = await createClient();
+  const name = String(formData.get("name") ?? "");
+  const email = String(formData.get("email") ?? "");
+  const password = String(formData.get("password") ?? "");
+  const password_confirmation = String(
+    formData.get("password_confirmation") ?? "",
+  );
+
+  const validatedFields = schema.safeParse({
+    name,
+    email,
+    password,
+    password_confirmation,
+  });
 
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: '',
-      data,
-    };
-  }
-
-  let res: Response;
-
-  try {
-    res = await fetch(`${process.env.API_URL}/api/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({
+      error: "",
+      data: {
         name,
         email,
         password,
-      }),
-    });
-  } catch (e) {
-    throw new Error(`Network error while registering new user: ${String(e)}`);
-  }
-
-  const resJson = await res.json();
-
-  if (!res.ok) {
-    return {
-      errors: resJson.errors,
-      message: resJson.message,
-      data,
+        password_confirmation,
+      },
     };
   }
 
-  const bearerToken = resJson.token;
-  const cookiesStore = await cookies();
-  cookiesStore.set('token', bearerToken, {
-    httpOnly: true,
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: process.env.APP_URL,
+    },
   });
 
-  revalidatePath('/', 'layout');
-  redirect('/');
-}
-
-export async function login(prevState: any, formData: FormData) {
-  const email = String(formData.get('email') ?? '');
-  const password = String(formData.get('password') ?? '');
-
-  let res: Response;
-
-  try {
-    res = await fetch(`${process.env.API_URL}/api/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: JSON.stringify({
+  if (error) {
+    return {
+      errors: {},
+      error: error.message ?? "An unknown error occurred",
+      data: {
+        name,
         email,
         password,
-      }),
-    });
-  } catch (e) {
-    throw new Error(`Network error while loging in: ${String(e)}`);
-  }
-
-  const resJson = await res.json();
-
-  if (!res.ok) {
-    return {
-      error: resJson.error,
-      data: { email, password },
+        password_confirmation,
+      },
     };
   }
 
-  const bearerToken = resJson.token;
-  const cookiesStore = await cookies();
-  cookiesStore.set('token', bearerToken, {
-    httpOnly: true,
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .insert({
+      name,
+      user_id: data.user?.id,
+    })
+    .select()
+    .single();
+
+  if (profileError) {
+    return {
+      errors: {},
+      error: profileError.message ?? "An unknown error occurred",
+      data: {
+        name,
+        email,
+        password,
+        password_confirmation,
+      },
+    };
+  }
+
+  return {
+    errors: {},
+    error: "",
+    data: {
+      name,
+      email,
+      password,
+      password_confirmation,
+    },
+  };
+}
+
+export type signInWithEmailState = {
+  errors: {
+    email?: string[];
+    password?: string[];
+  };
+  error: string;
+  data: {
+    email: string;
+    password: string;
+  };
+};
+
+export async function signInWithEmail(
+  prevState: signInWithEmailState,
+  formData: FormData,
+) {
+  const supabase = await createClient();
+  const email = String(formData.get("email") ?? "");
+  const password = String(formData.get("password") ?? "");
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
   });
 
-  revalidatePath('/', 'layout');
-  redirect('/');
+  if (error) {
+    return {
+      errors: {},
+      error: error.message ?? "An unknown error occurred",
+      data: {
+        email,
+        password,
+      },
+    };
+  }
+
+  redirect("/");
+
+  return {
+    errors: {},
+    error: "",
+    data: {
+      email,
+      password,
+    },
+  };
 }
 
 export async function logout(prevState: any, formData: FormData) {
   const cookiesStore = await cookies();
-  const token = cookiesStore.get('token')?.value;
+  const token = cookiesStore.get("token")?.value;
   let res: Response;
 
   try {
     res = await fetch(`${process.env.API_URL}/api/logout`, {
-      method: 'POST',
+      method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -129,6 +185,6 @@ export async function logout(prevState: any, formData: FormData) {
     throw new Error(`Network error while logout : ${String(e)}`);
   }
 
-  revalidatePath('/', 'layout');
-  redirect('/');
+  revalidatePath("/", "layout");
+  redirect("/");
 }

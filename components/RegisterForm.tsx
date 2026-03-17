@@ -1,6 +1,6 @@
 "use client";
 
-import { register } from "@/app/(auth)/action";
+import { signUpNewUser, signUpNewUserState } from "@/app/(auth)/action";
 import { useActionState } from "react";
 import { SubmitButton } from "./buttons/SubmitButton";
 import Link from "next/link";
@@ -9,9 +9,9 @@ import { FormRow } from "./form/FormRow";
 import { Input } from "./form/Input";
 import { ErrorMessage } from "./form/ErrorMessage";
 
-const initialState = {
+const initialState: signUpNewUserState = {
   errors: {},
-  message: "",
+  error: "",
   data: {
     name: "",
     email: "",
@@ -21,7 +21,7 @@ const initialState = {
 };
 
 export const RegisterForm = () => {
-  const [state, formAction] = useActionState(register, initialState);
+  const [state, formAction] = useActionState(signUpNewUser, initialState);
   return (
     <AuthForm
       action={formAction}
@@ -48,6 +48,8 @@ export const RegisterForm = () => {
         />
         <ErrorMessage>{state.errors["name"]}</ErrorMessage>
       </FormRow>
+
+      <ErrorMessage>{state.error}</ErrorMessage>
 
       <FormRow>
         <label htmlFor="email">Email</label>
