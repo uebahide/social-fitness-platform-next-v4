@@ -1,30 +1,126 @@
 "use server";
 
+import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
+import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import z from "zod";
 
-export async function createActivity(prevState: any, formData: FormData) {
-  const cookiesStore = await cookies();
-  const token = cookiesStore.get("token")?.value;
-  let res: Response;
+const schema = z.object({
+  title: z.string(),
+  description: z.string(),
+  category: z.string().min(1, "Category is required"),
+  details: z.object({
+    distance: z.number().optional(),
+    duration: z.number().optional(),
+    location: z.string().optional(),
+  }),
+});
 
-  try {
-    res = await fetch(`${process.env.API_URL}/api/activities`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: formData,
-    });
-  } catch (e) {
-    throw new Error(`Network error while logout : ${String(e)}`);
+type CreateActivityState = {
+  errors: {
+    title?: string[];
+    description?: string[];
+    category?: string[];
+    details?: string[];
+  };
+  error: string;
+  message: string;
+  data: {
+    title?: string;
+    description?: string;
+    category?: string;
+    details?: {
+      distance?: number;
+      duration?: number;
+      location?: string;
+    };
+  };
+  ok: boolean;
+};
+
+export async function createActivity(
+  prevState: CreateActivityState,
+  formData: FormData,
+) {
+  const supabase = await createClient();
+  const title = String(formData.get("title") ?? "");
+  const description = String(formData.get("description") ?? "");
+  const category = String(formData.get("category") ?? "");
+  const details = {
+    distance: formData.get("distance")
+      ? Number(formData.get("distance"))
+      : undefined,
+    duration: formData.get("duration")
+      ? Number(formData.get("duration"))
+      : undefined,
+    location: formData.get("location")
+      ? String(formData.get("location"))
+      : undefined,
+  };
+  const validatedFields = schema.safeParse({
+    title,
+    description,
+    category,
+    details,
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error?.flatten().fieldErrors,
+      error: "",
+      message: "Invalid fields",
+      data: {},
+      ok: false,
+    };
   }
 
-  if (!res.ok) {
-    const resJson = await res.json();
+  //get category id from category name
+  const { data: category_data, error: category_error } = await supabase
+    .from("categories")
+    .select("*")
+    .eq("name", category)
+    .single();
+  const category_id = category_data?.id;
+
+  //get user id from auth user
+  const user_id = await getCurrentUserId();
+
+  //create activity in supabase
+  const { data, error } = await supabase
+    .from("activities")
+    .insert([{ title, description, category_id, user_id }])
+    .select()
+    .single();
+
+  if (error) {
     return {
-      errors: resJson.errors,
-      message: resJson.message,
+      errors: {},
+      error: error.message,
+      message: error.message,
+      data: {},
+      ok: false,
+    };
+  }
+
+  //create activity detail in supabase based on category
+  const activity_detail_payload = buildActivityDetailPayload(
+    category,
+    details,
+    data.id,
+  );
+  const { data: activity_detail_data, error: activity_detail_error } =
+    await supabase
+      .from("activity_details")
+      .insert([activity_detail_payload])
+      .select()
+      .single();
+
+  if (activity_detail_error) {
+    return {
+      errors: {},
+      error: activity_detail_error?.message,
+      message: activity_detail_error?.message,
       data: {},
       ok: false,
     };
@@ -34,17 +130,15 @@ export async function createActivity(prevState: any, formData: FormData) {
 
   return {
     errors: {},
-    message: "New activity was created successfully",
+    error: "",
+    message: "Activity was created successfully",
     data: {},
     ok: true,
   };
 }
 
 export async function deleteActivity(prevState: any, formData: FormData) {
-  const cookiesStore = await cookies();
-  const token = cookiesStore.get("token")?.value;
-  let res: Response;
-
+  const supabase = await createClient();
   const id = formData.get("id");
   if (!id) {
     return {
@@ -55,23 +149,20 @@ export async function deleteActivity(prevState: any, formData: FormData) {
     };
   }
 
-  try {
-    res = await fetch(`${process.env.API_URL}/api/activities/${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-  } catch (e) {
-    throw new Error(`Network error while logout : ${String(e)}`);
-  }
+  const { data, error } = await supabase
+    .from("activities")
+    .delete()
+    .eq("id", id)
+    .select()
+    .single();
 
-  if (!res.ok) {
-    const resJson = await res.json();
+  if (error) {
     return {
-      errors: resJson.errors,
-      message: resJson.message,
+      errors: {},
+      error: error.message,
+      message: error.message,
       data: {},
+      ok: false,
     };
   }
 
@@ -85,58 +176,108 @@ export async function deleteActivity(prevState: any, formData: FormData) {
   };
 }
 
-export async function updateActivity(prevState: any, formData: FormData) {
-  const cookiesStore = await cookies();
-  const token = cookiesStore.get("token")?.value;
-  let res: Response;
+type updateActivityState = {
+  errors: {
+    title?: string[];
+    description?: string[];
+    category?: string[];
+    details?: string[];
+  };
+  error: string;
+  message: string;
+  data: {
+    title?: string;
+    description?: string;
+    category?: string;
+    details?: {
+      distance?: number;
+      duration?: number;
+      location?: string;
+    };
+  };
+  ok: boolean;
+};
 
-  const data = {
-    title: formData.get("title"),
-    description: formData.get("description"),
-    category: formData.get("category"),
-    details: {
-      distance: formData.get("distance"),
-      duration: formData.get("duration"),
-      location: formData.get("location") ?? null,
-    },
+export async function updateActivity(
+  prevState: CreateActivityState,
+  formData: FormData,
+) {
+  const supabase = await createClient();
+  const id = String(formData.get("id") ?? "");
+  const title = String(formData.get("title") ?? "");
+  const description = String(formData.get("description") ?? "");
+  const category = String(formData.get("category") ?? "");
+  const details = {
+    distance: formData.get("distance")
+      ? Number(formData.get("distance"))
+      : undefined,
+    duration: formData.get("duration")
+      ? Number(formData.get("duration"))
+      : undefined,
+    location: formData.get("location")
+      ? String(formData.get("location"))
+      : undefined,
   };
 
-  const id = formData.get("id");
-  if (!id) {
+  const validatedFields = schema.safeParse({
+    title,
+    description,
+    category,
+    details,
+  });
+
+  if (!validatedFields.success) {
     return {
-      errors: { id: "Id is required" },
-      message: "Id is required",
+      errors: validatedFields.error?.flatten().fieldErrors,
+      error: "",
+      message: "Invalid fields",
       data: {},
       ok: false,
     };
   }
 
-  try {
-    res = await fetch(`${process.env.API_URL}/api/activities/${id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-      cache: "no-store",
-    });
-  } catch (e) {
-    throw new Error(`Network error while logout : ${String(e)}`);
-  }
+  //update activity in supabase
+  const { data, error } = await supabase
+    .from("activities")
+    .update({ title, description })
+    .eq("id", id)
+    .select()
+    .single();
 
-  if (!res.ok) {
-    const resJson = await res.json();
+  if (error) {
     return {
-      errors: resJson.errors,
-      message: resJson.message,
+      errors: {},
+      error: error.message,
+      message: error.message,
       data: {},
       ok: false,
     };
   }
 
-  revalidatePath("/activity");
+  //update activity detail in supabase based on category
+  const activity_detail_payload = buildActivityDetailPayload(
+    category,
+    details,
+    data.id,
+  );
+  const { data: activity_detail_data, error: activity_detail_error } =
+    await supabase
+      .from("activity_details")
+      .update([activity_detail_payload])
+      .eq("activity_id", data.id)
+      .select()
+      .single();
+  if (activity_detail_error) {
+    return {
+      errors: {},
+      error: activity_detail_error?.message,
+      message: activity_detail_error?.message,
+      data: {},
+      ok: false,
+    };
+  }
+
+  revalidatePath("/activity", "layout");
 
   return {
     errors: {},
@@ -144,4 +285,59 @@ export async function updateActivity(prevState: any, formData: FormData) {
     data: {},
     ok: true,
   };
+}
+
+function buildActivityDetailPayload(
+  category: string,
+  details: {
+    distance?: number;
+    duration?: number;
+    location?: string;
+  },
+  activityId: string,
+) {
+  switch (category) {
+    case "running":
+      return {
+        activity_id: activityId,
+        category,
+        distance: details.distance,
+        duration: details.duration,
+      };
+
+    case "walking":
+      return {
+        activity_id: activityId,
+        category,
+        distance: details.distance,
+        duration: details.duration,
+      };
+
+    case "cycling":
+      return {
+        activity_id: activityId,
+        category,
+        distance: details.distance,
+        duration: details.duration,
+      };
+
+    case "swimming":
+      return {
+        activity_id: activityId,
+        category,
+        distance: details.distance,
+        duration: details.duration,
+      };
+
+    case "hiking":
+      return {
+        activity_id: activityId,
+        category,
+        location: details.location,
+        duration: details.duration,
+        distance: details.distance,
+      };
+    default:
+      throw new Error("Invalid category");
+  }
 }

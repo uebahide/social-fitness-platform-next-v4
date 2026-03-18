@@ -78,8 +78,6 @@ export async function signUpNewUser(
     },
   });
 
-  console.log(data);
-
   if (error) {
     return {
       errors: {},

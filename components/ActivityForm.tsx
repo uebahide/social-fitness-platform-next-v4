@@ -66,7 +66,7 @@ export const CategoryAndDetailsFields = ({
   activity?: ActivityType;
 }) => {
   const [category, setCategory] = useState<Category>(
-    (uppercaseFirstLetter(defaultValue ?? "") ?? "null") as unknown as Category,
+    defaultValue as unknown as Category,
   );
 
   const handleCategoryChange = (value: string) => {

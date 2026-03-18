@@ -4,28 +4,17 @@ import { CategoryIcon } from "@/components/CategoryIcon";
 import { ActivityType } from "@/types/api/activity";
 import { Category } from "@/types/api/category";
 import ActivityCard from "@/components/ActivityCard";
-import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/buttons/Button";
 import { useCategories } from "@/contexts/CategoriesProvider";
-import { PER_PAGE } from "@/constants";
-import { useUser } from "@/contexts/UserProvider";
+import { useState } from "react";
 
-export const MyActivities = ({ page }: { page: number }) => {
-  const { user } = useUser();
-  const [activities, setActivities] = useState<ActivityType[]>([]);
+export const MyActivities = ({
+  activities,
+}: {
+  activities: ActivityType[];
+}) => {
   const [categoryFilter, setCategoryFilter] = useState<Category | null>(null);
-
-  useEffect(() => {
-    const fetchActivities = async () => {
-      const response = await fetch(
-        `/api/activity?page=${page}&per_page=${PER_PAGE}&userId=${user?.id}`,
-      );
-      const data = await response.json();
-      setActivities(data);
-    };
-    fetchActivities();
-  }, [page, user?.id]);
 
   return (
     <div className="space-y-6">
