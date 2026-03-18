@@ -6,6 +6,7 @@ import { PaginationSimple } from "@/components/Pagination";
 import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
 import { createClient } from "@/lib/supabase/server";
 import { PER_PAGE } from "@/constants";
+import { MyAnalytics } from "./MyAnalytics";
 
 type PageProps = {
   searchParams: Promise<{
@@ -51,7 +52,7 @@ export default async function Activity({ searchParams }: PageProps) {
 
       <aside>
         <Suspense fallback={<div>Loading...</div>}>
-          {/* <MyAnalytics token={token} /> */}
+          <MyAnalytics />
         </Suspense>
       </aside>
     </section>
