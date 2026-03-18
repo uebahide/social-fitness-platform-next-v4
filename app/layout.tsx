@@ -9,6 +9,8 @@ import Main from "@/components/Main";
 import { UserProvider } from "@/contexts/UserProvider";
 import { createClient } from "@/lib/supabase/server";
 import { User } from "@/types/api/user";
+import { CategoriesProvider } from "@/contexts/CategoriesProvider";
+import { Category } from "@/types/api/category";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,8 +46,12 @@ export default async function RootLayout({
       throw new Error(error.message);
     }
     profile = data?.[0];
-    console.log(profile);
   }
+
+  const { data: categoriesData } = await supabase
+    .from("categories")
+    .select("*");
+  const categories = categoriesData?.map((category) => category.name);
   return (
     <html lang="en">
       <body
@@ -54,13 +60,13 @@ export default async function RootLayout({
         <SidebarProvider>
           <TooltipProvider>
             <UserProvider initialUser={profile as User | null}>
-              {/* <CategoriesProvider initialCategories={categories}> */}
-              <AppSidebar />
-              <Main>
-                <SidebarTrigger />
-                {children}
-              </Main>
-              {/* </CategoriesProvider> */}
+              <CategoriesProvider initialCategories={categories as Category[]}>
+                <AppSidebar />
+                <Main>
+                  <SidebarTrigger />
+                  {children}
+                </Main>
+              </CategoriesProvider>
             </UserProvider>
           </TooltipProvider>
         </SidebarProvider>

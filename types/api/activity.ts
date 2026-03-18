@@ -1,8 +1,9 @@
-import { User } from './user';
+import { Category } from "./category";
+import { User } from "./user";
 
 export type ActivityType = {
   id: string;
-  category: string;
+  category: Category;
   title: string;
   description: string;
   created_at: string;
