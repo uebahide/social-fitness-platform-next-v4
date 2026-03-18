@@ -6,11 +6,13 @@ import { TextareaSimple } from "./form/TextAreaSimple";
 import { ErrorMessage } from "./form/ErrorMessage";
 import { Category } from "@/types/api/category";
 import { SelectSimple } from "./form/SelectSimple";
-import { CreateActivityState } from "./AddActivityButton";
 import { InputWithLabel } from "./form/InputWithLabel";
 import { Input } from "./form/Input";
 import { ActivityType, HikingActivityDetailsType } from "@/types/api/activity";
-import { uppercaseFirstLetter } from "@/lib/utils";
+import {
+  CreateActivityState,
+  UpdateActivityState,
+} from "@/app/activity/action";
 
 export const ActivityForm = ({
   categories,
@@ -18,7 +20,7 @@ export const ActivityForm = ({
   activity,
 }: {
   categories: Category[];
-  state: CreateActivityState;
+  state: UpdateActivityState | CreateActivityState;
   activity?: ActivityType;
 }) => {
   return (

@@ -19,11 +19,22 @@ import { ActivityForm } from "./ActivityForm";
 import { useCategories } from "@/contexts/CategoriesProvider";
 import { ActivityType } from "@/types/api/activity";
 
-const editActivityInitialState = {
-  ok: false,
+const updateActivityInitialState = {
+  errors: {
+    title: [],
+    description: [],
+    category: [],
+    details: [],
+  },
+  error: "",
   message: "",
-  data: {},
-  errors: {},
+  data: {
+    title: "",
+    description: "",
+    category: "",
+    details: {},
+  },
+  ok: false,
 };
 
 export const UpdateActivityDialogForm = ({
@@ -38,7 +49,7 @@ export const UpdateActivityDialogForm = ({
   const { categories } = useCategories();
   const [state, formAction] = useActionState(
     updateActivity,
-    editActivityInitialState,
+    updateActivityInitialState,
   );
   const formRef = useRef<HTMLFormElement>(null);
 

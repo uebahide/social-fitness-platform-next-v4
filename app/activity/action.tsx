@@ -3,7 +3,6 @@
 import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import z from "zod";
 
 const schema = z.object({
@@ -17,7 +16,7 @@ const schema = z.object({
   }),
 });
 
-type CreateActivityState = {
+export type CreateActivityState = {
   errors: {
     title?: string[];
     description?: string[];
@@ -176,7 +175,7 @@ export async function deleteActivity(prevState: any, formData: FormData) {
   };
 }
 
-type updateActivityState = {
+export type UpdateActivityState = {
   errors: {
     title?: string[];
     description?: string[];
@@ -281,6 +280,7 @@ export async function updateActivity(
 
   return {
     errors: {},
+    error: "",
     message: "Activity was updated successfully",
     data: {},
     ok: true,
