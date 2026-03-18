@@ -8,7 +8,7 @@ import { Category } from "@/types/api/category";
 import { SelectSimple } from "./form/SelectSimple";
 import { InputWithLabel } from "./form/InputWithLabel";
 import { Input } from "./form/Input";
-import { ActivityType, HikingActivityDetailsType } from "@/types/api/activity";
+import { ActivityType } from "@/types/api/activity";
 import {
   CreateActivityState,
   UpdateActivityState,
@@ -137,12 +137,12 @@ const InputFields = ({
     );
   }
   if (String(category) === "hiking") {
-    const hikingDetails = activity?.details as HikingActivityDetailsType;
+    const hikingDetails = activity?.details;
     return (
       <>
         <DistanceAndDurationFields
-          defaultDistance={activity?.details.distance}
-          defaultDuration={activity?.details.duration}
+          defaultDistance={hikingDetails?.distance}
+          defaultDuration={hikingDetails?.duration}
         />
         <InputWithLabel label="Location" unit="optional">
           <Input
