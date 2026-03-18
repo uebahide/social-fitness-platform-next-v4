@@ -102,7 +102,7 @@ const InputFields = ({
   category: Category;
   activity?: ActivityType;
 }) => {
-  if (String(category) === "Running") {
+  if (String(category) === "running") {
     return (
       <DistanceAndDurationFields
         defaultDistance={activity?.details.distance}
@@ -110,7 +110,7 @@ const InputFields = ({
       />
     );
   }
-  if (String(category) === "Walking") {
+  if (String(category) === "walking") {
     return (
       <DistanceAndDurationFields
         defaultDistance={activity?.details.distance}
@@ -118,7 +118,7 @@ const InputFields = ({
       />
     );
   }
-  if (String(category) === "Cycling") {
+  if (String(category) === "cycling") {
     return (
       <DistanceAndDurationFields
         defaultDistance={activity?.details.distance}
@@ -126,7 +126,7 @@ const InputFields = ({
       />
     );
   }
-  if (String(category) === "Swimming") {
+  if (String(category) === "swimming") {
     return (
       <DistanceAndDurationFields
         defaultDistance={activity?.details.distance}
@@ -134,7 +134,7 @@ const InputFields = ({
       />
     );
   }
-  if (String(category) === "Hiking") {
+  if (String(category) === "hiking") {
     const hikingDetails = activity?.details as HikingActivityDetailsType;
     return (
       <>
@@ -148,7 +148,7 @@ const InputFields = ({
             id="location"
             name="location"
             placeholder="eg. The Peak, Hong Kong"
-            defaultValue={hikingDetails.location}
+            defaultValue={hikingDetails?.location}
           />
         </InputWithLabel>
       </>
