@@ -28,14 +28,11 @@ export function PaginationSimple({
         `/api/activity/total-pages?userId=${user?.id}`,
       );
       const count = await response.json();
-      setTotalPages(count);
+      setTotalPages(Math.ceil(count / PER_PAGE));
     };
     fetchTotalPages();
   }, [user?.id]);
 
-  if (totalPages <= PER_PAGE) {
-    return null;
-  }
   return (
     <Pagination className={className}>
       <PaginationContent>
