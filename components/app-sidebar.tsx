@@ -40,7 +40,7 @@ const data = [
     items: [
       {
         name: "Friend list",
-        url: "/friend/list",
+        url: "/friend/friend-list",
         icon: <UsersIcon />,
       },
       {
