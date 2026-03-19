@@ -1,0 +1,86 @@
+import { MessageClient } from "./MessageClient";
+import { createClient } from "@/lib/supabase/server";
+import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
+import { Room } from "@/types/api/message";
+
+export default async function MessagePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ friendId?: string }>;
+}) {
+  const { friendId } = await searchParams;
+  const currentUserId = await getCurrentUserId();
+  const supabase = await createClient();
+
+  if (friendId) {
+    const parsedFriendId = Number(friendId);
+    if (!Number.isInteger(parsedFriendId)) {
+      throw new Error(`Invalid friendId: ${friendId}`);
+    }
+
+    // check if room with both users (current user id and friend id) exists
+    const { data: isRoomExists, error: isRoomExistsError } = await supabase.rpc(
+      "are_users_in_same_room",
+      {
+        user1_id: currentUserId,
+        user2_id: parsedFriendId,
+      },
+    );
+
+    if (isRoomExistsError) {
+      throw new Error(
+        `Error while checking if room exists: ${isRoomExistsError.message}`,
+      );
+    }
+
+    // if room does not exist, create it
+    if (!isRoomExists) {
+      const { data: room, error: roomError } = await supabase
+        .from("rooms")
+        .insert({
+          type: "private",
+        })
+        .select()
+        .single();
+
+      if (roomError) {
+        throw new Error(`Error while creating room: ${roomError.message}`);
+      }
+
+      // create room_user intermediary table records for both users
+      const newRoomId = room?.id;
+      const { data: createRoom, error: createRoomError } = await supabase
+        .from("room_user")
+        .insert([
+          {
+            room_id: newRoomId,
+            user_id: currentUserId,
+          },
+          {
+            room_id: newRoomId,
+            user_id: parsedFriendId,
+          },
+        ]);
+
+      if (createRoomError) {
+        throw new Error(
+          `Error while creating room user: ${createRoomError.message}`,
+        );
+      }
+    }
+  }
+
+  // get all rooms for the current user
+  const { data: rooms, error: roomsError } = await supabase
+    .from("rooms")
+    .select(
+      "*, users:room_user(...profiles(id, name, email, image_path, created_at)), my_filter:room_user!inner()",
+    )
+    .eq("my_filter.user_id", currentUserId);
+
+  if (roomsError) {
+    throw new Error(`Error while fetching rooms: ${roomsError.message}`);
+  }
+
+  return <MessageClient rooms={rooms as Room[]} friendId={friendId} />;
+}
