@@ -51,7 +51,7 @@ export const MessageInput = ({
       return;
     }
 
-    addOptimisticMessage();
+    // addOptimisticMessage();
     setMessage("");
   };
 
@@ -63,7 +63,7 @@ export const MessageInput = ({
 
       if (!message.trim()) return;
 
-      addOptimisticMessage();
+      // addOptimisticMessage();
       formRef.current?.requestSubmit();
       setMessage("");
     }

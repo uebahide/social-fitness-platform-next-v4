@@ -4,6 +4,7 @@ import { Message, Room } from "@/types/api/message";
 import { ChatHeader } from "./ChatHeader";
 import { MessageInput } from "./MessageInput";
 import { createClient } from "@/lib/supabase/client";
+import { useRealtimeMessages } from "@/hooks/useRealtimeMessages";
 
 export const MessagePanel = ({
   selectedRoom,
@@ -33,6 +34,18 @@ export const MessagePanel = ({
       fetchMessages();
     }
   }, [selectedRoom]);
+
+  useRealtimeMessages(
+    selectedRoom ? selectedRoom.id.toString() : null,
+    (newMessage: Message) => {
+      console.log("newMessage", newMessage);
+      setMessages((prev) => {
+        const exists = prev.some((msg) => msg.id === newMessage.id);
+        if (exists) return prev;
+        return [...prev, newMessage];
+      });
+    },
+  );
   return (
     <div className="bg-card flex w-full flex-col rounded-r-sm border border-gray-200">
       {!selectedRoom ? (
