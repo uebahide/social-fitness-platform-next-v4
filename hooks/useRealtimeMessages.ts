@@ -38,9 +38,10 @@ export function useRealtimeMessages(
 
     return () => {
       cancelled = true;
+
       if (channel) {
         supabase.removeChannel(channel);
       }
     };
-  }, [roomId]);
+  }, [roomId, onInsert]);
 }
