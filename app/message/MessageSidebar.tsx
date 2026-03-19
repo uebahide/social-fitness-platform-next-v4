@@ -3,6 +3,7 @@
 import { Avatar } from "@/components/Avatar";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@/contexts/UserProvider";
+import { useRealtimeMessages } from "@/hooks/useRealtimeMessages";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Message, Room } from "@/types/api/message";
@@ -68,6 +69,11 @@ const RoomListItem = ({
   const [latestMessage, setLatestMessage] = useState<Message | null>(null);
   const { user: currentUser } = useUser();
   const friend = room.users.find((user) => user.id !== currentUser?.id);
+
+  useRealtimeMessages(room.id.toString(), (newMessage: Message) => {
+    console.log("newMessage", newMessage);
+    setLatestMessage(newMessage);
+  });
 
   useEffect(() => {
     const fetchLatestMessages = async () => {
