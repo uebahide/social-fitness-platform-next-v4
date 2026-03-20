@@ -1,20 +1,13 @@
 import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
 import { FriendList } from "./FriendList";
 import { createClient } from "@/lib/supabase/server";
+import { getFriends } from "@/lib/server/getFriends";
 
 export default async function FriendListPage() {
   const supabase = await createClient();
   const userId = await getCurrentUserId();
 
-  const { data: friendsData, error: friendsError } = await supabase
-    .from("friends")
-    .select("*, profile:friend_id(*)")
-    .eq("user_id", userId);
-
-  if (friendsError) {
-    return <div>Error: {friendsError.message}</div>;
-  }
-
+  const friends = await getFriends();
   const { data: receivedRequests, error: receivedRequestsError } =
     await supabase
       .from("friend_requests")
@@ -26,7 +19,8 @@ export default async function FriendListPage() {
     return <div>Error: {receivedRequestsError.message}</div>;
   }
 
-  const friends = friendsData?.map((friend) => friend.profile);
+  console.log("receivedRequests", receivedRequests);
+
   return (
     <div className="grid grid-cols-[3fr_7fr] gap-4">
       <FriendList friends={friends} requests={receivedRequests} />
