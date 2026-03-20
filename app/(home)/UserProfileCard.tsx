@@ -19,7 +19,7 @@ export const UserProfileCard = ({
   showWebsite = true,
   className,
 }: {
-  user: User;
+  user?: User;
   latestActivity: ActivityType;
   activityCount: number;
   showMyActivitiesLink?: boolean;
@@ -34,7 +34,7 @@ export const UserProfileCard = ({
   return (
     <Card className={cn(" col-span-1 row-span-1", className)}>
       <header className="flex flex-col items-center justify-center space-y-4">
-        <Avatar size="large" user={target_user} />
+        <Avatar size="large" user={target_user ?? undefined} />
         <p className="text-center text-2xl font-bold">{target_user?.name}</p>
       </header>
       <main className="mt-2 space-y-4">
