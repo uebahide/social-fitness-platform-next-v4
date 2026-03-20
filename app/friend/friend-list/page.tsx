@@ -19,14 +19,11 @@ export default async function FriendListPage() {
     return <div>Error: {receivedRequestsError.message}</div>;
   }
 
-  console.log("receivedRequests", receivedRequests);
-
   return (
     <div className="grid grid-cols-[3fr_7fr] gap-4">
       <FriendList friends={friends} requests={receivedRequests} />
-      <article>
-        <div>Image</div>
-        <div>Name</div>
+      <article className="flex justify-center items-center">
+        <p>Select a friend from the list to view their profile</p>
       </article>
     </div>
   );
