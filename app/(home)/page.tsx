@@ -1,7 +1,7 @@
 import { UserProfileCard } from "./UserProfileCard";
 import { WeatherCard } from "./WeatherCard";
-import { getTotalActivityCount } from "@/lib/services/totalActivityCount";
-import { getLatestActivity } from "@/lib/services/latestActivity";
+import { getTotalActivityCount } from "@/lib/server/getTotalActivityCount";
+import { getLatestActivity } from "@/lib/server/getLatestActivity";
 import { FriendActivity } from "./FriendActivity";
 
 export default async function Home() {
@@ -13,6 +13,8 @@ export default async function Home() {
       <UserProfileCard
         latestActivity={latestActivity}
         activityCount={activityCount}
+        showWebsite={false}
+        showFrom={false}
       />
       <FriendActivity />
       <WeatherCard />
