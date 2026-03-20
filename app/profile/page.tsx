@@ -35,8 +35,8 @@ export default async function Profile() {
                 <Input id="display_name" name="display_name" />
               </FormRow>
               <FormRow>
-                <label htmlFor="name">Email</label>
-                <Input id="email" name="email" />
+                <label htmlFor="name">Gender</label>
+                <Input id="gender" name="gender" />
               </FormRow>
               <FormRow>
                 <label htmlFor="name">Nationality</label>

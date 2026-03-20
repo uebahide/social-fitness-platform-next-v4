@@ -10,16 +10,24 @@ import { useState } from "react";
 import { DeleteActivityDialogForm } from "./DeleteActivityDialogForm";
 import { UpdateActivityDialogForm } from "./UpdateActivityDialogForm";
 
-export default function ActivityCard({ activity }: { activity: ActivityType }) {
+export default function ActivityCard({
+  activity,
+  showMenu = true,
+}: {
+  activity: ActivityType;
+  showMenu?: boolean;
+}) {
   const created_user = activity.user;
   const details = activity.details;
 
   return (
     <article className="bg-card relative rounded-lg border border-gray-300 p-7 shadow-sm hover:shadow-md">
       {/*  menu button (delete, edit) */}
-      <div className="absolute top-3 right-7">
-        <ActivityCardMenu activityId={activity.id} activity={activity} />
-      </div>
+      {showMenu && (
+        <div className="absolute top-3 right-7">
+          <ActivityCardMenu activityId={activity.id} activity={activity} />
+        </div>
+      )}
 
       {/* activity card main content */}
       <main className="r mb-10 grid grid-cols-[50px_auto] grid-rows-[1fr_auto] space-y-4 gap-x-6">

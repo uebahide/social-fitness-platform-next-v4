@@ -19,8 +19,6 @@ export default async function FriendListPage() {
     return <div>Error: {receivedRequestsError.message}</div>;
   }
 
-  console.log("receivedRequests", receivedRequests);
-
   return (
     <div className="grid grid-cols-[3fr_7fr] gap-4">
       <FriendList friends={friends} requests={receivedRequests} />

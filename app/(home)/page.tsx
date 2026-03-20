@@ -9,21 +9,26 @@ export default async function Home() {
   const activityCount = await getTotalActivityCount();
 
   return (
-    <div className="grid grid-cols-[3fr_4fr_3fr] grid-rows-2 h-screen gap-2">
-      <UserProfileCard
-        latestActivity={latestActivity}
-        activityCount={activityCount}
-        showWebsite={false}
-        showFrom={false}
-      />
+    <div className="grid grid-cols-[3fr_4fr_3fr] gap-4 ">
+      <div className="flex flex-col gap-4">
+        <UserProfileCard
+          latestActivity={latestActivity}
+          activityCount={activityCount}
+          showWebsite={false}
+          showFrom={false}
+          className="mt-9"
+        />
+        <section className="bg-card col-span-1 row-span-1 rounded-sm border border-gray-200 p-4">
+          championships are coming soon
+        </section>
+      </div>
       <FriendActivity />
-      <WeatherCard />
-      <section className="bg-card col-span-1 row-span-1 rounded-sm border border-gray-200 p-4">
-        championships are coming soon
-      </section>
-      <section className="bg-card col-span-1 row-span-1 rounded-sm border border-gray-200 p-4">
-        events are coming soon
-      </section>
+      <div className="flex flex-col gap-4">
+        <WeatherCard />
+        <section className="bg-card col-span-1 row-span-1 rounded-sm border border-gray-200 p-4">
+          events are coming soon
+        </section>
+      </div>
     </div>
   );
 }
