@@ -10,7 +10,7 @@ export const Card = ({
 }) => {
   return (
     <section
-      className={cn("bg-card rounded-sm border border-gray-200 p-4", className)}
+      className={cn("bg-card border-gray-200 p-4 border rounded-xl", className)}
     >
       {children}
     </section>

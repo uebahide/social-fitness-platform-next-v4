@@ -7,6 +7,7 @@ import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
 import { createClient } from "@/lib/supabase/server";
 import { PER_PAGE } from "@/constants";
 import { MyAnalytics } from "./MyAnalytics";
+import { MyAnalyticsSkelton } from "@/components/skeltons/MyAnalyticsSkeleton";
 
 type PageProps = {
   searchParams: Promise<{
@@ -39,8 +40,13 @@ export default async function Activity({ searchParams }: PageProps) {
   }));
 
   return (
-    <section className="grid grid-cols-[9fr_6fr] space-y-6 gap-x-10">
-      <main className="space-y-6">
+    <section className="flex flex-col gap-6">
+      <div>
+        <Suspense fallback={<MyAnalyticsSkelton />}>
+          <MyAnalytics />
+        </Suspense>
+      </div>
+      <div className="space-y-6">
         <header className="flex items-center gap-3">
           <h2 className="">My Activity</h2>
           <AddActivityButton />
@@ -48,13 +54,7 @@ export default async function Activity({ searchParams }: PageProps) {
 
         <MyActivities activities={formattedActivities ?? []} />
         <PaginationSimple page={page} />
-      </main>
-
-      <aside>
-        <Suspense fallback={<div>Loading...</div>}>
-          <MyAnalytics />
-        </Suspense>
-      </aside>
+      </div>
     </section>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { WeatherCardSkeleton } from "@/components/skeltons/WeatherCardSkeleton";
 
 type DailyForecast = {
   time: string[];
@@ -50,6 +51,7 @@ export const WeatherCard = ({}) => {
 
   useEffect(() => {
     const getWeather = async () => {
+      setLoading(true);
       navigator.geolocation.getCurrentPosition(async (position) => {
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
@@ -81,10 +83,15 @@ export const WeatherCard = ({}) => {
         setDailyForecast(mapped);
         setWeather(weatherData.current_weather);
         setLocation(locationData.address);
+        setLoading(false);
       });
     };
     getWeather();
   }, []);
+
+  if (loading) {
+    return <WeatherCardSkeleton />;
+  }
 
   return (
     <section className="col-span-1 row-span-1">
