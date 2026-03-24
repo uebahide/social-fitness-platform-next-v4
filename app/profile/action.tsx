@@ -67,16 +67,12 @@ const schema = z.object({
   about: z.string().optional(),
 });
 
-export async function updateProfile(prevState: any, formData: FormData) {
+export async function updateProfile(
+  prevState: UpdateProfileState,
+  formData: FormData,
+): Promise<UpdateProfileState> {
   const supabase = await createClient();
   const currentUserId = await getCurrentUserId();
-  if (!currentUserId) {
-    return {
-      errors: {
-        email: ["User not found"],
-      },
-    };
-  }
   const first_name = String(formData.get("first_name") ?? "");
   const last_name = String(formData.get("last_name") ?? "");
   const display_name = String(formData.get("display_name") ?? "");
@@ -94,7 +90,6 @@ export async function updateProfile(prevState: any, formData: FormData) {
     about,
   });
 
-  console.log("gender", gender);
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
@@ -139,6 +134,7 @@ export async function updateProfile(prevState: any, formData: FormData) {
         gender,
         nationality,
         website,
+        about,
       },
     };
   }

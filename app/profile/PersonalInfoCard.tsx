@@ -19,7 +19,15 @@ import { SuccessMessage } from "@/components/form/SuccessMessage";
 import { ErrorMessage } from "@/components/form/ErrorMessage";
 
 const initialState: UpdateProfileState = {
-  errors: {},
+  errors: {
+    first_name: [],
+    last_name: [],
+    display_name: [],
+    gender: [],
+    nationality: [],
+    website: [],
+    about: [],
+  },
   message: "",
   error: "",
   data: {
@@ -109,19 +117,14 @@ export const PersonalInfoCard = ({ user }: { user: User }) => {
           <div className="grid grid-cols-2 gap-4 pl-3">
             <FormRow>
               <label htmlFor="name">Email</label>
-              <Input
-                id="first_name"
-                name="first_name"
-                defaultValue={user?.email}
-                readOnly
-              />
+              <Input id="email" defaultValue={user?.email} readOnly />
             </FormRow>
             <FormRow>
               <label htmlFor="name">Website</label>
               <ErrorMessage>{state.errors?.website}</ErrorMessage>
               <Input
-                id="display_name"
-                name="display_name"
+                id="website"
+                name="website"
                 defaultValue={state.data?.website || user?.website}
               />
             </FormRow>
