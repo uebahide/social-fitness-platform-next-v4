@@ -8,6 +8,7 @@ import {
 } from "@/types/api/analytics";
 
 import { TrendLineChart } from "./TrendLineChart";
+import { Card } from "@/components/Card";
 
 export const MyAnalyticsClient = ({
   last7DaysActivityTotal,
@@ -63,8 +64,9 @@ export const MyAnalyticsClient = ({
   );
 
   return (
-    <div className="bg-card h-auto space-y-8 rounded-lg border border-gray-300 px-7 py-4 shadow-sm focus-within:outline-none">
-      <nav className="flex justify-end gap-2">
+    <div className="space-y-4 mt-4">
+      <h1>Activity Overview</h1>
+      <nav className="flex justify-start gap-2">
         <select
           className="bg-card rounded-lg border border-gray-300 px-2 py-1"
           onChange={(e) => setDays(Number(e.target.value))}
@@ -76,18 +78,19 @@ export const MyAnalyticsClient = ({
         </select>
       </nav>
 
-      <ul className="flex flex-col gap-2">
-        <li>
+      <div className="flex gap-4">
+        <Card className="h-[300px] flex items-center justify-center">
           <TrendLineChart trendData={trendData} />
-        </li>
+        </Card>
 
-        <li>
+        <Card className="h-[300px] flex items-center justify-center">
           <CategoryBreakDownChart data={categoryBreakDownData} />
-        </li>
-        <hr />
-        <li>Activity count: {totalActivityCount}</li>
-        <li>Total distance: {totalDistance.toFixed(2)} km</li>
-      </ul>
+        </Card>
+        <Card className="h-[300px] flex flex-col flex-1 w-full">
+          <div>Activity count: {totalActivityCount}</div>
+          <div>Total distance: {totalDistance.toFixed(2)} km</div>
+        </Card>
+      </div>
     </div>
   );
 };
