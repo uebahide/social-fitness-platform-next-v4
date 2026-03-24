@@ -35,7 +35,7 @@ export default function ActivityCard({
           <Avatar user={created_user} size="xsmall" />
         </span>
         <header>
-          <p className="text-sm font-medium">{created_user.name}</p>
+          <p className="text-sm font-medium">{created_user.display_name}</p>
           <p className="text-xs text-gray-400">{activity.created_at}</p>
         </header>
         <span className="flex justify-center">
