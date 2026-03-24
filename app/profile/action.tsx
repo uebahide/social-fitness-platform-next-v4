@@ -44,6 +44,7 @@ export async function updateImage(prevState: any, formData: FormData) {
   }
 
   revalidatePath("/profile", "layout");
+  redirect("/profile");
 }
 
 export type UpdateProfileState = {

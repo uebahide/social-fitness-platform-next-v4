@@ -65,10 +65,6 @@ export const UserProfileCard = ({
         ) : (
           <form
             action={formAction}
-            onSubmit={() => {
-              setImage(null);
-              setError("");
-            }}
             className="relative flex items-center justify-center gap-5 w-full"
           >
             <label className="cursor-pointer">
