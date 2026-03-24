@@ -1,12 +1,7 @@
 "use client";
 
 import * as React from "react";
-import {
-  MailIcon,
-  MessageCircleIcon,
-  SearchIcon,
-  UsersIcon,
-} from "lucide-react";
+import { MessageCircleIcon, SearchIcon, UsersIcon } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
 import {
@@ -20,6 +15,9 @@ import RunIcon from "./icons/Run";
 import HomeIcon from "./icons/Home";
 import { NavUser } from "./nav-user";
 import { useUser } from "@/contexts/UserProvider";
+import Logo from "@/components/Logo";
+import Link from "next/link";
+import { TeamSwitcher } from "./team-switcher";
 
 const data = [
   {
@@ -61,7 +59,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useUser();
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>{/* <TeamSwitcher teams={data.teams} /> */}</SidebarHeader>
+      <SidebarHeader>
+        <Link href="/" className="flex flex-row items-center gap-0 mt-3">
+          <TeamSwitcher
+            teams={[
+              {
+                name: "Social Fitness",
+                logo: <Logo size="extra-small" />,
+                plan: "Free",
+              },
+            ]}
+          />
+        </Link>
+      </SidebarHeader>
       <SidebarContent>
         <NavMain items={data} />
       </SidebarContent>

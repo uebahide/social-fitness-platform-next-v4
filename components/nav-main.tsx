@@ -9,7 +9,6 @@ import {
 } from "@/components/ui/collapsible";
 import {
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -76,16 +75,14 @@ export function NavMain({
               </SidebarMenuItem>
             </Collapsible>
           ) : (
-            <SidebarMenu key={item.name}>
-              <SidebarMenuItem key={item.name}>
-                <SidebarMenuButton asChild tooltip={item.name}>
-                  <a href={item.url}>
-                    {item.icon}
-                    <span>{item.name}</span>
-                  </a>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
+            <SidebarMenuItem key={item.name}>
+              <SidebarMenuButton asChild tooltip={item.name}>
+                <a href={item.url}>
+                  {item.icon}
+                  <span>{item.name}</span>
+                </a>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
           ),
         )}
       </SidebarMenu>
