@@ -74,7 +74,7 @@ export default async function MessagePage({
   const { data: rooms, error: roomsError } = await supabase
     .from("rooms")
     .select(
-      "*, users:room_user(...profiles(id, name, email, image_path, created_at)), my_filter:room_user!inner()",
+      "*, users:room_user(...profiles(id, display_name, email, image_path, created_at)), my_filter:room_user!inner()",
     )
     .eq("my_filter.user_id", currentUserId);
 

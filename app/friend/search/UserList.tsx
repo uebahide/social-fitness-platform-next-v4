@@ -49,7 +49,7 @@ export const UserList = () => {
             "*, friend_requests_sent:friend_requests!sender_id(id, sender_id, receiver_id, status), friend_requests_received:friend_requests!receiver_id(id, sender_id, receiver_id, status), friends:friends!user_id(id, user_id, friend_id)",
           )
           .not("id", "eq", currentUser?.id.toString())
-          .ilike("name", `%${debouncedSearch}%`);
+          .ilike("display_name", `%${debouncedSearch}%`);
 
         if (usersError) {
           return <div>Error: {usersError.message}</div>;
@@ -131,7 +131,7 @@ const UserItem = ({
         className="flex items-center gap-5 w-full hover:bg-gray-50 rounded-sm p-2"
       >
         <Avatar size="small" user={user} />
-        <div>{user.name}</div>
+        <div>{user.display_name}</div>
       </Link>
       <form className="flex items-center gap-2" action={formAction}>
         <input

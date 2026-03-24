@@ -12,7 +12,7 @@ export const RequestItem = ({ request }: { request: FriendRequest }) => {
     <li className="flex cursor-pointer items-center justify-between gap-5 rounded-sm p-2 hover:bg-gray-50">
       <div className="flex items-center gap-5">
         <Avatar size="small" user={requestSender} />
-        <div>{requestSender.name}</div>
+        <div>{requestSender.display_name}</div>
       </div>
       <RequestItemButton
         requestId={request?.id.toString() ?? ""}

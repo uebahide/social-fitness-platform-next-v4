@@ -50,7 +50,9 @@ export function NavUser({}: {}) {
             >
               <Avatar size="small" />
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user?.name}</span>
+                <span className="truncate font-medium">
+                  {user?.display_name}
+                </span>
                 <span className="truncate text-xs">{user?.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
@@ -66,7 +68,9 @@ export function NavUser({}: {}) {
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar size="small" />
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user?.name}</span>
+                  <span className="truncate font-medium">
+                    {user?.display_name}
+                  </span>
                   <span className="truncate text-xs">{user?.email}</span>
                 </div>
               </div>

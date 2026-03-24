@@ -21,12 +21,14 @@ export const FriendList = ({
   const [currentTab, setCurrentTab] = useState<"friend" | "request">("friend");
   const filteredFriends = useMemo(() => {
     return friends?.filter((friend) =>
-      friend?.name?.toLowerCase().includes(search.toLowerCase()),
+      friend?.display_name?.toLowerCase().includes(search.toLowerCase()),
     );
   }, [friends, search]);
   const filteredRequests = useMemo(() => {
     return requests?.filter((request) =>
-      request.sender?.name?.toLowerCase().includes(search.toLowerCase()),
+      request.sender?.display_name
+        ?.toLowerCase()
+        .includes(search.toLowerCase()),
     );
   }, [requests, search]);
 
@@ -90,7 +92,7 @@ const FriendItem = ({ friend }: { friend: User }) => {
         className="flex w-full cursor-pointer items-center gap-2 rounded-sm p-2 hover:bg-gray-50"
       >
         <Avatar size="small" user={friend ?? null} />
-        <div>{friend.name}</div>
+        <div>{friend.display_name}</div>
       </Link>
       <Link href={`/message?friendId=${friend.id}`}>
         <Button color="secondary">
