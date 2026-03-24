@@ -13,6 +13,8 @@ export default async function Profile() {
   const activityCount = await getTotalActivityCount();
   const user = await getCurrentUser();
 
+  console.log(user?.image_path);
+
   return (
     <div className="grid grid-cols-[1fr_2fr] gap-4 grid-rows-[3fr_2fr]">
       <UserProfileCard

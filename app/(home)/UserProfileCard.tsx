@@ -9,6 +9,11 @@ import { ArrowRightIcon } from "@radix-ui/react-icons";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/Card";
 import { User } from "@/types/api/user";
+import Image from "next/image";
+import { useActionState, useState } from "react";
+import { ErrorMessage } from "@/components/form/ErrorMessage";
+import { SubmitButton } from "@/components/buttons/SubmitButton";
+import { updateImage } from "../profile/action";
 
 export const UserProfileCard = ({
   user,
@@ -27,14 +32,79 @@ export const UserProfileCard = ({
   showWebsite?: boolean;
   className?: string;
 }) => {
+  const [image, setImage] = useState<File | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [state, formAction] = useActionState(updateImage, null);
   const { user: login_user } = useUser();
   const target_user = user ?? login_user;
   const category = latestActivity?.category;
   const date = latestActivity?.created_at;
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setError("");
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // const maxSize = 1 * 1024 * 1024; // 1MB
+
+    // if (file.size > maxSize) {
+    //   setError("Image must be 1MB or smaller.");
+    //   e.target.value = "";
+    //   return;
+    // }
+
+    if (e.target.files && e.target.files[0]) {
+      setImage(e.target.files[0]);
+    }
+  };
   return (
     <Card className={cn(" col-span-1 row-span-1", className)}>
       <header className="flex flex-col items-center justify-center space-y-4">
-        <Avatar size="large" user={target_user ?? undefined} />
+        {user ? (
+          <Avatar size="large" user={target_user ?? undefined} />
+        ) : (
+          <form
+            action={formAction}
+            onSubmit={() => {
+              setImage(null);
+              setError("");
+            }}
+            className="relative flex items-center justify-center gap-5 w-full"
+          >
+            <label className="cursor-pointer">
+              {image ? (
+                <div className="relative h-18 w-18 overflow-hidden rounded-full">
+                  <Image
+                    src={URL.createObjectURL(image)}
+                    alt="avatar"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              ) : (
+                <Avatar size="large" user={target_user ?? undefined} />
+              )}
+              <ErrorMessage>{error || state?.error || ""}</ErrorMessage>
+              <input
+                type="file"
+                id="image"
+                name="image"
+                accept="image/*"
+                onChange={handleFileChange}
+                hidden
+              />
+            </label>
+            {image && (
+              <SubmitButton
+                className="h-10 absolute right-0 bottom-0"
+                color="secondary"
+              >
+                Save Image
+              </SubmitButton>
+            )}
+          </form>
+        )}
+
         <p className="text-center text-2xl font-bold">
           {target_user?.display_name}
         </p>
