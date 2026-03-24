@@ -29,7 +29,7 @@ export const MessageSidebar = ({
       if (!friend) return false;
       if (!keyword) return true;
 
-      return friend.name.toLowerCase().includes(keyword);
+      return friend.display_name.toLowerCase().includes(keyword);
     });
   }, [rooms, search, currentUser]);
   return (
@@ -104,9 +104,9 @@ const RoomListItem = ({
     >
       <Avatar size="small" user={friend} />
       <section className="flex flex-col gap-1">
-        <h3 className="text-xs font-medium">{friend?.name}</h3>
+        <h3 className="text-xs font-medium">{friend?.display_name}</h3>
         <p className="text-xs text-gray-500">
-          {latestMessage?.body ?? `${friend?.name} is ready to chat!`}
+          {latestMessage?.body ?? `${friend?.display_name} is ready to chat!`}
         </p>
       </section>
     </li>

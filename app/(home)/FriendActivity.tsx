@@ -10,13 +10,15 @@ export const FriendActivity = async () => {
       <header>
         <h2 className="text-2xl font-bold">Friend Activity</h2>
       </header>
-      <div className="h-[calc(100%-4rem)] overflow-y-auto p-1">
-        <ul className="space-y-4">
-          {friendsActivities.map((activity: ActivityType) => (
-            <ActivityCard key={activity.id} activity={activity} />
-          ))}
-        </ul>
-      </div>
+      <ul className="h-[740px] overflow-y-auto p-1 space-y-4">
+        {friendsActivities.map((activity: ActivityType) => (
+          <ActivityCard
+            key={activity.id}
+            activity={activity}
+            showMenu={false}
+          />
+        ))}
+      </ul>
     </section>
   );
 };

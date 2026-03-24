@@ -9,7 +9,7 @@ export const ChatHeader = ({ room }: { room: Room }) => {
     <div className="flex flex-col gap-4 border-b border-gray-200 p-4">
       <div className="flex items-center gap-2">
         <Avatar size="medium" user={friend} />
-        <h1 className="font-bold">{friend?.name}</h1>
+        <h1 className="font-bold">{friend?.display_name}</h1>
       </div>
     </div>
   );

@@ -15,7 +15,8 @@ const initialState: signUpNewUserState = {
   error: "",
   success: "",
   data: {
-    name: "",
+    first_name: "",
+    last_name: "",
     email: "",
     password: "",
     password_confirmation: "",
@@ -41,17 +42,28 @@ export const RegisterForm = () => {
     >
       <ErrorMessage>{state.error}</ErrorMessage>
       <SuccessMessage>{state.success}</SuccessMessage>
-
       <FormRow>
-        <label htmlFor="name">Name</label>
+        <label htmlFor="name">First name</label>
         <Input
-          defaultValue={state.data.name}
+          defaultValue={state.data.first_name}
           type="text"
-          id="name"
-          name="name"
+          id="first_name"
+          name="first_name"
           required
         />
-        <ErrorMessage>{state.errors["name"]}</ErrorMessage>
+        <ErrorMessage>{state.errors["first_name"]}</ErrorMessage>
+      </FormRow>
+
+      <FormRow>
+        <label htmlFor="name">Last name</label>
+        <Input
+          defaultValue={state.data.last_name}
+          type="text"
+          id="last_name"
+          name="last_name"
+          required
+        />
+        <ErrorMessage>{state.errors["last_name"]}</ErrorMessage>
       </FormRow>
 
       <FormRow>

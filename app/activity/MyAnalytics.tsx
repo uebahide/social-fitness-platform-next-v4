@@ -1,5 +1,5 @@
 import { MyAnalyticsClient } from "./MyAnalyticsClient";
-import { getDashboardAnalytics } from "@/lib/services/analytics";
+import { getDashboardAnalytics } from "@/lib/server/getDashboardAnalytics";
 
 export const MyAnalytics = async () => {
   const analyticsDashboardData = await getDashboardAnalytics();

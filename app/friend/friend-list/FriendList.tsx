@@ -21,12 +21,14 @@ export const FriendList = ({
   const [currentTab, setCurrentTab] = useState<"friend" | "request">("friend");
   const filteredFriends = useMemo(() => {
     return friends?.filter((friend) =>
-      friend?.name?.toLowerCase().includes(search.toLowerCase()),
+      friend?.display_name?.toLowerCase().includes(search.toLowerCase()),
     );
   }, [friends, search]);
   const filteredRequests = useMemo(() => {
     return requests?.filter((request) =>
-      request.sender?.name?.toLowerCase().includes(search.toLowerCase()),
+      request.sender?.display_name
+        ?.toLowerCase()
+        .includes(search.toLowerCase()),
     );
   }, [requests, search]);
 
@@ -85,10 +87,13 @@ export const FriendList = ({
 const FriendItem = ({ friend }: { friend: User }) => {
   return (
     <li className="flex items-center justify-between gap-5">
-      <div className="flex w-full cursor-pointer items-center gap-2 rounded-sm p-2 hover:bg-gray-50">
+      <Link
+        href={`/profile/${friend.id}`}
+        className="flex w-full cursor-pointer items-center gap-2 rounded-sm p-2 hover:bg-gray-50"
+      >
         <Avatar size="small" user={friend ?? null} />
-        <div>{friend.name}</div>
-      </div>
+        <div>{friend.display_name}</div>
+      </Link>
       <Link href={`/message?friendId=${friend.id}`}>
         <Button color="secondary">
           <MessageCircleIcon className="size-5 cursor-pointer text-gray-500 hover:text-gray-700" />
