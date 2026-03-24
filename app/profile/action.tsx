@@ -3,31 +3,44 @@
 import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import z from "zod";
+import z, { file } from "zod";
 
 export async function updateImage(prevState: any, formData: FormData) {
-  const cookiesStore = await cookies();
-  const token = cookiesStore.get("token")?.value;
-  let res: Response;
+  const supabase = await createClient();
+  const image = formData.get("image") as File;
+  const userId = await getCurrentUserId();
+  const fileExt = image.name.split(".").pop();
+  const filePath = `${userId}/avatar-${Date.now()}.${fileExt}`;
+  console.log(image);
 
-  try {
-    res = await fetch(`${process.env.API_URL}/api/user/image/update`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: formData,
+  const { error: uploadError } = await supabase.storage
+    .from("avatars")
+    .upload(filePath, image, {
+      upsert: true,
+      contentType: image.type,
     });
-  } catch (e) {
-    throw new Error(`Network error while logout : ${String(e)}`);
+
+  if (uploadError) {
+    return {
+      error: uploadError.message,
+    };
   }
 
-  const resJson = await res.json();
+  const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
+  const publicUrl = data.publicUrl;
 
-  if (!res.ok) {
-    throw new Error(`${resJson.error}: ${res.status}, ${res.statusText}`);
+  const { error: updateError } = await supabase
+    .from("profiles")
+    .update({
+      image_path: publicUrl,
+    })
+    .eq("id", userId);
+
+  if (updateError) {
+    return {
+      error: updateError.message,
+    };
   }
 
   revalidatePath("/profile", "layout");
