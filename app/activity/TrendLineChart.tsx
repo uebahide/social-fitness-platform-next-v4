@@ -14,7 +14,7 @@ export const TrendLineChart = ({
   trendData: { name: string; distance: number }[];
 }) => {
   return (
-    <LineChart width={400} height={230} data={trendData} className="">
+    <LineChart width={400} height={250} data={trendData} className="">
       <CartesianGrid strokeDasharray="3 3" />
 
       <XAxis dataKey="name" />
