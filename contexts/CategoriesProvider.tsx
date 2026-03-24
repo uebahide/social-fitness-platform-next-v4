@@ -1,7 +1,7 @@
 'use client';
 
 import { Category } from '@/types/api/category';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 
 type CategoriesState = {
   categories: Category[];

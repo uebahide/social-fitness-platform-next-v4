@@ -52,15 +52,16 @@ export const UpdateActivityDialogForm = ({
     updateActivityInitialState,
   );
   const formRef = useRef<HTMLFormElement>(null);
+  const isOpen = state?.ok ? false : updateOpen;
 
   useEffect(() => {
     if (state?.ok) {
       setUpdateOpen(false);
     }
-  }, [state]);
+  }, [state, setUpdateOpen]);
 
   return (
-    <Dialog open={updateOpen} onOpenChange={setUpdateOpen}>
+    <Dialog open={isOpen} onOpenChange={setUpdateOpen}>
       <DialogContent>
         <form
           action={formAction}

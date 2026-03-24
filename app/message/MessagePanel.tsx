@@ -58,11 +58,7 @@ export const MessagePanel = ({
         <>
           <ChatHeader room={selectedRoom} />
           <MessageList messages={messages} />
-          <MessageInput
-            setMessages={setMessages}
-            messages={messages}
-            selectedRoom={selectedRoom}
-          />
+          <MessageInput selectedRoom={selectedRoom} />
         </>
       )}
     </div>

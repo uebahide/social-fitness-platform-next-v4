@@ -17,12 +17,15 @@ export const UserProvider = ({
   initialUser: User | null;
   children: React.ReactNode;
 }) => {
+  const [user, setUser] = useState<User | null>(initialUser);
+
   useEffect(() => {
     setUser(initialUser);
   }, [initialUser]);
 
-  const [user, setUser] = useState<User | null>(initialUser);
-  return <userContext.Provider value={{ user, setUser }}>{children}</userContext.Provider>;
+  return (
+    <userContext.Provider value={{ user, setUser }}>{children}</userContext.Provider>
+  );
 };
 
 export const useUser = () => {

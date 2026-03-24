@@ -3,13 +3,23 @@ import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
 
-export async function sendFriendRequest(prevState: any, formData: FormData) {
+type FriendActionState = {
+  message: string;
+  error: string;
+  ok: boolean;
+  data: Record<string, never>;
+};
+
+export async function sendFriendRequest(
+  _prevState: FriendActionState,
+  formData: FormData,
+) {
   const friendId = formData.get("friendId");
 
   const supabase = await createClient();
   const userId = await getCurrentUserId();
 
-  const { data, error } = await supabase.from("friend_requests").insert({
+  const { error } = await supabase.from("friend_requests").insert({
     sender_id: userId,
     receiver_id: friendId,
     status: "pending",
@@ -35,7 +45,10 @@ export async function sendFriendRequest(prevState: any, formData: FormData) {
   };
 }
 
-export async function acceptFriendRequest(prevState: any, formData: FormData) {
+export async function acceptFriendRequest(
+  _prevState: FriendActionState,
+  formData: FormData,
+) {
   const requestId = formData.get("request_id");
   const supabase = await createClient();
 
@@ -43,7 +56,7 @@ export async function acceptFriendRequest(prevState: any, formData: FormData) {
   const requestSenderId = formData.get("requestSenderId");
 
   // create a new friend record
-  const { data: friendData, error: createFriendError } = await supabase
+  const { error: createFriendError } = await supabase
     .from("friends")
     .insert([
       {
@@ -65,7 +78,7 @@ export async function acceptFriendRequest(prevState: any, formData: FormData) {
     };
   }
 
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("friend_requests")
     .update({
       status: "accepted",
@@ -92,11 +105,14 @@ export async function acceptFriendRequest(prevState: any, formData: FormData) {
   };
 }
 
-export async function rejectFriendRequest(prevState: any, formData: FormData) {
+export async function rejectFriendRequest(
+  _prevState: FriendActionState,
+  formData: FormData,
+) {
   const requestId = formData.get("request_id");
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("friend_requests")
     .update({
       status: "rejected",

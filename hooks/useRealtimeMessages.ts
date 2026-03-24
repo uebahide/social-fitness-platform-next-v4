@@ -5,6 +5,12 @@ import { createClient } from "@/lib/supabase/client";
 import { Message } from "@/types/api/message";
 import { RealtimeChannel } from "@supabase/supabase-js";
 
+type BroadcastInsertPayload = {
+  payload: {
+    record: Message;
+  };
+};
+
 export function useRealtimeMessages(
   roomId: string | null,
   onInsert: (newMessage: Message) => void,
@@ -25,7 +31,7 @@ export function useRealtimeMessages(
         .channel(`channel:${roomId}`, {
           config: { private: true },
         })
-        .on("broadcast", { event: "INSERT" }, (payload: any) => {
+        .on("broadcast", { event: "INSERT" }, (payload: BroadcastInsertPayload) => {
           console.log("broadcast payload", payload);
           onInsert(payload.payload.record as Message);
         })

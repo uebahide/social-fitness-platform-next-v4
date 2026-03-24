@@ -9,7 +9,7 @@ export const CategoryBreakDownChart = ({
 }: {
   data: CategoryActivityTotal[];
 }) => {
-  const dataWithColors = data.map((entry, index) => ({
+  const dataWithColors = data.map((entry) => ({
     ...entry,
     fill: getCategoryColor(entry.category),
   }));

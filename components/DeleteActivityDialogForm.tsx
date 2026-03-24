@@ -34,15 +34,16 @@ export const DeleteActivityDialogForm = ({
 }) => {
   const [state, formAction] = useActionState(deleteActivity, deleteActivityInitialState);
   const formRef = useRef<HTMLFormElement>(null);
+  const isOpen = state?.ok ? false : deleteOpen;
 
   useEffect(() => {
     if (state?.ok) {
       setDeleteOpen(false);
     }
-  }, [state]);
+  }, [state, setDeleteOpen]);
 
   return (
-    <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+    <Dialog open={isOpen} onOpenChange={setDeleteOpen}>
       <DialogContent className="w-[400px]">
         <form
           action={formAction}
