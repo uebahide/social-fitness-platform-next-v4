@@ -1,14 +1,13 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import z from "zod";
 
 const schema = z
   .object({
-    name: z.string().min(1, "Name is required"),
+    first_name: z.string().min(1, "First name is required"),
+    last_name: z.string().min(1, "Last name is required"),
     email: z.email("Invalid email"),
     password: z.string().min(8, "Password must be at least 8 characters"),
     password_confirmation: z.string(),
@@ -20,7 +19,8 @@ const schema = z
 
 export type signUpNewUserState = {
   errors: {
-    name?: string[];
+    first_name?: string[];
+    last_name?: string[];
     email?: string[];
     password?: string[];
     password_confirmation?: string[];
@@ -28,7 +28,8 @@ export type signUpNewUserState = {
   error?: string;
   success: string;
   data: {
-    name?: string;
+    first_name?: string;
+    last_name?: string;
     email?: string;
     password?: string;
     password_confirmation?: string;
@@ -40,7 +41,9 @@ export async function signUpNewUser(
   formData: FormData,
 ) {
   const supabase = await createClient();
-  const name = String(formData.get("name") ?? "");
+  const first_name = String(formData.get("first_name") ?? "");
+  const last_name = String(formData.get("last_name") ?? "");
+  const display_name = first_name + " " + last_name;
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
   const password_confirmation = String(
@@ -49,7 +52,8 @@ export async function signUpNewUser(
 
   //validate fields
   const validatedFields = schema.safeParse({
-    name,
+    first_name,
+    last_name,
     email,
     password,
     password_confirmation,
@@ -61,7 +65,8 @@ export async function signUpNewUser(
       error: "",
       success: "",
       data: {
-        name,
+        first_name,
+        last_name,
         email,
         password,
         password_confirmation,
@@ -84,7 +89,8 @@ export async function signUpNewUser(
       error: error.message ?? "An unknown error occurred",
       success: "",
       data: {
-        name,
+        first_name,
+        last_name,
         email,
         password,
         password_confirmation,
@@ -103,7 +109,8 @@ export async function signUpNewUser(
       error: profile_check_error.message ?? "An unknown error occurred",
       success: "",
       data: {
-        name: "",
+        first_name: "",
+        last_name: "",
         email: "",
         password: "",
         password_confirmation: "",
@@ -118,7 +125,8 @@ export async function signUpNewUser(
       error: "This email is already in use.",
       success: "",
       data: {
-        name: "",
+        first_name: "",
+        last_name: "",
         email: "",
         password: "",
         password_confirmation: "",
@@ -130,7 +138,9 @@ export async function signUpNewUser(
   const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .insert({
-      name,
+      first_name,
+      last_name,
+      display_name,
       email,
       user_id: data.user?.id,
     })
@@ -143,7 +153,8 @@ export async function signUpNewUser(
       error: profileError.message ?? "An unknown error occurred",
       success: "",
       data: {
-        name,
+        first_name,
+        last_name,
         email,
         password,
         password_confirmation,
@@ -156,7 +167,8 @@ export async function signUpNewUser(
     error: "",
     success: "Please check your email for verification.",
     data: {
-      name: "",
+      first_name: "",
+      last_name: "",
       email: "",
       password: "",
       password_confirmation: "",
