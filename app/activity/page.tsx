@@ -34,11 +34,6 @@ export default async function Activity({ searchParams }: PageProps) {
     return <div>Error: {activitiesError.message}</div>;
   }
 
-  const formattedActivities = activities.map((a) => ({
-    ...a,
-    details: a.details?.[0] ?? null,
-  }));
-
   return (
     <section className="flex flex-col gap-6">
       <div>
@@ -52,7 +47,7 @@ export default async function Activity({ searchParams }: PageProps) {
           <AddActivityButton />
         </header>
 
-        <MyActivities activities={formattedActivities ?? []} />
+        <MyActivities activities={activities ?? []} />
         <PaginationSimple page={page} />
       </div>
     </section>
