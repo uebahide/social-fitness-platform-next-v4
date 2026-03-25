@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUserId } from "./getCurrentUserId";
 
-export async function getTotalActivityCount(userId?: string) {
+export async function getTotalActivityCount(userId?: number) {
   const supabase = await createClient();
   const currentUserId = await getCurrentUserId();
   const targetUserId = userId ?? currentUserId;

@@ -1,5 +1,4 @@
 import { Card } from "@/components/Card";
-import { UserProfileCard } from "../(home)/UserProfileCard";
 import { getLatestActivity } from "@/lib/server/getLatestActivity";
 import { getTotalActivityCount } from "@/lib/server/getTotalActivityCount";
 import { Input } from "@/components/form/Input";
@@ -7,22 +6,16 @@ import { FormRow } from "@/components/form/FormRow";
 import { SubmitButton } from "@/components/buttons/SubmitButton";
 import { getCurrentUser } from "@/lib/server/getCurrentUser";
 import { PersonalInfoCard } from "./PersonalInfoCard";
+import { UserProfileCard } from "../(home)/UserProfileCard";
 
 export default async function Profile() {
-  const latestActivity = await getLatestActivity();
-  const activityCount = await getTotalActivityCount();
   const user = await getCurrentUser();
 
   console.log(user?.image_path);
 
   return (
     <div className="grid grid-cols-[1fr_2fr] gap-4 grid-rows-[3fr_2fr]">
-      <UserProfileCard
-        latestActivity={latestActivity}
-        activityCount={activityCount}
-        showMyActivitiesLink={false}
-        className="col-span-1"
-      />
+      <UserProfileCard showMyActivitiesLink={false} className="col-span-1" />
       <PersonalInfoCard user={user} />
 
       <Card>

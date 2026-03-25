@@ -1,10 +1,10 @@
-import { UserProfileCard } from "@/app/(home)/UserProfileCard";
 import { FormRow } from "@/components/form/FormRow";
 import { getLatestActivity } from "@/lib/server/getLatestActivity";
 import { getTotalActivityCount } from "@/lib/server/getTotalActivityCount";
 import { Card } from "@/components/Card";
 import { createClient } from "@/lib/supabase/server";
 import ActivityCard from "@/components/ActivityCard";
+import { UserProfileCard } from "@/app/(home)/UserProfileCard";
 
 export default async function OtherUserProfilePage({
   params,
@@ -12,8 +12,6 @@ export default async function OtherUserProfilePage({
   params: Promise<{ userId: string }>;
 }) {
   const { userId } = await params;
-  const latestActivity = await getLatestActivity(userId);
-  const activityCount = await getTotalActivityCount(userId);
   const supabase = await createClient();
 
   const { data: user, error: userError } = await supabase
@@ -40,12 +38,7 @@ export default async function OtherUserProfilePage({
   return (
     <div className="grid grid-cols-[2fr_4fr] gap-4">
       <div className="flex flex-col gap-4">
-        <UserProfileCard
-          latestActivity={latestActivity}
-          activityCount={activityCount}
-          showMyActivitiesLink={false}
-          user={user}
-        />
+        <UserProfileCard showMyActivitiesLink={false} user={user} />
         <Card>
           <FormRow>
             <p>About this user</p>
