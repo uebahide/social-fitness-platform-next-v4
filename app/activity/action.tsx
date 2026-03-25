@@ -39,7 +39,7 @@ export type CreateActivityState = {
 };
 
 export async function createActivity(
-  prevState: CreateActivityState,
+  _prevState: CreateActivityState,
   formData: FormData,
 ) {
   const supabase = await createClient();
@@ -75,7 +75,7 @@ export async function createActivity(
   }
 
   //get category id from category name
-  const { data: category_data, error: category_error } = await supabase
+  const { data: category_data } = await supabase
     .from("categories")
     .select("*")
     .eq("name", category)
@@ -108,12 +108,11 @@ export async function createActivity(
     details,
     data.id,
   );
-  const { data: activity_detail_data, error: activity_detail_error } =
-    await supabase
-      .from("activity_details")
-      .insert([activity_detail_payload])
-      .select()
-      .single();
+  const { error: activity_detail_error } = await supabase
+    .from("activity_details")
+    .insert([activity_detail_payload])
+    .select()
+    .single();
 
   if (activity_detail_error) {
     return {
@@ -136,19 +135,23 @@ export async function createActivity(
   };
 }
 
-export async function deleteActivity(prevState: any, formData: FormData) {
+export async function deleteActivity(
+  _prevState: CreateActivityState,
+  formData: FormData,
+) {
   const supabase = await createClient();
   const id = formData.get("id");
   if (!id) {
     return {
       errors: { id: "Id is required" },
+      error: "",
       message: "Id is required",
       data: {},
       ok: false,
     };
   }
 
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("activities")
     .delete()
     .eq("id", id)
@@ -169,6 +172,7 @@ export async function deleteActivity(prevState: any, formData: FormData) {
 
   return {
     errors: {},
+    error: "",
     message: "Activity was deleted successfully",
     data: {},
     ok: true,
@@ -198,7 +202,7 @@ export type UpdateActivityState = {
 };
 
 export async function updateActivity(
-  prevState: CreateActivityState,
+  _prevState: CreateActivityState,
   formData: FormData,
 ) {
   const supabase = await createClient();
@@ -259,13 +263,12 @@ export async function updateActivity(
     details,
     data.id,
   );
-  const { data: activity_detail_data, error: activity_detail_error } =
-    await supabase
-      .from("activity_details")
-      .update([activity_detail_payload])
-      .eq("activity_id", data.id)
-      .select()
-      .single();
+  const { error: activity_detail_error } = await supabase
+    .from("activity_details")
+    .update([activity_detail_payload])
+    .eq("activity_id", data.id)
+    .select()
+    .single();
   if (activity_detail_error) {
     return {
       errors: {},

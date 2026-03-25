@@ -3,13 +3,23 @@
 import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
 import { createClient } from "@/lib/supabase/server";
 
-export async function sendMessage(prevState: any, formData: FormData) {
+type SendMessageState = {
+  errors: string | Record<string, never>;
+  message: string;
+  data: Record<string, never>;
+  ok: boolean;
+};
+
+export async function sendMessage(
+  _prevState: SendMessageState,
+  formData: FormData,
+) {
   const body = formData.get("message") as string;
   const roomId = formData.get("roomId") as string;
   const supabase = await createClient();
   const userId = await getCurrentUserId();
 
-  const { data, error } = await supabase.from("messages").insert({
+  const { error } = await supabase.from("messages").insert({
     body,
     room_id: roomId,
     user_id: userId,

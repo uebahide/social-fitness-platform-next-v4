@@ -63,7 +63,7 @@ export const UserList = () => {
 
     fetchSearchResult();
     return () => controller.abort();
-  }, [debouncedSearch]);
+  }, [debouncedSearch, currentUser?.id]);
   return (
     <aside className="bg-card flex h-[calc(100vh-92px)] flex-col gap-4 rounded-sm border border-gray-200 p-3">
       <Input
@@ -77,6 +77,7 @@ export const UserList = () => {
       />
 
       <ul className="flex flex-col overflow-y-auto">
+        {loading && <li className="p-2 text-xs text-gray-500">Loading...</li>}
         {searchResult &&
           searchResult.map((user) => (
             <UserItem key={user.id} user={user} currentUser={currentUser} />

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { MessagePanel } from "./MessagePanel";
 import { MessageSidebar } from "./MessageSidebar";
 import { Room } from "@/types/api/message";
@@ -12,17 +12,16 @@ export const MessageClient = ({
   rooms: Room[];
   friendId?: string;
 }) => {
-  const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
-
-  useEffect(() => {
-    if (friendId) {
-      setSelectedRoom(
-        rooms.find((room) =>
-          room.users.some((user) => user.id === Number(friendId)),
-        ) ?? null,
-      );
-    }
-  }, [friendId, rooms]);
+  const initialRoom = useMemo(
+    () =>
+      friendId
+        ? rooms.find((room) =>
+            room.users.some((user) => user.id === Number(friendId)),
+          ) ?? null
+        : null,
+    [friendId, rooms],
+  );
+  const [selectedRoom, setSelectedRoom] = useState<Room | null>(initialRoom);
 
   return (
     <div className="grid grid-cols-[4fr_9fr]">

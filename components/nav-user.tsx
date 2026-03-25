@@ -5,11 +5,9 @@ import {
   Bell,
   ChevronsUpDown,
   CreditCard,
-  LogOut,
   Sparkles,
 } from "lucide-react";
 
-import { AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,7 +31,7 @@ import { useState } from "react";
 import { Avatar } from "./Avatar";
 import { LogoutButton } from "./LogoutButton";
 
-export function NavUser({}: {}) {
+export function NavUser() {
   const { user } = useUser();
   const { isMobile } = useSidebar();
   const [open, setOpen] = useState(false);

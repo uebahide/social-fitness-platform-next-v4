@@ -1,8 +1,7 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import { createActivity } from "@/app/activity/action";
-import { Category } from "@/types/api/category";
 import DialogFormOpenButton from "./DialogFormOpenButton";
 import { Button } from "./buttons/Button";
 import { ActivityForm } from "./ActivityForm";
@@ -34,13 +33,8 @@ export default function AddActivityButton() {
     createActivity,
     createActivityInitialState,
   );
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    if (state?.ok) {
-      setOpen(false);
-    }
-  }, [state]);
+  const [isOpen, setIsOpen] = useState(false);
+  const open = state?.ok ? false : isOpen;
 
   return (
     <DialogFormOpenButton
@@ -54,7 +48,7 @@ export default function AddActivityButton() {
       dialogDescription="New Activity"
       subitButtonText="Create Activity"
       open={open}
-      setOpen={setOpen}
+      setOpen={setIsOpen}
     >
       {/* Dialog content here */}
       <ActivityForm categories={categories} state={state} />

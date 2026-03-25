@@ -4,9 +4,16 @@ import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import z, { file } from "zod";
+import z from "zod";
 
-export async function updateImage(prevState: any, formData: FormData) {
+type UpdateImageState = {
+  error: string;
+} | null;
+
+export async function updateImage(
+  _prevState: UpdateImageState,
+  formData: FormData,
+): Promise<UpdateImageState> {
   const supabase = await createClient();
   const image = formData.get("image") as File;
   const userId = await getCurrentUserId();

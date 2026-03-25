@@ -92,7 +92,7 @@ const RoomListItem = ({
       setLatestMessage(latestMessages[0] ?? null);
     };
     fetchLatestMessages();
-  }, []);
+  }, [room?.id]);
   return (
     <li
       key={room.id}

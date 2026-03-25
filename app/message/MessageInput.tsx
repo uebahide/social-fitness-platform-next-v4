@@ -1,49 +1,24 @@
 import { TextareaSimple } from "@/components/form/TextAreaSimple";
-import { useUser } from "@/contexts/UserProvider";
-import { Message, Room } from "@/types/api/message";
+import { Room } from "@/types/api/message";
 import { FaceIcon } from "@radix-ui/react-icons";
 import { SendIcon } from "lucide-react";
 import { useActionState, useRef, useState } from "react";
 import { sendMessage } from "./action";
-import { User } from "@/types/api/user";
 
 export const MessageInput = ({
-  setMessages,
-  messages,
   selectedRoom,
 }: {
-  setMessages: (messages: Message[]) => void;
-  messages: Message[];
   selectedRoom: Room;
 }) => {
-  const { user } = useUser();
   const [message, setMessage] = useState("");
   const formRef = useRef<HTMLFormElement | null>(null);
 
-  const [state, formAction] = useActionState(sendMessage, {
+  const [, formAction] = useActionState(sendMessage, {
     errors: {},
     message: "",
     data: {},
     ok: false,
   });
-
-  const addOptimisticMessage = () => {
-    if (!message.trim()) return false;
-
-    setMessages([
-      ...messages,
-      {
-        id: messages.length + 1,
-        body: message,
-        user_id: user?.id ?? 0,
-        room_id: selectedRoom.id,
-        created_at: new Date().toISOString(),
-        user: user as User,
-      },
-    ]);
-
-    return true;
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     if (!message.trim()) {
@@ -51,7 +26,6 @@ export const MessageInput = ({
       return;
     }
 
-    // addOptimisticMessage();
     setMessage("");
   };
 
@@ -63,7 +37,6 @@ export const MessageInput = ({
 
       if (!message.trim()) return;
 
-      // addOptimisticMessage();
       formRef.current?.requestSubmit();
       setMessage("");
     }

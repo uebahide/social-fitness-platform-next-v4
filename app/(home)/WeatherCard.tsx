@@ -11,7 +11,19 @@ type DailyForecast = {
 };
 
 type WeatherResponse = {
+  current_weather: {
+    weathercode: number;
+    temperature: number;
+  };
   daily: DailyForecast;
+};
+
+type LocationResponse = {
+  address: {
+    country?: string;
+    city?: string;
+    town?: string;
+  };
 };
 
 const weatherIcons = {
@@ -35,8 +47,8 @@ const weatherIcons = {
 };
 
 export const WeatherCard = ({}) => {
-  const [weather, setWeather] = useState<any>(null);
-  const [location, setLocation] = useState<any>(null);
+  const [weather, setWeather] = useState<WeatherResponse["current_weather"] | null>(null);
+  const [location, setLocation] = useState<LocationResponse["address"] | null>(null);
   const [dailyForecast, setDailyForecast] = useState<
     | {
         date: string;
@@ -47,7 +59,6 @@ export const WeatherCard = ({}) => {
     | null
   >([]);
   const [loading, setLoading] = useState(true); // loading state for the weather data
-  const [error, setError] = useState<string | null>(null); // error state for the weather data
 
   useEffect(() => {
     const getWeather = async () => {
@@ -68,9 +79,9 @@ export const WeatherCard = ({}) => {
           ),
         ]);
 
-        const weatherData = await weatherRes.json();
-        const locationData = await locationRes.json();
-        const dailyForecastData = await dailyForecastRes.json();
+        const weatherData: WeatherResponse = await weatherRes.json();
+        const locationData: LocationResponse = await locationRes.json();
+        const dailyForecastData: WeatherResponse = await dailyForecastRes.json();
         const mapped = dailyForecastData.daily.time.map(
           (date: string, index: number) => ({
             date: date.split("-")[2],

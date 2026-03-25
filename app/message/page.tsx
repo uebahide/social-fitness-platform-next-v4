@@ -49,7 +49,7 @@ export default async function MessagePage({
 
       // create room_user intermediary table records for both users
       const newRoomId = room?.id;
-      const { data: createRoom, error: createRoomError } = await supabase
+      const { error: createRoomError } = await supabase
         .from("room_user")
         .insert([
           {

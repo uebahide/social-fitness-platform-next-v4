@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useActionState, useEffect, useRef } from 'react';
+import { useActionState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogClose,
@@ -9,17 +9,18 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from './ui/dialog';
-import { deleteActivity } from '@/app/activity/action';
-import { ChevronDownIcon } from 'lucide-react';
-import { Button } from './buttons/Button';
-import { SubmitButton } from './buttons/SubmitButton';
-import RunIcon from './icons/Run';
+} from "./ui/dialog";
+import { deleteActivity } from "@/app/activity/action";
+import { ChevronDownIcon } from "lucide-react";
+import { Button } from "./buttons/Button";
+import { SubmitButton } from "./buttons/SubmitButton";
+import RunIcon from "./icons/Run";
 
 const deleteActivityInitialState = {
   ok: false,
-  message: '',
+  message: "",
   data: {},
+  error: "",
   errors: {},
 };
 
@@ -32,23 +33,27 @@ export const DeleteActivityDialogForm = ({
   setDeleteOpen: (boolean: boolean) => void;
   activityId: string;
 }) => {
-  const [state, formAction] = useActionState(deleteActivity, deleteActivityInitialState);
+  const [state, formAction] = useActionState(
+    deleteActivity,
+    deleteActivityInitialState,
+  );
   const formRef = useRef<HTMLFormElement>(null);
+  const isOpen = state?.ok ? false : deleteOpen;
 
   useEffect(() => {
     if (state?.ok) {
       setDeleteOpen(false);
     }
-  }, [state]);
+  }, [state, setDeleteOpen]);
 
   return (
-    <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+    <Dialog open={isOpen} onOpenChange={setDeleteOpen}>
       <DialogContent className="w-[400px]">
         <form
           action={formAction}
           className="space-y-4"
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+            if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
               e.preventDefault();
               formRef.current?.requestSubmit();
             }
@@ -59,7 +64,9 @@ export const DeleteActivityDialogForm = ({
               <RunIcon className="h-5 w-5" /> My Activity
             </DialogTitle>
             <ChevronDownIcon className="size-4 rotate-270 text-black" />
-            <DialogDescription className="text-black">Delete Activity</DialogDescription>
+            <DialogDescription className="text-black">
+              Delete Activity
+            </DialogDescription>
           </DialogHeader>
 
           <input name="id" value={activityId} id="id" type="hidden" />

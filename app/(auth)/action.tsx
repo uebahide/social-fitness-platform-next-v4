@@ -37,7 +37,7 @@ export type signUpNewUserState = {
 };
 
 export async function signUpNewUser(
-  prevState: signUpNewUserState,
+  _prevState: signUpNewUserState,
   formData: FormData,
 ) {
   const supabase = await createClient();
@@ -135,7 +135,7 @@ export async function signUpNewUser(
   }
 
   //insert profile into database
-  const { data: profile, error: profileError } = await supabase
+  const { error: profileError } = await supabase
     .from("profiles")
     .insert({
       first_name,
@@ -189,14 +189,14 @@ export type signInWithEmailState = {
 };
 
 export async function signInWithEmail(
-  prevState: signInWithEmailState,
+  _prevState: signInWithEmailState,
   formData: FormData,
 ) {
   const supabase = await createClient();
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
 
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
@@ -228,7 +228,7 @@ export type signOutState = {
   error: string;
 };
 
-export async function signOut(prevState: signOutState, formData?: FormData) {
+export async function signOut() {
   const supabase = await createClient();
   const { error } = await supabase.auth.signOut();
   if (error) {

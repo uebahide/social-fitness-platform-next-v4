@@ -4,12 +4,10 @@ import { cn } from '@/lib/utils';
 
 export const DropdownMenuBasic = ({
   buttonText,
-  className,
   children,
 }: {
   buttonText: string;
   children: React.ReactNode;
-  className?: string;
 }) => {
   return (
     <DropdownMenu.Root>

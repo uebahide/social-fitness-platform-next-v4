@@ -23,7 +23,7 @@ export function SelectSimple({
   id: string;
   name: string;
   items: { value: string; label: string }[];
-  onValueChange: (value: any) => any;
+  onValueChange: (value: string) => void;
   defaultValue?: string;
   required?: boolean;
   readonly?: boolean;

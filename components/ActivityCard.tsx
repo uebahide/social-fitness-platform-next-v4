@@ -95,7 +95,6 @@ const ActivityCardMenu = ({
   activityId: string;
   activity: ActivityType;
 }) => {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [updateOpen, setUpdateOpen] = useState(false);
 
@@ -107,7 +106,6 @@ const ActivityCardMenu = ({
             className="space-x-1"
             onSelect={(e) => {
               e.preventDefault();
-              setMenuOpen(false);
               setUpdateOpen(true);
             }}
           >
@@ -120,7 +118,6 @@ const ActivityCardMenu = ({
             className="space-x-1"
             onSelect={(e) => {
               e.preventDefault();
-              setMenuOpen(false);
               setDeleteOpen(true);
             }}
           >
