@@ -371,10 +371,10 @@ begin
     'description', a.description,
     'created_at', a.created_at,
 
-    -- User（完全一致）
+    -- User
     'user', jsonb_build_object(
       'id', p.id,
-      'name', p.name,
+      'display_name', coalesce(p.display_name, concat_ws(' ', p.first_name, p.last_name)),
       'email', p.email,
       'image_path', p.image_path,
       'created_at', p.created_at
@@ -815,7 +815,7 @@ CREATE POLICY "all" ON "public"."messages" USING (true) WITH CHECK (true);
 
 
 
-CREATE POLICY "all" ON "public"."profiles" USING (true) WITH CHECK (true);
+CREATE POLICY "all" ON "public"."profiles" TO "authenticated" USING (true) WITH CHECK (true);
 
 
 
@@ -1081,13 +1081,11 @@ GRANT ALL ON FUNCTION "public"."messages_broadcast"() TO "service_role";
 
 
 
-GRANT ALL ON TABLE "public"."profiles" TO "anon";
 GRANT ALL ON TABLE "public"."profiles" TO "authenticated";
 GRANT ALL ON TABLE "public"."profiles" TO "service_role";
 
 
 
-GRANT ALL ON SEQUENCE "public"."Profiles_id_seq" TO "anon";
 GRANT ALL ON SEQUENCE "public"."Profiles_id_seq" TO "authenticated";
 GRANT ALL ON SEQUENCE "public"."Profiles_id_seq" TO "service_role";
 
@@ -1310,6 +1308,5 @@ using ((bucket_id = 'avatars'::text));
   for update
   to public
 using ((bucket_id = 'avatars'::text));
-
 
 
