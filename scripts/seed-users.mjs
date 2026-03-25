@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { seedUsers as users } from "./seed-users-data.mjs";
 
 const supabaseUrl =
   process.env.SUPABASE_URL ||
@@ -15,42 +16,6 @@ if (!publishableKey) {
     "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY is required to seed local users.",
   );
 }
-
-const users = [
-  ["Hidekazu", "Ueba"],
-  ["Alex", "Walker"],
-  ["Mia", "Summers"],
-  ["Noah", "Brooks"],
-  ["Emma", "Parker"],
-  ["Liam", "Reed"],
-  ["Sofia", "Hayes"],
-  ["Ethan", "Foster"],
-  ["Ava", "Morris"],
-  ["Lucas", "Bennett"],
-  ["Harper", "Cole"],
-  ["Mason", "Price"],
-  ["Isla", "Ward"],
-  ["Logan", "Powell"],
-  ["Chloe", "Diaz"],
-  ["Elijah", "Russell"],
-  ["Grace", "Long"],
-  ["James", "Kelly"],
-  ["Lily", "Cooper"],
-  ["Benjamin", "Bailey"],
-  ["Zoe", "Rivera"],
-].map(([firstName, lastName], index) => {
-  const emailLocalPart = `${firstName}_${lastName}`
-    .toLowerCase()
-    .replace(/[^a-z_]/g, "");
-  const email = `${emailLocalPart}@example.com`;
-
-  return {
-    email,
-    firstName,
-    lastName,
-    displayName: `${firstName} ${lastName}`,
-  };
-});
 
 function createPublicClient() {
   return createClient(supabaseUrl, publishableKey, {

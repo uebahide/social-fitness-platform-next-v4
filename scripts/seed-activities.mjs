@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { seedUsers } from "./seed-users-data.mjs";
 
 const supabaseUrl =
   process.env.SUPABASE_URL ||
@@ -257,29 +258,17 @@ function buildActivityPlan(profile) {
   });
 }
 
-async function fetchProfilesAndCategories() {
+async function fetchCategoriesByName() {
   const supabase = createPublicClient();
-  const [{ data: profiles, error: profilesError }, { data: categories, error: categoriesError }] =
-    await Promise.all([
-      supabase
-        .from("profiles")
-        .select("id, email, first_name, last_name, display_name")
-        .order("id", { ascending: true }),
-      supabase.from("categories").select("id, name"),
-    ]);
-
-  if (profilesError) {
-    throw profilesError;
-  }
+  const { data: categories, error: categoriesError } = await supabase
+    .from("categories")
+    .select("id, name");
 
   if (categoriesError) {
     throw categoriesError;
   }
 
-  return {
-    profiles,
-    categoriesByName: new Map(categories.map((category) => [category.name, category.id])),
-  };
+  return new Map(categories.map((category) => [category.name, category.id]));
 }
 
 async function signIn(email) {
@@ -296,9 +285,21 @@ async function signIn(email) {
   return supabase;
 }
 
-async function seedActivitiesForProfile(profile, categoriesByName) {
-  const supabase = await signIn(profile.email);
+async function getCurrentProfile(supabase, email) {
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("id, email, first_name, last_name, display_name")
+    .limit(1)
+    .single();
 
+  if (error || !profile) {
+    throw error ?? new Error(`Could not fetch profile for ${email}`);
+  }
+
+  return profile;
+}
+
+async function seedActivitiesForProfile(supabase, profile, categoriesByName) {
   const { count, error: countError } = await supabase
     .from("activities")
     .select("id", { count: "exact", head: true })
@@ -309,7 +310,6 @@ async function seedActivitiesForProfile(profile, categoriesByName) {
   }
 
   if ((count ?? 0) >= activitiesPerUser) {
-    await supabase.auth.signOut();
     return {
       email: profile.email,
       status: "skipped",
@@ -362,8 +362,6 @@ async function seedActivitiesForProfile(profile, categoriesByName) {
     }
   }
 
-  await supabase.auth.signOut();
-
   return {
     email: profile.email,
     status: "seeded",
@@ -372,16 +370,23 @@ async function seedActivitiesForProfile(profile, categoriesByName) {
 }
 
 async function main() {
-  const { profiles, categoriesByName } = await fetchProfilesAndCategories();
+  const categoriesByName = await fetchCategoriesByName();
   const results = [];
 
-  for (const profile of profiles) {
+  for (const user of seedUsers) {
     try {
-      const result = await seedActivitiesForProfile(profile, categoriesByName);
+      const signedInSupabase = await signIn(user.email);
+      const profile = await getCurrentProfile(signedInSupabase, user.email);
+      const result = await seedActivitiesForProfile(
+        signedInSupabase,
+        profile,
+        categoriesByName,
+      );
       results.push(result);
+      await signedInSupabase.auth.signOut();
     } catch (error) {
       results.push({
-        email: profile.email,
+        email: user.email,
         status: "failed",
         reason: serializeError(error),
       });
@@ -389,7 +394,7 @@ async function main() {
   }
 
   console.table(results);
-  console.log(`Processed ${profiles.length} profiles.`);
+  console.log(`Processed ${seedUsers.length} profiles.`);
 }
 
 main().catch((error) => {
