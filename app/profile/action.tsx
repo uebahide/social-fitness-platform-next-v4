@@ -6,10 +6,14 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import z from "zod";
 
+type UpdateImageState = {
+  error: string;
+} | null;
+
 export async function updateImage(
-  _prevState: Record<string, never>,
+  _prevState: UpdateImageState,
   formData: FormData,
-) {
+): Promise<UpdateImageState> {
   const supabase = await createClient();
   const image = formData.get("image") as File;
   const userId = await getCurrentUserId();
