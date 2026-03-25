@@ -1,9 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useEffectEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Message } from "@/types/api/message";
 import { RealtimeChannel } from "@supabase/supabase-js";
+
+type RealtimeSubscribeCallback = NonNullable<
+  Parameters<RealtimeChannel["subscribe"]>[0]
+>;
+type RealtimeSubscribeStatus = Parameters<RealtimeSubscribeCallback>[0];
 
 type BroadcastInsertPayload = {
   payload: {
@@ -12,14 +17,22 @@ type BroadcastInsertPayload = {
 };
 
 export function useRealtimeMessages(
-  roomId: string | null,
+  roomIds: string | string[] | null,
   onInsert: (newMessage: Message) => void,
 ) {
+  const handleInsert = useEffectEvent(onInsert);
+
   useEffect(() => {
-    if (!roomId) return;
+    const normalizedRoomIds = Array.isArray(roomIds)
+      ? roomIds.filter(Boolean)
+      : roomIds
+        ? [roomIds]
+        : [];
+
+    if (normalizedRoomIds.length === 0) return;
 
     const supabase = createClient();
-    let channel: RealtimeChannel | null = null;
+    const channels: RealtimeChannel[] = [];
     let cancelled = false;
 
     const setup = async () => {
@@ -27,27 +40,36 @@ export function useRealtimeMessages(
 
       if (cancelled) return;
 
-      channel = supabase
-        .channel(`channel:${roomId}`, {
-          config: { private: true },
-        })
-        .on("broadcast", { event: "INSERT" }, (payload: BroadcastInsertPayload) => {
-          console.log("broadcast payload", payload);
-          onInsert(payload.payload.record as Message);
-        })
-        .subscribe((status) => {
-          console.log("Realtime status:", status);
-        });
+      normalizedRoomIds.forEach((roomId) => {
+        const channel = supabase
+          .channel(`channel:${roomId}`, {
+            config: { private: true },
+          })
+          .on(
+            "broadcast",
+            { event: "INSERT" },
+            (payload: BroadcastInsertPayload) => {
+              console.log("broadcast payload", payload);
+              handleInsert(payload.payload.record as Message);
+            },
+          )
+          .subscribe((status: RealtimeSubscribeStatus) => {
+            console.log(`Realtime status [room ${roomId}]:`, status);
+          });
+
+        channels.push(channel);
+      });
     };
 
-    setup();
+    void setup();
 
     return () => {
       cancelled = true;
 
-      if (channel) {
-        supabase.removeChannel(channel);
-      }
+      channels.forEach((channel) => {
+        void channel.unsubscribe();
+        void supabase.removeChannel(channel);
+      });
     };
-  }, [roomId, onInsert]);
+  }, [roomIds]);
 }

@@ -3,7 +3,6 @@
 import { Avatar } from "@/components/Avatar";
 import { Input } from "@/components/ui/input";
 import { useUser } from "@/contexts/UserProvider";
-import { useRealtimeMessages } from "@/hooks/useRealtimeMessages";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Message, Room } from "@/types/api/message";
@@ -13,10 +12,12 @@ export const MessageSidebar = ({
   rooms,
   setSelectedRoom,
   selectedRoom,
+  latestMessagesByRoom,
 }: {
   rooms: Room[];
   setSelectedRoom: (room: Room) => void;
   selectedRoom: Room | null;
+  latestMessagesByRoom: Record<number, Message | null>;
 }) => {
   const { user: currentUser } = useUser();
   const [search, setSearch] = useState("");
@@ -50,6 +51,7 @@ export const MessageSidebar = ({
             room={room}
             setSelectedRoom={setSelectedRoom}
             selectedRoom={selectedRoom}
+            latestMessageFromRealtime={latestMessagesByRoom[room.id] ?? null}
           />
         ))}
       </ul>
@@ -61,19 +63,16 @@ const RoomListItem = ({
   room,
   setSelectedRoom,
   selectedRoom,
+  latestMessageFromRealtime,
 }: {
   room: Room;
   setSelectedRoom: (room: Room) => void;
   selectedRoom: Room | null;
+  latestMessageFromRealtime: Message | null;
 }) => {
   const [latestMessage, setLatestMessage] = useState<Message | null>(null);
   const { user: currentUser } = useUser();
   const friend = room.users.find((user) => user.id !== currentUser?.id);
-
-  useRealtimeMessages(room.id.toString(), (newMessage: Message) => {
-    console.log("newMessage", newMessage);
-    setLatestMessage(newMessage);
-  });
 
   useEffect(() => {
     const fetchLatestMessages = async () => {
@@ -91,8 +90,10 @@ const RoomListItem = ({
       console.log("latestMessages", latestMessages);
       setLatestMessage(latestMessages[0] ?? null);
     };
-    fetchLatestMessages();
+    void fetchLatestMessages();
   }, [room?.id]);
+
+  const displayedLatestMessage = latestMessageFromRealtime ?? latestMessage;
   return (
     <li
       key={room.id}
@@ -106,7 +107,8 @@ const RoomListItem = ({
       <section className="flex flex-col gap-1">
         <h3 className="text-xs font-medium">{friend?.display_name}</h3>
         <p className="text-xs text-gray-500">
-          {latestMessage?.body ?? `${friend?.display_name} is ready to chat!`}
+          {displayedLatestMessage?.body ??
+            `${friend?.display_name} is ready to chat!`}
         </p>
       </section>
     </li>
