@@ -7,10 +7,10 @@ import { createClient } from "@/lib/supabase/client";
 
 export const MessagePanel = ({
   selectedRoom,
-  realtimeMessage,
+  realtimeMessages,
 }: {
   selectedRoom: Room | null;
-  realtimeMessage: Message | null;
+  realtimeMessages: Message[];
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
 
@@ -59,15 +59,19 @@ export const MessagePanel = ({
   }, [selectedRoom]);
 
   useEffect(() => {
-    if (!selectedRoom || !realtimeMessage) return;
-    if (realtimeMessage.room_id !== selectedRoom.id) return;
+    if (!selectedRoom || realtimeMessages.length === 0) return;
 
     setMessages((prev) => {
-      const exists = prev.some((message) => message.id === realtimeMessage.id);
-      if (exists) return prev;
-      return [...prev, realtimeMessage];
+      const newMessages = realtimeMessages.filter(
+        (message) =>
+          message.room_id === selectedRoom.id &&
+          !prev.some((prevMessage) => prevMessage.id === message.id),
+      );
+
+      if (newMessages.length === 0) return prev;
+      return [...prev, ...newMessages];
     });
-  }, [realtimeMessage, selectedRoom]);
+  }, [realtimeMessages, selectedRoom]);
 
   return (
     <div className="bg-card flex w-full flex-col rounded-r-sm border border-gray-200">

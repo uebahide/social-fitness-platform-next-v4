@@ -29,12 +29,24 @@ export const MessageClient = ({
     return null;
   }, [friendId, rooms]);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(preferredRoom);
-  const [latestMessagesByRoom, setLatestMessagesByRoom] = useState<
-    Record<number, Message>
+  const [realtimeMessagesByRoom, setRealtimeMessagesByRoom] = useState<
+    Record<number, Message[]>
   >({});
   const realtimeRoomIds = useMemo(
     () => rooms.map((room) => room.id.toString()),
     [rooms],
+  );
+  const latestMessagesByRoom = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(realtimeMessagesByRoom)
+          .map(([roomId, messages]) => [
+            roomId,
+            messages[messages.length - 1] ?? null,
+          ])
+          .filter(([, message]) => message !== null),
+      ) as Record<number, Message>,
+    [realtimeMessagesByRoom],
   );
 
   useEffect(() => {
@@ -53,9 +65,9 @@ export const MessageClient = ({
   useRealtimeMessages(
     realtimeRoomIds,
     (newMessage) => {
-      setLatestMessagesByRoom((prev) => ({
+      setRealtimeMessagesByRoom((prev) => ({
         ...prev,
-        [newMessage.room_id]: newMessage,
+        [newMessage.room_id]: [...(prev[newMessage.room_id] ?? []), newMessage],
       }));
     },
   );
@@ -70,8 +82,8 @@ export const MessageClient = ({
       />
       <MessagePanel
         selectedRoom={selectedRoom}
-        realtimeMessage={
-          selectedRoom ? latestMessagesByRoom[selectedRoom.id] ?? null : null
+        realtimeMessages={
+          selectedRoom ? realtimeMessagesByRoom[selectedRoom.id] ?? [] : []
         }
       />
     </div>

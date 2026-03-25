@@ -17,7 +17,7 @@ export const MessageSidebar = ({
   rooms: Room[];
   setSelectedRoom: (room: Room) => void;
   selectedRoom: Room | null;
-  latestMessagesByRoom: Record<number, Message>;
+  latestMessagesByRoom: Record<number, Message | null>;
 }) => {
   const { user: currentUser } = useUser();
   const [search, setSearch] = useState("");
