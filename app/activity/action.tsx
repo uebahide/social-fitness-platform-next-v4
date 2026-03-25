@@ -144,6 +144,7 @@ export async function deleteActivity(
   if (!id) {
     return {
       errors: { id: "Id is required" },
+      error: "",
       message: "Id is required",
       data: {},
       ok: false,
@@ -171,6 +172,7 @@ export async function deleteActivity(
 
   return {
     errors: {},
+    error: "",
     message: "Activity was deleted successfully",
     data: {},
     ok: true,
