@@ -3,10 +3,12 @@
 import { useEffect, useEffectEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Message } from "@/types/api/message";
-import {
-  RealtimeChannel,
-  RealtimeChannelStatus,
-} from "@supabase/supabase-js";
+import { RealtimeChannel } from "@supabase/supabase-js";
+
+type RealtimeSubscribeCallback = NonNullable<
+  Parameters<RealtimeChannel["subscribe"]>[0]
+>;
+type RealtimeSubscribeStatus = Parameters<RealtimeSubscribeCallback>[0];
 
 type BroadcastInsertPayload = {
   payload: {
@@ -51,7 +53,7 @@ export function useRealtimeMessages(
               handleInsert(payload.payload.record as Message);
             },
           )
-          .subscribe((status: RealtimeChannelStatus) => {
+          .subscribe((status: RealtimeSubscribeStatus) => {
             console.log(`Realtime status [room ${roomId}]:`, status);
           });
 
