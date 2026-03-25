@@ -1,7 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
+import { ActivityType } from "@/types/api/activity";
 import { getCurrentUserId } from "./getCurrentUserId";
 
-export async function getLatestActivity(userId?: string) {
+export async function getLatestActivity(
+  userId?: number,
+): Promise<ActivityType | null> {
   const supabase = await createClient();
   const currentUserId = await getCurrentUserId();
   const targetUserId = userId ?? currentUserId;
@@ -14,5 +17,5 @@ export async function getLatestActivity(userId?: string) {
     throw new Error(error.message);
   }
 
-  return data.id == null ? null : data;
+  return data?.id == null ? null : (data as ActivityType);
 }

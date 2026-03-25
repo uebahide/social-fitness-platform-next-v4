@@ -424,20 +424,47 @@ CREATE TABLE IF NOT EXISTS "public"."activities" (
 ALTER TABLE "public"."activities" OWNER TO "postgres";
 
 
-CREATE OR REPLACE FUNCTION "public"."get_latest_activity"("p_user_id" bigint) RETURNS "public"."activities"
+CREATE OR REPLACE FUNCTION "public"."get_latest_activity"("p_user_id" bigint) RETURNS "jsonb"
     LANGUAGE "plpgsql"
     AS $$
 declare
-  v_activity public.activities;
+  result jsonb;
 begin
-  select a.*
-    into v_activity
+  select jsonb_build_object(
+    'id', a.id::text,
+    'category', jsonb_build_object(
+      'id', c.id::text,
+      'name', c.name
+    ),
+    'title', a.title,
+    'description', a.description,
+    'created_at', a.created_at,
+    'user', jsonb_build_object(
+      'id', p.id,
+      'display_name', coalesce(p.display_name, concat_ws(' ', p.first_name, p.last_name)),
+      'email', p.email,
+      'image_path', p.image_path,
+      'created_at', p.created_at
+    ),
+    'details', jsonb_build_object(
+      'distance', ad.distance,
+      'duration', ad.duration,
+      'location', ad.location
+    )
+  )
+    into result
   from public.activities a
+  left join public.activity_details ad
+    on ad.activity_id = a.id
+  join public.categories c
+    on c.id = a.category_id
+  join public.profiles p
+    on p.id = a.user_id
   where a.user_id = p_user_id
-  order by a.created_at desc
+  order by a.created_at desc, a.id desc
   limit 1;
 
-  return v_activity;
+  return coalesce(result, '{}'::jsonb);
 end;
 $$;
 
@@ -1308,5 +1335,4 @@ using ((bucket_id = 'avatars'::text));
   for update
   to public
 using ((bucket_id = 'avatars'::text));
-
 

@@ -81,11 +81,21 @@ function buildRunningEntry(rng, createdAt) {
   const duration = Math.round(distance * pace);
   const variants = [
     ["Morning tempo run", "Held a steady effort and finished feeling smooth."],
-    ["Easy evening run", "Kept the pace comfortable and focused on relaxed form."],
-    ["Riverside progression run", "Started easy and picked it up over the final kilometers."],
-    ["Lunch break run", "Shorter outing to keep the legs fresh during the day."],
+    [
+      "Easy evening run",
+      "Kept the pace comfortable and focused on relaxed form.",
+    ],
+    [
+      "Riverside progression run",
+      "Started easy and picked it up over the final kilometers.",
+    ],
+    [
+      "Lunch break run",
+      "Shorter outing to keep the legs fresh during the day.",
+    ],
   ];
-  const [title, description] = variants[intBetween(rng, 0, variants.length - 1)];
+  const [title, description] =
+    variants[intBetween(rng, 0, variants.length - 1)];
 
   return {
     activity: {
@@ -107,12 +117,19 @@ function buildWalkingEntry(rng, createdAt) {
   const pace = randomBetween(rng, 10.5, 14.0, 2);
   const duration = Math.round(distance * pace);
   const variants = [
-    ["Evening walk", "Used this as a light recovery session and to get extra steps in."],
-    ["Park walk", "Kept it easy and consistent with a relaxed pace throughout."],
+    [
+      "Evening walk",
+      "Used this as a light recovery session and to get extra steps in.",
+    ],
+    [
+      "Park walk",
+      "Kept it easy and consistent with a relaxed pace throughout.",
+    ],
     ["Neighborhood walk", "Nice low-intensity outing to reset after work."],
     ["Sunset walk", "Comfortable walk with a few small hills mixed in."],
   ];
-  const [title, description] = variants[intBetween(rng, 0, variants.length - 1)];
+  const [title, description] =
+    variants[intBetween(rng, 0, variants.length - 1)];
 
   return {
     activity: {
@@ -134,12 +151,22 @@ function buildCyclingEntry(rng, createdAt) {
   const speed = randomBetween(rng, 21, 29, 2);
   const duration = Math.round((distance / speed) * 60);
   const variants = [
-    ["Weekend ride", "Mostly steady riding with a few stronger efforts on open roads."],
+    [
+      "Weekend ride",
+      "Mostly steady riding with a few stronger efforts on open roads.",
+    ],
     ["Endurance ride", "Focused on smooth cadence and steady aerobic work."],
-    ["After-work spin", "Kept the effort controlled with a few rolling climbs."],
-    ["Long bike ride", "Good endurance session with a comfortable overall pace."],
+    [
+      "After-work spin",
+      "Kept the effort controlled with a few rolling climbs.",
+    ],
+    [
+      "Long bike ride",
+      "Good endurance session with a comfortable overall pace.",
+    ],
   ];
-  const [title, description] = variants[intBetween(rng, 0, variants.length - 1)];
+  const [title, description] =
+    variants[intBetween(rng, 0, variants.length - 1)];
 
   return {
     activity: {
@@ -162,11 +189,15 @@ function buildSwimmingEntry(rng, createdAt) {
   const duration = Math.round(distance * pacePerKm);
   const variants = [
     ["Pool session", "Mixed steady laps with short rest between sets."],
-    ["Technique swim", "Focused on relaxed breathing and clean form in the water."],
+    [
+      "Technique swim",
+      "Focused on relaxed breathing and clean form in the water.",
+    ],
     ["Endurance swim", "Longer continuous effort with even pacing."],
     ["Recovery swim", "Easy session to loosen up without much impact."],
   ];
-  const [title, description] = variants[intBetween(rng, 0, variants.length - 1)];
+  const [title, description] =
+    variants[intBetween(rng, 0, variants.length - 1)];
 
   return {
     activity: {
@@ -187,14 +218,28 @@ function buildHikingEntry(rng, createdAt) {
   const distance = intBetween(rng, 6, 17);
   const pace = randomBetween(rng, 12.5, 20.0, 2);
   const duration = Math.round(distance * pace);
-  const location = hikingLocations[intBetween(rng, 0, hikingLocations.length - 1)];
+  const location =
+    hikingLocations[intBetween(rng, 0, hikingLocations.length - 1)];
   const variants = [
-    ["Day hike", "Longer outing with a few climbs and plenty of steady hiking."],
-    ["Trail hike", "Kept a sustainable pace and took in a good amount of elevation."],
-    ["Weekend hike", "Comfortable trail day with a mix of flats and uphill sections."],
-    ["Scenic hike", "Solid hiking session with a few stops for views along the route."],
+    [
+      "Day hike",
+      "Longer outing with a few climbs and plenty of steady hiking.",
+    ],
+    [
+      "Trail hike",
+      "Kept a sustainable pace and took in a good amount of elevation.",
+    ],
+    [
+      "Weekend hike",
+      "Comfortable trail day with a mix of flats and uphill sections.",
+    ],
+    [
+      "Scenic hike",
+      "Solid hiking session with a few stops for views along the route.",
+    ],
   ];
-  const [title, description] = variants[intBetween(rng, 0, variants.length - 1)];
+  const [title, description] =
+    variants[intBetween(rng, 0, variants.length - 1)];
 
   return {
     activity: {
@@ -289,6 +334,7 @@ async function getCurrentProfile(supabase, email) {
   const { data: profile, error } = await supabase
     .from("profiles")
     .select("id, email, first_name, last_name, display_name")
+    .eq("email", email)
     .limit(1)
     .single();
 
