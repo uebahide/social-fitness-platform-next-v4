@@ -26,7 +26,6 @@ export const UserProfileCard = async ({
       latestActivity={latestActivity}
       activityCount={activityCount}
       friendsCount={friendsCount}
-      showMyActivitiesLink={showMyActivitiesLink}
       showFrom={showFrom}
       showWebsite={showWebsite}
       className={className}

@@ -1,6 +1,4 @@
 import { FormRow } from "@/components/form/FormRow";
-import { getLatestActivity } from "@/lib/server/getLatestActivity";
-import { getTotalActivityCount } from "@/lib/server/getTotalActivityCount";
 import { Card } from "@/components/Card";
 import { createClient } from "@/lib/supabase/server";
 import ActivityCard from "@/components/ActivityCard";

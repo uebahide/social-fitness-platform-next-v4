@@ -1,6 +1,4 @@
 import { WeatherCard } from "./WeatherCard";
-import { getTotalActivityCount } from "@/lib/server/getTotalActivityCount";
-import { getLatestActivity } from "@/lib/server/getLatestActivity";
 import { FriendActivity } from "./FriendActivity";
 import { UserProfileCard } from "./UserProfileCard";
 

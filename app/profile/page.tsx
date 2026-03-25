@@ -1,6 +1,4 @@
 import { Card } from "@/components/Card";
-import { getLatestActivity } from "@/lib/server/getLatestActivity";
-import { getTotalActivityCount } from "@/lib/server/getTotalActivityCount";
 import { Input } from "@/components/form/Input";
 import { FormRow } from "@/components/form/FormRow";
 import { SubmitButton } from "@/components/buttons/SubmitButton";
