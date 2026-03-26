@@ -11,13 +11,19 @@ export const FriendActivity = async () => {
         <h2 className="text-2xl font-bold">Friend Activity</h2>
       </header>
       <ul className="h-[740px] overflow-y-auto p-1 space-y-4">
-        {friendsActivities.map((activity: ActivityType) => (
-          <ActivityCard
-            key={activity.id}
-            activity={activity}
-            showMenu={false}
-          />
-        ))}
+        {friendsActivities.length === 0 ? (
+          <p className="text-center text-sm text-gray-500 h-full flex items-center justify-center">
+            No friend activities found
+          </p>
+        ) : (
+          friendsActivities.map((activity: ActivityType) => (
+            <ActivityCard
+              key={activity.id}
+              activity={activity}
+              showMenu={false}
+            />
+          ))
+        )}
       </ul>
     </section>
   );

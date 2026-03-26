@@ -47,8 +47,12 @@ const weatherIcons = {
 };
 
 export const WeatherCard = ({}) => {
-  const [weather, setWeather] = useState<WeatherResponse["current_weather"] | null>(null);
-  const [location, setLocation] = useState<LocationResponse["address"] | null>(null);
+  const [weather, setWeather] = useState<
+    WeatherResponse["current_weather"] | null
+  >(null);
+  const [location, setLocation] = useState<LocationResponse["address"] | null>(
+    null,
+  );
   const [dailyForecast, setDailyForecast] = useState<
     | {
         date: string;
@@ -81,7 +85,8 @@ export const WeatherCard = ({}) => {
 
         const weatherData: WeatherResponse = await weatherRes.json();
         const locationData: LocationResponse = await locationRes.json();
-        const dailyForecastData: WeatherResponse = await dailyForecastRes.json();
+        const dailyForecastData: WeatherResponse =
+          await dailyForecastRes.json();
         const mapped = dailyForecastData.daily.time.map(
           (date: string, index: number) => ({
             date: date.split("-")[2],
@@ -106,7 +111,7 @@ export const WeatherCard = ({}) => {
 
   return (
     <section className="col-span-1 row-span-1">
-      <div className="bg-card relative mt-9 space-y-8 rounded-sm border border-gray-200 px-7 py-6">
+      <div className="bg-card relative mt-9 space-y-8 rounded-xl border border-gray-200 px-7 py-6">
         <div className="flex items-end gap-x-4">
           <p className="text-4xl font-medium">
             {new Date().toLocaleDateString("en-US", { month: "long" })}
