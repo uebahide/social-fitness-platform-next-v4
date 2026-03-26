@@ -36,7 +36,7 @@ export default async function OtherUserProfilePage({
   return (
     <div className="grid grid-cols-[2fr_4fr] gap-4">
       <div className="flex flex-col gap-4">
-        <UserProfileCard showMyActivitiesLink={false} user={user} />
+        <UserProfileCard user={user} />
         <Card>
           <FormRow>
             <p>About this user</p>
