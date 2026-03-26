@@ -13,7 +13,7 @@ export default async function Profile() {
 
   return (
     <div className="grid grid-cols-[1fr_2fr] gap-4 grid-rows-[3fr_2fr]">
-      <UserProfileCard showMyActivitiesLink={false} className="col-span-1" />
+      <UserProfileCard className="col-span-1" />
       <PersonalInfoCard user={user} />
 
       <Card>

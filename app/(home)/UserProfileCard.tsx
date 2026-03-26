@@ -6,13 +6,11 @@ import { getTotalActivityCount } from "@/lib/server/getTotalActivityCount";
 
 export const UserProfileCard = async ({
   user,
-  showMyActivitiesLink = true,
   showFrom = true,
   showWebsite = true,
   className,
 }: {
   user?: User;
-  showMyActivitiesLink?: boolean;
   showFrom?: boolean;
   showWebsite?: boolean;
   className?: string;
