@@ -106,20 +106,35 @@ export const UserProfileCardClient = ({
       </header>
       <main className="mt-2 space-y-4">
         <ul className="flex items-center justify-center px-4">
-          <Link
-            href="/friend/friend-list"
-            className="flex flex-col items-center justify-center border-r border-gray-200 pr-6 w-full"
-          >
-            <p>Friends</p>
-            <p className="font-bold">{friendsCount}</p>
-          </Link>
-          <Link
-            href="/activity"
-            className="flex flex-col items-center justify-center w-full"
-          >
-            <p>Activities</p>
-            <p className="font-bold">{activityCount}</p>
-          </Link>
+          {user === undefined ? (
+            <>
+              <Link
+                href="/friend/friend-list"
+                className="flex flex-col items-center justify-center border-r border-gray-200 pr-6 w-full"
+              >
+                <p>Friends</p>
+                <p className="font-bold">{friendsCount}</p>
+              </Link>
+              <Link
+                href="/activity"
+                className="flex flex-col items-center justify-center w-full"
+              >
+                <p>Activities</p>
+                <p className="font-bold">{activityCount}</p>
+              </Link>
+            </>
+          ) : (
+            <>
+              <div className="flex flex-col items-center justify-center border-r border-gray-200 pr-6 w-full">
+                <p>Friends</p>
+                <p className="font-bold">{friendsCount}</p>
+              </div>
+              <div className="flex flex-col items-center justify-center border-gray-200 pr-6 w-full">
+                <p>Activities</p>
+                <p className="font-bold">{activityCount}</p>
+              </div>
+            </>
+          )}
         </ul>
         <hr />
         <div className="flex flex-col gap-2 px-4">
