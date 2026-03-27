@@ -1,0 +1,1 @@
+CREATE TYPE message_type AS ENUM ('text', 'image', 'emoji');
