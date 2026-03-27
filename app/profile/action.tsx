@@ -19,7 +19,6 @@ export async function updateImage(
   const userId = await getCurrentUserId();
   const fileExt = image.name.split(".").pop();
   const filePath = `${userId}/avatar-${Date.now()}.${fileExt}`;
-  console.log(image);
 
   const { error: uploadError } = await supabase.storage
     .from("avatars")
