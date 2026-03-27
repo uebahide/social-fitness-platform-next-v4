@@ -5,6 +5,9 @@ import { MessagePanel } from "./MessagePanel";
 import { MessageSidebar } from "./MessageSidebar";
 import { Message, Room } from "@/types/api/message";
 import { useRealtimeMessages } from "@/hooks/useRealtimeMessages";
+import { createClient } from "@/lib/supabase/client";
+import { User } from "@/types/api/user";
+import { MessageEditorProvider } from "@/contexts/MessageEditorProvider";
 
 export const MessageClient = ({
   rooms,
@@ -13,6 +16,7 @@ export const MessageClient = ({
   rooms: Room[];
   friendId?: string;
 }) => {
+  const supabase = createClient();
   const preferredRoom = useMemo(() => {
     if (friendId) {
       return (
@@ -32,6 +36,7 @@ export const MessageClient = ({
   const [realtimeMessagesByRoom, setRealtimeMessagesByRoom] = useState<
     Record<number, Message[]>
   >({});
+  const [updatedMessage, setUpdatedMessage] = useState<Message | null>(null);
   const realtimeRoomIds = useMemo(
     () => rooms.map((room) => room.id.toString()),
     [rooms],
@@ -51,10 +56,7 @@ export const MessageClient = ({
 
   useEffect(() => {
     setSelectedRoom((currentRoom) => {
-      if (
-        currentRoom &&
-        rooms.some((room) => room.id === currentRoom.id)
-      ) {
+      if (currentRoom && rooms.some((room) => room.id === currentRoom.id)) {
         return currentRoom;
       }
 
@@ -62,30 +64,46 @@ export const MessageClient = ({
     });
   }, [preferredRoom, rooms]);
 
-  useRealtimeMessages(
-    realtimeRoomIds,
-    (newMessage) => {
-      setRealtimeMessagesByRoom((prev) => ({
-        ...prev,
-        [newMessage.room_id]: [...(prev[newMessage.room_id] ?? []), newMessage],
-      }));
-    },
-  );
+  const onInsert = async (newMessage: Message) => {
+    const { data: user, error: userError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", newMessage.user_id)
+      .single();
+    if (userError) {
+      throw new Error(userError.message);
+    }
+    newMessage.user = user as User;
+    setRealtimeMessagesByRoom((prev) => ({
+      ...prev,
+      [newMessage.room_id]: [...(prev[newMessage.room_id] ?? []), newMessage],
+    }));
+  };
+
+  const onUpdate = async (message: Message) => {
+    setUpdatedMessage(message);
+  };
+
+  useRealtimeMessages(realtimeRoomIds, onInsert, onUpdate);
 
   return (
-    <div className="grid grid-cols-[4fr_9fr]">
-      <MessageSidebar
-        rooms={rooms}
-        setSelectedRoom={setSelectedRoom}
-        selectedRoom={selectedRoom}
-        latestMessagesByRoom={latestMessagesByRoom}
-      />
-      <MessagePanel
-        selectedRoom={selectedRoom}
-        realtimeMessages={
-          selectedRoom ? realtimeMessagesByRoom[selectedRoom.id] ?? [] : []
-        }
-      />
-    </div>
+    <MessageEditorProvider>
+      <div className="grid min-w-0 grid-cols-[4fr_9fr]">
+        <MessageSidebar
+          rooms={rooms}
+          setSelectedRoom={setSelectedRoom}
+          selectedRoom={selectedRoom}
+          latestMessagesByRoom={latestMessagesByRoom}
+        />
+        <MessagePanel
+          selectedRoom={selectedRoom}
+          realtimeMessages={
+            selectedRoom ? (realtimeMessagesByRoom[selectedRoom.id] ?? []) : []
+          }
+          updatedMessage={updatedMessage}
+          setUpdatedMessage={setUpdatedMessage}
+        />
+      </div>
+    </MessageEditorProvider>
   );
 };

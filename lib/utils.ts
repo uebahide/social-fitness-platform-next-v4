@@ -70,3 +70,11 @@ export const formatDate = (dateStr: string) => {
     year: "numeric",
   });
 };
+
+export const formatTime = (dateStr: string) => {
+  const date = new Date(dateStr);
+  return date.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};

@@ -22,7 +22,7 @@ export const Avatar = ({
   return imagePath ? (
     <div
       className={cn(
-        size == "xsmall" && "h-9 w-9",
+        size == "xsmall" && "h-8 w-8",
         size == "small" && "h-10 w-10",
         size == "medium" && "h-12 w-12",
         size == "large" && "h-18 w-18",

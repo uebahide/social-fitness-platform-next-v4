@@ -14,13 +14,16 @@ type BroadcastInsertPayload = {
   payload: {
     record: Message;
   };
+  eventType: string;
 };
 
 export function useRealtimeMessages(
   roomIds: string | string[] | null,
   onInsert: (newMessage: Message) => void,
+  onUpdate: (updatedMessage: Message) => void,
 ) {
   const handleInsert = useEffectEvent(onInsert);
+  const handleUpdate = useEffectEvent(onUpdate);
 
   useEffect(() => {
     const normalizedRoomIds = Array.isArray(roomIds)
@@ -49,8 +52,24 @@ export function useRealtimeMessages(
             "broadcast",
             { event: "INSERT" },
             (payload: BroadcastInsertPayload) => {
-              console.log("broadcast payload", payload);
+              console.log("payload", payload);
+              console.log("payload event type", payload.eventType);
+              console.log("broadcast payload record", payload.payload.record);
               handleInsert(payload.payload.record as Message);
+            },
+          )
+          .on(
+            "broadcast",
+            { event: "UPDATE" },
+            (payload: BroadcastInsertPayload) => {
+              handleUpdate(payload.payload.record as Message);
+            },
+          )
+          .on(
+            "broadcast",
+            { event: "DELETE" },
+            (payload: BroadcastInsertPayload) => {
+              handleUpdate(payload.payload.record as Message);
             },
           )
           .subscribe((status: RealtimeSubscribeStatus) => {

@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 import { Message, Room } from "@/types/api/message";
 import { useEffect, useMemo, useState } from "react";
 
+const LATEST_MESSAGE_PREVIEW_LIMIT = 50;
+
 export const MessageSidebar = ({
   rooms,
   setSelectedRoom,
@@ -87,13 +89,23 @@ const RoomListItem = ({
       if (latestMessagesError) {
         throw new Error(latestMessagesError.message);
       }
-      console.log("latestMessages", latestMessages);
       setLatestMessage(latestMessages[0] ?? null);
     };
     void fetchLatestMessages();
   }, [room?.id]);
 
   const displayedLatestMessage = latestMessageFromRealtime ?? latestMessage;
+  const latestMessagePreview = displayedLatestMessage?.deleted ? (
+    <span className="italic text-[11px]">This message has been unsent</span>
+  ) : displayedLatestMessage?.body ? (
+    displayedLatestMessage.body.length > LATEST_MESSAGE_PREVIEW_LIMIT ? (
+      `${displayedLatestMessage.body.slice(0, LATEST_MESSAGE_PREVIEW_LIMIT)}...`
+    ) : (
+      displayedLatestMessage.body
+    )
+  ) : (
+    `${friend?.display_name} is ready to chat!`
+  );
   return (
     <li
       key={room.id}
@@ -106,10 +118,7 @@ const RoomListItem = ({
       <Avatar size="small" user={friend} />
       <section className="flex flex-col gap-1">
         <h3 className="text-xs font-medium">{friend?.display_name}</h3>
-        <p className="text-xs text-gray-500">
-          {displayedLatestMessage?.body ??
-            `${friend?.display_name} is ready to chat!`}
-        </p>
+        <p className="text-xs text-gray-500">{latestMessagePreview}</p>
       </section>
     </li>
   );
