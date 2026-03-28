@@ -11,6 +11,7 @@ import { createClient } from "@/lib/supabase/server";
 import { User } from "@/types/api/user";
 import { CategoriesProvider } from "@/contexts/CategoriesProvider";
 import { Category } from "@/types/api/category";
+import StoreProvider from "./StoreProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -57,19 +58,23 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <SidebarProvider>
-          <TooltipProvider>
-            <UserProvider initialUser={profile as User | null}>
-              <CategoriesProvider initialCategories={categories as Category[]}>
-                <AppSidebar />
-                <Main>
-                  <SidebarTrigger />
-                  {children}
-                </Main>
-              </CategoriesProvider>
-            </UserProvider>
-          </TooltipProvider>
-        </SidebarProvider>
+        <StoreProvider>
+          <SidebarProvider>
+            <TooltipProvider>
+              <UserProvider initialUser={profile as User | null}>
+                <CategoriesProvider
+                  initialCategories={categories as Category[]}
+                >
+                  <AppSidebar />
+                  <Main>
+                    <SidebarTrigger />
+                    {children}
+                  </Main>
+                </CategoriesProvider>
+              </UserProvider>
+            </TooltipProvider>
+          </SidebarProvider>
+        </StoreProvider>
       </body>
     </html>
   );
