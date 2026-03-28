@@ -62,6 +62,8 @@ export const MessageClient = ({
   };
 
   const onUpdate = async (message: Message) => {
+    const user = await getUserById(message.user_id);
+    message.user = user;
     dispatch(updateMessage(message));
   };
 
