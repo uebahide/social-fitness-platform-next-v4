@@ -1,13 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { MessagePanel } from "./MessagePanel";
 import { MessageSidebar } from "./MessageSidebar";
 import { Message, Room } from "@/types/api/message";
 import { useRealtimeMessages } from "@/hooks/useRealtimeMessages";
-import { createClient } from "@/lib/supabase/client";
-import { User } from "@/types/api/user";
 import { MessageEditorProvider } from "@/contexts/MessageEditorProvider";
+import { useDispatch } from "react-redux";
+import {
+  insertMessage,
+  ensureRoomLoadStatuses,
+  setSelectedRoom,
+  updateMessage,
+} from "@/lib/redux/features/message/messageSlice";
+import { getUserById } from "@/lib/client/getUserById";
 
 export const MessageClient = ({
   rooms,
@@ -16,7 +22,13 @@ export const MessageClient = ({
   rooms: Room[];
   friendId?: string;
 }) => {
-  const supabase = createClient();
+  const dispatch = useDispatch();
+
+  const roomIds = useMemo(() => rooms.map((room) => room.id), [rooms]);
+  const realtimeRoomIds = useMemo(
+    () => rooms.map((room) => room.id.toString()),
+    [rooms],
+  );
   const preferredRoom = useMemo(() => {
     if (friendId) {
       return (
@@ -32,56 +44,25 @@ export const MessageClient = ({
 
     return null;
   }, [friendId, rooms]);
-  const [selectedRoom, setSelectedRoom] = useState<Room | null>(preferredRoom);
-  const [realtimeMessagesByRoom, setRealtimeMessagesByRoom] = useState<
-    Record<number, Message[]>
-  >({});
-  const [updatedMessage, setUpdatedMessage] = useState<Message | null>(null);
-  const realtimeRoomIds = useMemo(
-    () => rooms.map((room) => room.id.toString()),
-    [rooms],
-  );
-  const latestMessagesByRoom = useMemo(
-    () =>
-      Object.fromEntries(
-        Object.entries(realtimeMessagesByRoom)
-          .map(([roomId, messages]) => [
-            roomId,
-            messages[messages.length - 1] ?? null,
-          ])
-          .filter(([, message]) => message !== null),
-      ) as Record<number, Message>,
-    [realtimeMessagesByRoom],
-  );
 
   useEffect(() => {
-    setSelectedRoom((currentRoom) => {
-      if (currentRoom && rooms.some((room) => room.id === currentRoom.id)) {
-        return currentRoom;
-      }
+    dispatch(ensureRoomLoadStatuses(roomIds));
+  }, [dispatch, roomIds]);
 
-      return preferredRoom;
-    });
-  }, [preferredRoom, rooms]);
+  useEffect(() => {
+    if (preferredRoom) {
+      dispatch(setSelectedRoom(preferredRoom));
+    }
+  }, [preferredRoom, rooms, dispatch]);
 
   const onInsert = async (newMessage: Message) => {
-    const { data: user, error: userError } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", newMessage.user_id)
-      .single();
-    if (userError) {
-      throw new Error(userError.message);
-    }
-    newMessage.user = user as User;
-    setRealtimeMessagesByRoom((prev) => ({
-      ...prev,
-      [newMessage.room_id]: [...(prev[newMessage.room_id] ?? []), newMessage],
-    }));
+    const user = await getUserById(newMessage.user_id);
+    newMessage.user = user;
+    dispatch(insertMessage(newMessage));
   };
 
   const onUpdate = async (message: Message) => {
-    setUpdatedMessage(message);
+    dispatch(updateMessage(message));
   };
 
   useRealtimeMessages(realtimeRoomIds, onInsert, onUpdate);
@@ -89,20 +70,8 @@ export const MessageClient = ({
   return (
     <MessageEditorProvider>
       <div className="grid min-w-0 grid-cols-[4fr_9fr]">
-        <MessageSidebar
-          rooms={rooms}
-          setSelectedRoom={setSelectedRoom}
-          selectedRoom={selectedRoom}
-          latestMessagesByRoom={latestMessagesByRoom}
-        />
-        <MessagePanel
-          selectedRoom={selectedRoom}
-          realtimeMessages={
-            selectedRoom ? (realtimeMessagesByRoom[selectedRoom.id] ?? []) : []
-          }
-          updatedMessage={updatedMessage}
-          setUpdatedMessage={setUpdatedMessage}
-        />
+        <MessageSidebar rooms={rooms} />
+        <MessagePanel />
       </div>
     </MessageEditorProvider>
   );

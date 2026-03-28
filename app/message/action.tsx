@@ -105,8 +105,6 @@ export async function deleteMessage(
 ) {
   const supabase = await createClient();
   const messageId = formData.get("messageId") as string;
-  console.log("messageId", messageId);
-  console.log("deleting message");
 
   const { error } = await supabase
     .from("messages")

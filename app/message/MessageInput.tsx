@@ -16,13 +16,16 @@ import EmojiPicker from "emoji-picker-react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/contexts/UserProvider";
+import { useSelector } from "react-redux";
+import { selectSelectedRoom } from "@/lib/redux/features/message/messageSelector";
 
 type SelectedImage = {
   id: string;
   file: File;
 };
 
-export const MessageInput = ({ selectedRoom }: { selectedRoom: Room }) => {
+export const MessageInput = () => {
+  const selectedRoom = useSelector(selectSelectedRoom) as Room;
   const [message, setMessage] = useState("");
   const [images, setImages] = useState<SelectedImage[]>([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);

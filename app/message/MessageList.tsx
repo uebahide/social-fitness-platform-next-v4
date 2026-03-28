@@ -1,13 +1,16 @@
 import { Avatar } from "@/components/Avatar";
 import { useUser } from "@/contexts/UserProvider";
 import { Message } from "@/types/api/message";
-import { FaceIcon, StopIcon } from "@radix-ui/react-icons";
-import { ReplyIcon, StopCircle, StopCircleIcon } from "lucide-react";
+import { FaceIcon } from "@radix-ui/react-icons";
+import { ReplyIcon } from "lucide-react";
 import { MessageMenu } from "./MessageMenu";
 import Image from "next/image";
 import { useEffect, useRef } from "react";
+import { useSelector } from "react-redux";
+import { selectSelectedRoomMessages } from "@/lib/redux/features/message/messageSelector";
 
-export const MessageList = ({ messages }: { messages: Message[] }) => {
+export const MessageList = () => {
+  const messages = useSelector(selectSelectedRoomMessages);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const isFirstRender = useRef(true);
 
@@ -31,9 +34,10 @@ export const MessageList = ({ messages }: { messages: Message[] }) => {
       ref={containerRef}
       className="flex h-[calc(100vh-258px)] min-w-0 flex-col gap-4 overflow-x-hidden overflow-y-auto p-4"
     >
-      {messages.map((message) => (
-        <MessageGroup key={message.id} message={message} />
-      ))}
+      {messages &&
+        messages.map((message) => (
+          <MessageGroup key={message.id} message={message} />
+        ))}
     </div>
   );
 };
@@ -76,6 +80,10 @@ const MessageGroup = ({ message }: { message: Message }) => {
 };
 
 const MyMessage = ({ message }: { message: Message }) => {
+  const isDeleted = message.deleted;
+  if (isDeleted) {
+    return <DeletedMessageBubble message={message} />;
+  }
   if (message.type === "image") {
     return <ImageMessageBubble message={message} />;
   }
@@ -83,6 +91,10 @@ const MyMessage = ({ message }: { message: Message }) => {
 };
 
 const OtherMessage = ({ message }: { message: Message }) => {
+  const isDeleted = message.deleted;
+  if (isDeleted) {
+    return <DeletedMessageBubble message={message} />;
+  }
   if (message.type === "image") {
     return <ImageMessageBubble message={message} />;
   }
@@ -90,10 +102,6 @@ const OtherMessage = ({ message }: { message: Message }) => {
 };
 
 const MyMessageBubble = ({ message }: { message: Message }) => {
-  const isDeleted = message.deleted;
-  if (isDeleted) {
-    return <DeletedMessageBubble message={message} />;
-  }
   return (
     <div className="flex max-w-[min(20rem,100%)] min-w-0 flex-col gap-4 rounded-2xl bg-purple-500 px-4 py-2 font-mono text-sm text-white">
       <div key={message.id} className="break-words whitespace-pre-wrap">

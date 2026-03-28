@@ -52,9 +52,6 @@ export function useRealtimeMessages(
             "broadcast",
             { event: "INSERT" },
             (payload: BroadcastInsertPayload) => {
-              console.log("payload", payload);
-              console.log("payload event type", payload.eventType);
-              console.log("broadcast payload record", payload.payload.record);
               handleInsert(payload.payload.record as Message);
             },
           )
