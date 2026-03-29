@@ -5,7 +5,6 @@ import { MessagePanel } from "./MessagePanel";
 import { MessageSidebar } from "./MessageSidebar";
 import { Message, Room } from "@/types/api/message";
 import { useRealtimeMessages } from "@/hooks/useRealtimeMessages";
-import { MessageEditorProvider } from "@/contexts/MessageEditorProvider";
 import { useDispatch } from "react-redux";
 import {
   insertMessage,
@@ -14,6 +13,10 @@ import {
   updateMessage,
 } from "@/lib/redux/features/message/messageSlice";
 import { getUserById } from "@/lib/client/getUserById";
+import { roomUser } from "@/types/api/roomUser";
+import { useLastReadMessageId } from "@/contexts/LastReadMessageIdProvider";
+import { useRealtimeReadStatus } from "@/hooks/useRealtimeReadStatus";
+import { useUser } from "@/contexts/UserProvider";
 
 export const MessageClient = ({
   rooms,
@@ -23,7 +26,8 @@ export const MessageClient = ({
   friendId?: string;
 }) => {
   const dispatch = useDispatch();
-
+  const { setFriendLastReadMessageId } = useLastReadMessageId();
+  const user = useUser();
   const roomIds = useMemo(() => rooms.map((room) => room.id), [rooms]);
   const realtimeRoomIds = useMemo(
     () => rooms.map((room) => room.id.toString()),
@@ -55,12 +59,14 @@ export const MessageClient = ({
     }
   }, [preferredRoom, rooms, dispatch]);
 
+  // realtime insert message
   const onInsert = async (newMessage: Message) => {
     const user = await getUserById(newMessage.user_id);
     newMessage.user = user;
     dispatch(insertMessage(newMessage));
   };
 
+  // realtime update message
   const onUpdate = async (message: Message) => {
     const user = await getUserById(message.user_id);
     message.user = user;
@@ -69,12 +75,18 @@ export const MessageClient = ({
 
   useRealtimeMessages(realtimeRoomIds, onInsert, onUpdate);
 
+  const onReadUpdate = (roomUser: roomUser) => {
+    if (roomUser.user_id !== user.user?.id) {
+      setFriendLastReadMessageId(roomUser.last_read_message_id);
+    }
+  };
+
+  useRealtimeReadStatus(roomIds, onReadUpdate);
+
   return (
-    <MessageEditorProvider>
-      <div className="grid min-w-0 grid-cols-[4fr_9fr]">
-        <MessageSidebar rooms={rooms} />
-        <MessagePanel />
-      </div>
-    </MessageEditorProvider>
+    <div className="grid min-w-0 grid-cols-[4fr_9fr]">
+      <MessageSidebar rooms={rooms} />
+      <MessagePanel />
+    </div>
   );
 };

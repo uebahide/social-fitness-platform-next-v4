@@ -1,5 +1,5 @@
 import { MessageList } from "./MessageList";
-import { Message, Room } from "@/types/api/message";
+import { Room } from "@/types/api/message";
 import { ChatHeader } from "./ChatHeader";
 import { MessageInput } from "./MessageInput";
 import { useMessageEditor } from "@/contexts/MessageEditorProvider";
@@ -10,7 +10,7 @@ import {
   selectSelectedRoom,
   selectSelectedRoomId,
 } from "@/lib/redux/features/message/messageSelector";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { RootState } from "@/lib/redux/store";
 import { setRoomLoaded } from "@/lib/redux/features/message/messageSlice";
@@ -25,6 +25,7 @@ export const MessagePanel = () => {
     selectRoomLoadStatus(state, selectedRoomId as number),
   );
 
+  // fetch messages when the room is selected
   useEffect(() => {
     const fetchMessages = async () => {
       const { data, error } = await supabase

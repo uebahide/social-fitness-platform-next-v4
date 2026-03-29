@@ -2,6 +2,8 @@ import { MessageClient } from "./MessageClient";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
 import { Room } from "@/types/api/message";
+import { LastReadMessageIdProvider } from "@/contexts/LastReadMessageIdProvider";
+import { MessageEditorProvider } from "@/contexts/MessageEditorProvider";
 
 export default async function MessagePage({
   searchParams,
@@ -82,5 +84,11 @@ export default async function MessagePage({
     throw new Error(`Error while fetching rooms: ${roomsError.message}`);
   }
 
-  return <MessageClient rooms={rooms as Room[]} friendId={friendId} />;
+  return (
+    <MessageEditorProvider>
+      <LastReadMessageIdProvider>
+        <MessageClient rooms={rooms as Room[]} friendId={friendId} />
+      </LastReadMessageIdProvider>
+    </MessageEditorProvider>
+  );
 }

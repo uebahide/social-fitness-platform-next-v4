@@ -1,3 +1,5 @@
+"use client";
+
 import { Message } from "@/types/api/message";
 import { createContext, useContext, useState } from "react";
 
