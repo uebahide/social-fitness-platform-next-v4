@@ -1,33 +1,99 @@
 import { Avatar } from "@/components/Avatar";
 import { useUser } from "@/contexts/UserProvider";
-import { Message } from "@/types/api/message";
+import { Message, Room } from "@/types/api/message";
 import { FaceIcon } from "@radix-ui/react-icons";
 import { ReplyIcon } from "lucide-react";
 import { MessageMenu } from "./MessageMenu";
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { selectSelectedRoomMessages } from "@/lib/redux/features/message/messageSelector";
+import {
+  selectSelectedRoom,
+  selectSelectedRoomId,
+  selectSelectedRoomMessages,
+} from "@/lib/redux/features/message/messageSelector";
+import { createClient } from "@/lib/supabase/client";
+import { useLastReadMessageId } from "@/contexts/LastReadMessageIdProvider";
+import { useAutoScrollDown } from "@/hooks/useAutoScrollDownByProps";
 
 export const MessageList = () => {
+  const supabase = createClient();
   const messages = useSelector(selectSelectedRoomMessages);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const isFirstRender = useRef(true);
+  const { containerRef } = useAutoScrollDown([messages]);
+  const selectedRoomId = useSelector(selectSelectedRoomId) as number;
+  const selectedRoom = useSelector(selectSelectedRoom) as Room;
+  const { setFriendLastReadMessageId } = useLastReadMessageId();
 
+  const user = useUser();
+
+  const handledMessageIdRef = useRef<number | null>(null);
+
+  // fetch friend's last read message id when the room is selected
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
+    const fetchFriendLastReadMessageId = async () => {
+      const { data, error } = await supabase
+        .from("room_user")
+        .select("last_read_message_id")
+        .eq("room_id", selectedRoom.id)
+        .eq(
+          "user_id",
+          selectedRoom.users.find((_user) => _user.id !== user.user?.id)?.id,
+        )
+        .single();
+      if (error) {
+        console.error(error);
+        return;
+      }
+      setFriendLastReadMessageId(data.last_read_message_id);
+    };
+    void fetchFriendLastReadMessageId();
+  }, [
+    selectedRoomId,
+    user?.user?.id,
+    supabase,
+    setFriendLastReadMessageId,
+    selectedRoom,
+  ]);
 
-    if (isFirstRender.current) {
-      el.scrollTop = el.scrollHeight;
-      isFirstRender.current = false;
+  // sync my last read status when the room is selected or receive a new message
+  useEffect(() => {
+    if (selectedRoomId == null) return;
+    if (!user.user?.id) return;
+    if (!messages || messages.length === 0) return;
+
+    // get the latest message
+    const latestMessage = messages[messages.length - 1];
+    if (!latestMessage) return;
+
+    // prevent running the same latest message multiple times
+    if (handledMessageIdRef.current === latestMessage.id) return;
+
+    // if the latest message is my message, don't update my last read status
+    if (latestMessage.user_id === user.user.id) {
+      handledMessageIdRef.current = latestMessage.id;
       return;
     }
 
-    requestAnimationFrame(() => {
-      el.scrollTop = el.scrollHeight;
-    });
-  }, [messages]);
+    // sync my last read status to the database
+    const syncFriendLastReadMessageId = async () => {
+      const { error } = await supabase
+        .from("room_user")
+        .update({
+          last_read_message_id: latestMessage.id,
+        })
+        .eq("room_id", selectedRoomId)
+        .eq("user_id", user?.user?.id);
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+    };
+    // set the handled message id to the ref to prevent running the same latest message multiple times
+    handledMessageIdRef.current = latestMessage.id;
+
+    void syncFriendLastReadMessageId();
+  }, [selectedRoomId, messages, supabase, user.user?.id]);
 
   return (
     <div
@@ -44,9 +110,12 @@ export const MessageList = () => {
 
 const MessageGroup = ({ message }: { message: Message }) => {
   const { user } = useUser();
+  const { friendLastReadMessageId } = useLastReadMessageId();
   const isMyMessage = message.user_id === user?.id;
   const isDeleted = message.deleted;
   const isEdited = message.updated_at;
+  const isSeen =
+    friendLastReadMessageId && friendLastReadMessageId >= message.id;
 
   if (isMyMessage) {
     return (
@@ -68,6 +137,9 @@ const MessageGroup = ({ message }: { message: Message }) => {
           )}
           <MyMessage message={message} />
         </div>
+        {!isDeleted && isSeen && (
+          <p className="text-[8px] text-gray-500 self-end pr-2 ">seen</p>
+        )}
       </section>
     );
   }

@@ -8,9 +8,10 @@ import {
   selectSelectedRoomId,
 } from "@/lib/redux/features/message/messageSelector";
 import { setSelectedRoom } from "@/lib/redux/features/message/messageSlice";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Room } from "@/types/api/message";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 const LATEST_MESSAGE_PREVIEW_LIMIT = 50;
@@ -54,7 +55,11 @@ const RoomListItem = ({ room }: { room: Room }) => {
   const dispatch = useDispatch();
   const { user: currentUser } = useUser();
   const friend = room.users.find((user) => user.id !== currentUser?.id);
+  const supabase = createClient();
 
+  const [lastReadMessageId, setLastReadMessageId] = useState<number | null>(
+    null,
+  );
   const latestMessagesByRoom = useSelector(selectLatestMessagesByRoom);
   const latestMessage = latestMessagesByRoom[room.id] ?? null;
   const selectedRoomId = useSelector(selectSelectedRoomId);
@@ -69,6 +74,24 @@ const RoomListItem = ({ room }: { room: Room }) => {
   ) : (
     `${friend?.display_name} is ready to chat!`
   );
+
+  useEffect(() => {
+    const fetchLastReadMessageIdByRoom = async () => {
+      const { data, error } = await supabase
+        .from("room_user")
+        .select("last_read_message_id")
+        .eq("room_id", room.id)
+        .eq("user_id", currentUser?.id);
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      setLastReadMessageId(data?.[0]?.last_read_message_id ?? null);
+    };
+    fetchLastReadMessageIdByRoom();
+  }, [room.id, currentUser?.id, supabase, selectedRoomId]);
   return (
     <li
       key={room.id}
@@ -82,6 +105,11 @@ const RoomListItem = ({ room }: { room: Room }) => {
       <section className="flex flex-col gap-1">
         <h3 className="text-xs font-medium">{friend?.display_name}</h3>
         <p className="text-xs text-gray-500">{latestMessagePreview}</p>
+        {lastReadMessageId &&
+          latestMessage?.id &&
+          lastReadMessageId >= latestMessage?.id && (
+            <span className="rounded-full bg-green-500 w-2 h-2" />
+          )}
       </section>
     </li>
   );
