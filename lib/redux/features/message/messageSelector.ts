@@ -28,12 +28,12 @@ export const selectSelectedRoomMessages = (state: RootState) => {
 };
 
 export const selectLatestMessagesByRoom = (state: RootState) => {
-  const entries = Object.entries(
-    state.message.messagesByRoom as Record<number, Message[]>,
-  ).map(([roomId, messages]) => [
-    Number(roomId),
-    messages[messages.length - 1] ?? null,
-  ]);
+  return state.message.latestMessagesByRoom;
+};
 
-  return Object.fromEntries(entries) as Record<number, Message | null>;
+export const selectMyLastReadMessageIdByRoom = (
+  state: RootState,
+  roomId: number,
+) => {
+  return state.message.myLastReadMessageIdsByRoom[roomId] ?? null;
 };

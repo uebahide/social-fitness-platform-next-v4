@@ -84,10 +84,54 @@ export default async function MessagePage({
     throw new Error(`Error while fetching rooms: ${roomsError.message}`);
   }
 
+  // get my last read message id for each room
+  const {
+    data: myLastReadMessageIdsByRoom,
+    error: myLastReadMessageIdsByRoomError,
+  } = await supabase
+    .from("room_user")
+    .select("room_id, last_read_message_id")
+    .in(
+      "room_id",
+      rooms.map((room) => room.id),
+    )
+    .eq("user_id", currentUserId);
+
+  if (myLastReadMessageIdsByRoomError) {
+    throw new Error(
+      `Error while fetching my last read message id by room: ${myLastReadMessageIdsByRoomError.message}`,
+    );
+  }
+
+  //get latest message for each room
+  const { data: latestMessagesByRoom, error: latestMessagesByRoomError } =
+    await supabase
+      .from("messages")
+      .select(
+        "*, user:profiles(id, display_name, email, image_path, created_at)",
+      )
+      .in(
+        "room_id",
+        rooms.map((room) => room.id),
+      )
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+  if (latestMessagesByRoomError) {
+    throw new Error(
+      `Error while fetching latest messages by room: ${latestMessagesByRoomError.message}`,
+    );
+  }
+
   return (
     <MessageEditorProvider>
       <LastReadMessageIdProvider>
-        <MessageClient rooms={rooms as Room[]} friendId={friendId} />
+        <MessageClient
+          myLastReadMessageIdsByRoom={myLastReadMessageIdsByRoom}
+          latestMessagesByRoom={latestMessagesByRoom}
+          rooms={rooms as Room[]}
+          friendId={friendId}
+        />
       </LastReadMessageIdProvider>
     </MessageEditorProvider>
   );

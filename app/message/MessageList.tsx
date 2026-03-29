@@ -6,7 +6,7 @@ import { ReplyIcon } from "lucide-react";
 import { MessageMenu } from "./MessageMenu";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   selectSelectedRoom,
   selectSelectedRoomId,
@@ -15,9 +15,11 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { useLastReadMessageId } from "@/contexts/LastReadMessageIdProvider";
 import { useAutoScrollDown } from "@/hooks/useAutoScrollDownByProps";
+import { setMyLastReadMessageId } from "@/lib/redux/features/message/messageSlice";
 
 export const MessageList = () => {
   const supabase = createClient();
+  const dispatch = useDispatch();
   const messages = useSelector(selectSelectedRoomMessages);
   const { containerRef } = useAutoScrollDown([messages]);
   const selectedRoomId = useSelector(selectSelectedRoomId) as number;
@@ -89,21 +91,35 @@ export const MessageList = () => {
         return;
       }
     };
+
+    // set the my last read message id to the redux store
+    dispatch(
+      setMyLastReadMessageId({
+        roomId: selectedRoomId,
+        messageId: latestMessage.id,
+      }),
+    );
+
     // set the handled message id to the ref to prevent running the same latest message multiple times
     handledMessageIdRef.current = latestMessage.id;
 
     void syncFriendLastReadMessageId();
-  }, [selectedRoomId, messages, supabase, user.user?.id]);
+  }, [selectedRoomId, messages, supabase, user.user?.id, dispatch]);
 
   return (
     <div
       ref={containerRef}
       className="flex h-[calc(100vh-258px)] min-w-0 flex-col gap-4 overflow-x-hidden overflow-y-auto p-4"
     >
-      {messages &&
+      {messages && messages.length > 0 ? (
         messages.map((message) => (
           <MessageGroup key={message.id} message={message} />
-        ))}
+        ))
+      ) : (
+        <div className="flex items-center justify-center h-full">
+          <p className="text-gray-500">Start a conversation 💬</p>
+        </div>
+      )}
     </div>
   );
 };
@@ -124,17 +140,7 @@ const MessageGroup = ({ message }: { message: Message }) => {
           <p className="text-xs text-gray-500 self-end pr-2">Edited</p>
         )}
         <div className="flex justify-end min-w-0 group gap-4">
-          {!isDeleted && (
-            <ul className="flex items-center gap-2 opacity-0 pointer-events-none transition-opacity group-hover:opacity-100 group-hover:pointer-events-auto">
-              <MessageMenu message={message} />
-              <li>
-                <FaceIcon className="size-6 hover:bg-gray-200 rounded-full p-1 cursor-pointer" />
-              </li>
-              <li>
-                <ReplyIcon className="size-6 hover:bg-gray-200 rounded-full p-1 cursor-pointer" />
-              </li>
-            </ul>
-          )}
+          {!isDeleted && <MessageSideMenu message={message} />}
           <MyMessage message={message} />
         </div>
         {!isDeleted && isSeen && (
@@ -148,6 +154,20 @@ const MessageGroup = ({ message }: { message: Message }) => {
       <Avatar size="xsmall" user={message.user} />
       <OtherMessage message={message} />
     </section>
+  );
+};
+
+const MessageSideMenu = ({ message }: { message: Message }) => {
+  return (
+    <ul className="flex items-center gap-2 opacity-0 pointer-events-none transition-opacity group-hover:opacity-100 group-hover:pointer-events-auto">
+      <MessageMenu message={message} />
+      <li>
+        <FaceIcon className="size-6 hover:bg-gray-200 rounded-full p-1 cursor-pointer" />
+      </li>
+      <li>
+        <ReplyIcon className="size-6 hover:bg-gray-200 rounded-full p-1 cursor-pointer" />
+      </li>
+    </ul>
   );
 };
 

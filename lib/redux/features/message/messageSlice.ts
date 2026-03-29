@@ -5,14 +5,18 @@ type MessageState = {
   selectedRoom: Room | null;
   selectedRoomId: number | null;
   messagesByRoom: Record<number, Message[]>;
+  latestMessagesByRoom: Record<number, Message | null>;
   loadStatusByRoom: Record<number, "idle" | "loading" | "loaded" | "error">;
+  myLastReadMessageIdsByRoom: Record<number, number | null>;
 };
 
 const initialState: MessageState = {
   selectedRoomId: null,
   selectedRoom: null,
   messagesByRoom: {},
+  latestMessagesByRoom: {},
   loadStatusByRoom: {},
+  myLastReadMessageIdsByRoom: {},
 };
 
 const messageSlice = createSlice({
@@ -25,6 +29,13 @@ const messageSlice = createSlice({
           state.loadStatusByRoom[roomId] = "idle";
         }
       });
+    },
+    setLatestMessagesByRoom(
+      state,
+      action: PayloadAction<{ roomId: number; message: Message }>,
+    ) {
+      state.latestMessagesByRoom[action.payload.roomId] =
+        action.payload.message;
     },
     setRoomLoading(state, action: PayloadAction<number>) {
       state.loadStatusByRoom[action.payload] = "loading";
@@ -62,6 +73,7 @@ const messageSlice = createSlice({
           message,
         ] as Message[];
       }
+      state.latestMessagesByRoom[message.room_id] = message;
     },
     updateMessage: (state, action: PayloadAction<Message>) => {
       const message = action.payload;
@@ -71,6 +83,14 @@ const messageSlice = createSlice({
         current[index] = message;
         state.messagesByRoom[message.room_id] = current;
       }
+      state.latestMessagesByRoom[message.room_id] = message;
+    },
+    setMyLastReadMessageId: (
+      state,
+      action: PayloadAction<{ roomId: number; messageId: number }>,
+    ) => {
+      state.myLastReadMessageIdsByRoom[action.payload.roomId] =
+        action.payload.messageId;
     },
   },
 });
@@ -78,12 +98,14 @@ const messageSlice = createSlice({
 export const {
   setSelectedRoom,
   ensureRoomLoadStatuses,
+  setLatestMessagesByRoom,
   setRoomLoading,
   setRoomLoaded,
   setRoomError,
   setRoomMessages,
   insertMessage,
   updateMessage,
+  setMyLastReadMessageId,
 } = messageSlice.actions;
 
 export default messageSlice.reducer;

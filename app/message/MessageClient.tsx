@@ -11,6 +11,8 @@ import {
   ensureRoomLoadStatuses,
   setSelectedRoom,
   updateMessage,
+  setMyLastReadMessageId,
+  setLatestMessagesByRoom,
 } from "@/lib/redux/features/message/messageSlice";
 import { getUserById } from "@/lib/client/getUserById";
 import { roomUser } from "@/types/api/roomUser";
@@ -21,9 +23,16 @@ import { useUser } from "@/contexts/UserProvider";
 export const MessageClient = ({
   rooms,
   friendId,
+  myLastReadMessageIdsByRoom,
+  latestMessagesByRoom,
 }: {
   rooms: Room[];
   friendId?: string;
+  myLastReadMessageIdsByRoom: {
+    room_id: number;
+    last_read_message_id: number;
+  }[];
+  latestMessagesByRoom: Message[];
 }) => {
   const dispatch = useDispatch();
   const { setFriendLastReadMessageId } = useLastReadMessageId();
@@ -49,6 +58,31 @@ export const MessageClient = ({
     return null;
   }, [friendId, rooms]);
 
+  // set latest messages by room in redux
+  useEffect(() => {
+    latestMessagesByRoom.forEach((item) => {
+      dispatch(
+        setLatestMessagesByRoom({
+          roomId: item.room_id,
+          message: item,
+        }),
+      );
+    });
+  }, [dispatch, latestMessagesByRoom]);
+
+  // set my last read message id for each room in redux
+  useEffect(() => {
+    myLastReadMessageIdsByRoom.forEach((item) => {
+      dispatch(
+        setMyLastReadMessageId({
+          roomId: item.room_id,
+          messageId: item.last_read_message_id,
+        }),
+      );
+    });
+  }, [dispatch, myLastReadMessageIdsByRoom]);
+
+  // ensure room load statuses in redux
   useEffect(() => {
     dispatch(ensureRoomLoadStatuses(roomIds));
   }, [dispatch, roomIds]);
@@ -57,7 +91,7 @@ export const MessageClient = ({
     if (preferredRoom) {
       dispatch(setSelectedRoom(preferredRoom));
     }
-  }, [preferredRoom, rooms, dispatch]);
+  }, [dispatch, preferredRoom, rooms]);
 
   // realtime insert message
   const onInsert = async (newMessage: Message) => {
@@ -75,6 +109,7 @@ export const MessageClient = ({
 
   useRealtimeMessages(realtimeRoomIds, onInsert, onUpdate);
 
+  // realtime update read status
   const onReadUpdate = (roomUser: roomUser) => {
     if (roomUser.user_id !== user.user?.id) {
       setFriendLastReadMessageId(roomUser.last_read_message_id);
