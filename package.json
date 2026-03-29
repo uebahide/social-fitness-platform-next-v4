@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "seed:users": "node --env-file=.env.local scripts/seed-users.mjs",
+    "seed:friends": "node --env-file=.env.local scripts/seed-friends.mjs",
     "seed:activities": "node --env-file=.env.local scripts/seed-activities.mjs"
   },
   "dependencies": {
