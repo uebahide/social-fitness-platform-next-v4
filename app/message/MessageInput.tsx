@@ -250,7 +250,7 @@ export const EmojiPickerButton = ({
   return (
     <div ref={emojiPickerRef}>
       <FaceIcon
-        className="h-5 w-5 cursor-pointer hover:scale-110 transition-all duration-300"
+        className="h-5 w-5 cursor-pointer hover:scale-110 transition-all duration-300 pb-1"
         onClick={() => setShowEmojiPicker((prev) => !prev)}
       />
       {showEmojiPicker && (

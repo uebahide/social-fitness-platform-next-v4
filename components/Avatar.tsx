@@ -28,7 +28,7 @@ export const Avatar = ({
         size == "large" && "h-18 w-18",
         size == "xlarge" && "h-24 w-24",
         size == "xxlarge" && "h-30 w-30",
-        "relative overflow-hidden rounded-full",
+        "relative aspect-square shrink-0 overflow-hidden rounded-full",
         className,
       )}
     >

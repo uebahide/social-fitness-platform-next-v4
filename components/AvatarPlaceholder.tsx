@@ -24,7 +24,7 @@ export default function AvatarPlaceholder({
         size == "large" && "h-18 w-18",
         size == "xlarge" && "h-24 w-24",
         size == "xxlarge" && "h-30 w-30",
-        "flex items-center justify-center rounded-full bg-amber-200",
+        "flex aspect-square shrink-0 items-center justify-center rounded-full bg-amber-200",
         className,
       )}
     >
