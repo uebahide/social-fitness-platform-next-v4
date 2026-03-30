@@ -1,3 +1,4 @@
+import { MessageReaction } from "./messageReactions";
 import { User } from "./user";
 
 export type Room = {
@@ -20,6 +21,7 @@ export type Message = {
   user_id: number;
   room_id: number;
   user: User;
+  reactions: MessageReaction[];
   deleted: boolean;
   image_path: string;
   type: string;

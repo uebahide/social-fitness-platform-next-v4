@@ -129,3 +129,100 @@ export async function deleteMessage(
     ok: true,
   };
 }
+
+export async function addReaction(
+  _prevState: SendMessageState,
+  formData: FormData,
+) {
+  const supabase = await createClient();
+  const messageId = formData.get("messageId") as string;
+  const userId = await getCurrentUserId();
+  const reaction = formData.get("reaction") as string;
+  console.log(messageId, userId, reaction);
+
+  const { error } = await supabase.from("message_reactions").insert({
+    message_id: messageId,
+    user_id: userId,
+    reaction,
+  });
+
+  if (error) {
+    console.error(error);
+    return {
+      errors: error.message,
+      message: "error while adding reaction",
+      data: {},
+      ok: false,
+    };
+  }
+
+  return {
+    errors: {},
+    message: "Reaction was added successfully",
+    data: {},
+    ok: true,
+  };
+}
+
+export async function updateReaction(
+  _prevState: SendMessageState,
+  formData: FormData,
+) {
+  const supabase = await createClient();
+  const reactionId = formData.get("reactionId") as string;
+  const reaction = formData.get("reaction") as string;
+
+  const { error } = await supabase
+    .from("message_reactions")
+    .update({
+      reaction,
+    })
+    .eq("id", reactionId);
+
+  if (error) {
+    console.error(error);
+    return {
+      errors: error.message,
+      message: "error while updating reaction",
+      data: {},
+      ok: false,
+    };
+  }
+
+  return {
+    errors: {},
+    message: "Reaction was updated successfully",
+    data: {},
+    ok: true,
+  };
+}
+
+export async function deleteReaction(
+  _prevState: SendMessageState,
+  formData: FormData,
+) {
+  const supabase = await createClient();
+  const reactionId = formData.get("reactionId") as string;
+
+  const { error } = await supabase
+    .from("message_reactions")
+    .delete()
+    .eq("id", reactionId);
+
+  if (error) {
+    console.error(error);
+    return {
+      errors: error.message,
+      message: "error while deleting reaction",
+      data: {},
+      ok: false,
+    };
+  }
+
+  return {
+    errors: {},
+    message: "Reaction was deleted successfully",
+    data: {},
+    ok: true,
+  };
+}

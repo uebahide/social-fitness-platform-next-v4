@@ -31,7 +31,7 @@ export const MessagePanel = () => {
       const { data, error } = await supabase
         .from("messages")
         .select(
-          "*, user:profiles(id, display_name, email, image_path, created_at)",
+          "*, user:profiles(id, display_name, email, image_path, created_at), reactions:message_reactions(*)",
         )
         .eq("room_id", selectedRoomId as number);
 
