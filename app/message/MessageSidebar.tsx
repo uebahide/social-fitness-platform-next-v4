@@ -69,9 +69,12 @@ const RoomListItem = ({ room }: { room: Room }) => {
   const isImage = latestMessage?.type === "image";
 
   const isUnread =
-    (myLastReadMessageId === null && isLatestMessageFromFriend) ||
+    (myLastReadMessageId === null &&
+      latestMessage?.id &&
+      isLatestMessageFromFriend) ||
     (myLastReadMessageId &&
       latestMessage?.id &&
+      isLatestMessageFromFriend &&
       myLastReadMessageId < latestMessage?.id);
 
   console.log(friend?.display_name, isUnread);
