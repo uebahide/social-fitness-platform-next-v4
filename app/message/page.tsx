@@ -109,7 +109,9 @@ export default async function MessagePage({
     roomIds.map(async (roomId) => {
       const { data, error } = await supabase
         .from("messages")
-        .select("*")
+        .select(
+          "*, user:profiles(id, display_name, email, image_path, created_at)",
+        )
         .eq("room_id", roomId)
         .order("created_at", { ascending: false })
         .limit(1);
