@@ -171,6 +171,7 @@ export async function updateReaction(
   const supabase = await createClient();
   const reactionId = formData.get("reactionId") as string;
   const reaction = formData.get("reaction") as string;
+  console.log("updating reaction", reactionId, reaction);
 
   const { error } = await supabase
     .from("message_reactions")

@@ -20,6 +20,26 @@ const initialState: MessageState = {
   myLastReadMessageIdsByRoom: {},
 };
 
+const findMessageLocationByReaction = (
+  messagesByRoom: Record<number, Message[]>,
+  reaction: MessageReaction,
+) => {
+  for (const [roomId, messages] of Object.entries(messagesByRoom)) {
+    const messageIndex = messages.findIndex(
+      (message) => message.id === reaction.message_id,
+    );
+
+    if (messageIndex !== -1) {
+      return {
+        roomId: Number(roomId),
+        messageIndex,
+      };
+    }
+  }
+
+  return null;
+};
+
 const messageSlice = createSlice({
   name: "message",
   initialState,
@@ -88,23 +108,54 @@ const messageSlice = createSlice({
     },
     insertReaction: (state, action: PayloadAction<MessageReaction>) => {
       const reaction = action.payload;
-      const current = state.messagesByRoom[reaction.message_id] ?? [];
-      const index = current.findIndex((item) => item.id === reaction.id);
-      if (index !== -1) {
-        current[index].reactions.push(reaction);
-        state.messagesByRoom[reaction.message_id] = current;
+      const location = findMessageLocationByReaction(
+        state.messagesByRoom,
+        reaction,
+      );
+
+      if (!location) return;
+
+      const message =
+        state.messagesByRoom[location.roomId][location.messageIndex];
+      const alreadyExists = message.reactions.some(
+        (item) => item.id === reaction.id,
+      );
+
+      if (!alreadyExists) {
+        message.reactions.push(reaction);
       }
     },
     updateReaction: (state, action: PayloadAction<MessageReaction>) => {
       const reaction = action.payload;
-      const current = state.messagesByRoom[reaction.message_id] ?? [];
-      const index = current.findIndex((item) => item.id === reaction.id);
-      if (index !== -1) {
-        current[index].reactions = current[index].reactions.map((item) =>
-          item.id === reaction.id ? reaction : item,
-        );
-        state.messagesByRoom[reaction.message_id] = current;
-      }
+      const location = findMessageLocationByReaction(
+        state.messagesByRoom,
+        reaction,
+      );
+
+      if (!location) return;
+
+      const message =
+        state.messagesByRoom[location.roomId][location.messageIndex];
+      message.reactions = message.reactions.map((item) =>
+        item.id === reaction.id ? reaction : item,
+      );
+    },
+
+    deleteReaction: (state, action: PayloadAction<MessageReaction>) => {
+      const reaction = action.payload;
+      const location = findMessageLocationByReaction(
+        state.messagesByRoom,
+        reaction,
+      );
+
+      if (!location) return;
+
+      const message =
+        state.messagesByRoom[location.roomId][location.messageIndex];
+      message.reactions = message.reactions.filter(
+        (item) => item.id !== reaction.id,
+      );
+      state.latestMessagesByRoom[location.roomId] = message;
     },
     setMyLastReadMessageId: (
       state,
@@ -128,6 +179,7 @@ export const {
   updateMessage,
   insertReaction,
   updateReaction,
+  deleteReaction,
   setMyLastReadMessageId,
 } = messageSlice.actions;
 

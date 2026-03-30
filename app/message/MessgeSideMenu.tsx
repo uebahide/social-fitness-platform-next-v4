@@ -4,9 +4,11 @@ import { cn } from "@/lib/utils";
 import { MessageMenu } from "./MessageMenu";
 import { ReactionMenu } from "./ReactionMenu";
 import { ReplyIcon } from "lucide-react";
+import { useUser } from "@/contexts/UserProvider";
 
 export const MessageSideMenu = ({ message }: { message: Message }) => {
   const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
+  const { user } = useUser();
 
   return (
     <ul
@@ -20,10 +22,11 @@ export const MessageSideMenu = ({ message }: { message: Message }) => {
       <li className="flex items-center justify-center hover:bg-gray-200 rounded-full p-1 w-8 h-8">
         <MessageMenu message={message} />
       </li>
-      <li className="flex items-center justify-center hover:bg-gray-200 rounded-full p-1 w-8 h-8">
+      <li className="relative flex items-center justify-center hover:bg-gray-200 rounded-full p-1 w-8 h-8">
         <ReactionMenu
           setIsSubMenuOpen={setIsSubMenuOpen}
-          messageId={message.id}
+          message={message}
+          isMyMessage={message.user_id === user?.id}
         />
       </li>
       <li className="flex items-center justify-center hover:bg-gray-200 rounded-full p-1 w-8 h-8">
