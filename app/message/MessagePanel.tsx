@@ -33,7 +33,8 @@ export const MessagePanel = () => {
         .select(
           "*, user:profiles(id, display_name, email, image_path, created_at), reactions:message_reactions(*)",
         )
-        .eq("room_id", selectedRoomId as number);
+        .eq("room_id", selectedRoomId as number)
+        .order("created_at", { ascending: true });
 
       if (error) {
         console.error(error);

@@ -16,7 +16,7 @@ export const useAutoScrollDown = (deps: DependencyList) => {
     requestAnimationFrame(() => {
       el.scrollTop = el.scrollHeight;
     });
-  }, [deps]);
+  }, deps);
 
   return { containerRef };
 };
