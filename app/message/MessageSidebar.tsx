@@ -109,9 +109,7 @@ const RoomListItem = ({ room }: { room: Room }) => {
     >
       <Avatar size="small" user={friend} />
       <section className="flex flex-col gap-1 w-full">
-        <h3 className="text-xs font-medium bg-amber-400">
-          {friend?.display_name}
-        </h3>
+        <h3 className="text-xs font-medium">{friend?.display_name}</h3>
         <p className="text-xs text-gray-500">{latestMessagePreview}</p>
         {isUnread && (
           <span className="rounded-full bg-purple-500 w-2 h-2 inline-block self-end" />
