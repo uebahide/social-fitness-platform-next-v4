@@ -3,21 +3,20 @@ import { Room } from "@/types/api/message";
 import { FaceIcon } from "@radix-ui/react-icons";
 import { ImageIcon, SendIcon, XIcon } from "lucide-react";
 import {
-  RefObject,
   SetStateAction,
   startTransition,
   useActionState,
-  useEffect,
   useRef,
   useState,
 } from "react";
 import { sendMessage } from "./action";
-import EmojiPicker from "emoji-picker-react";
+import { EmojiClickData } from "emoji-picker-react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/contexts/UserProvider";
 import { useSelector } from "react-redux";
 import { selectSelectedRoom } from "@/lib/redux/features/message/messageSelector";
+import { EmojiPickerButton } from "@/components/buttons/EmojiPickerButton";
 
 type SelectedImage = {
   id: string;
@@ -28,11 +27,9 @@ export const MessageInput = () => {
   const selectedRoom = useSelector(selectSelectedRoom) as Room;
   const [message, setMessage] = useState("");
   const [images, setImages] = useState<SelectedImage[]>([]);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const { user } = useUser();
   const supabase = createClient();
   const formRef = useRef<HTMLFormElement | null>(null);
-  const emojiPickerRef = useRef<HTMLDivElement | null>(null);
   const [, formAction] = useActionState(sendMessage, {
     errors: {},
     message: "",
@@ -42,23 +39,6 @@ export const MessageInput = () => {
   const formData = new FormData();
   formData.append("message", message);
   formData.append("roomId", String(selectedRoom.id));
-
-  //handle click outside emoji picker
-  useEffect(() => {
-    if (!showEmojiPicker) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        emojiPickerRef.current &&
-        !emojiPickerRef.current.contains(event.target as Node)
-      ) {
-        setShowEmojiPicker(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showEmojiPicker]);
 
   //handle images upload to supabase
   const handleImagesUploadToSupabase = async (
@@ -119,7 +99,6 @@ export const MessageInput = () => {
 
     setMessage("");
     setImages([]);
-    setShowEmojiPicker(false);
   };
 
   //handle key down
@@ -148,12 +127,13 @@ export const MessageInput = () => {
 
         <div className="flex w-full min-w-0 items-end justify-between gap-2">
           <EmojiPickerButton
-            emojiPickerRef={emojiPickerRef}
-            setShowEmojiPicker={setShowEmojiPicker}
-            showEmojiPicker={showEmojiPicker}
-            setMessage={setMessage}
-            message={message}
-          />
+            onEmojiClick={(emojiObject: EmojiClickData) => {
+              setMessage(message + emojiObject.emoji);
+            }}
+            pickerClassName="absolute bottom-12 left-0"
+          >
+            <FaceIcon className="hover:scale-110 transition-all duration-300 size-6 pb-1" />
+          </EmojiPickerButton>
 
           <MessageTextarea
             message={message}
@@ -231,39 +211,6 @@ export const MessageTextarea = ({
       onKeyDown={handleKeyDown}
       className="block max-h-15 min-h-[24px] min-w-0 flex-1 resize-none overflow-y-auto break-all bg-transparent leading-6 whitespace-pre-wrap focus:outline-none"
     />
-  );
-};
-
-export const EmojiPickerButton = ({
-  emojiPickerRef,
-  setShowEmojiPicker,
-  showEmojiPicker,
-  setMessage,
-  message,
-}: {
-  emojiPickerRef: RefObject<HTMLDivElement | null>;
-  setShowEmojiPicker: (value: SetStateAction<boolean>) => void;
-  showEmojiPicker: boolean;
-  setMessage: (value: string) => void;
-  message: string;
-}) => {
-  return (
-    <div ref={emojiPickerRef}>
-      <FaceIcon
-        className="h-5 w-5 cursor-pointer hover:scale-110 transition-all duration-300 pb-1"
-        onClick={() => setShowEmojiPicker((prev) => !prev)}
-      />
-      {showEmojiPicker && (
-        <div className="absolute bottom-12 left-0">
-          <EmojiPicker
-            onEmojiClick={(emojiObject) => {
-              setMessage(message + emojiObject.emoji);
-              setShowEmojiPicker(false);
-            }}
-          />
-        </div>
-      )}
-    </div>
   );
 };
 

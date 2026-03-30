@@ -1,14 +1,13 @@
 import { startTransition, useEffect, useRef, useState } from "react";
-import {
-  EmojiPickerButton,
-  MessageSubmitButton,
-  MessageTextarea,
-} from "./MessageInput";
+import { MessageSubmitButton, MessageTextarea } from "./MessageInput";
+
 import { useMessageEditor } from "@/contexts/MessageEditorProvider";
 import { CheckIcon, XIcon } from "lucide-react";
 import { useActionState } from "react";
 import { editTextMessage } from "./action";
-
+import { EmojiPickerButton } from "@/components/buttons/EmojiPickerButton";
+import { EmojiClickData } from "emoji-picker-react";
+import { FaceIcon } from "@radix-ui/react-icons";
 export const MessageEditInput = () => {
   const formRef = useRef<HTMLFormElement | null>(null);
   const emojiPickerRef = useRef<HTMLDivElement | null>(null);
@@ -87,12 +86,13 @@ export const MessageEditInput = () => {
       >
         <div className="flex w-full min-w-0 items-end justify-between gap-2">
           <EmojiPickerButton
-            emojiPickerRef={emojiPickerRef}
-            setShowEmojiPicker={setShowEmojiPicker}
-            showEmojiPicker={showEmojiPicker}
-            setMessage={setMessage}
-            message={message}
-          />
+            onEmojiClick={(emojiObject: EmojiClickData) => {
+              setMessage(message + emojiObject.emoji);
+            }}
+            pickerClassName="absolute bottom-12 left-0"
+          >
+            <FaceIcon />
+          </EmojiPickerButton>
 
           <MessageTextarea
             message={message}
