@@ -2,27 +2,29 @@
 
 import { useEffect, useEffectEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { Message } from "@/types/api/message";
 import { RealtimeChannel } from "@supabase/supabase-js";
-import { roomUser } from "@/types/api/roomUser";
+import { MessageReaction } from "@/types/api/messageReactions";
 
 type RealtimeSubscribeCallback = NonNullable<
   Parameters<RealtimeChannel["subscribe"]>[0]
 >;
 type RealtimeSubscribeStatus = Parameters<RealtimeSubscribeCallback>[0];
 
-type BroadcastReadUpdatePayload = {
+type BroadcastReactionChangedPayload = {
   payload: {
-    record: roomUser;
-    old_record: roomUser | null;
+    record: MessageReaction;
   };
-  eventType: string;
+  eventType: "INSERT" | "UPDATE" | "DELETE";
 };
 
-export function useRealtimeReadStatus(
+export function useRealtimeMessageReactions(
   roomIds: string | string[] | null,
-  onReadUpdate: (roomUser: roomUser) => void,
+  onReactionInsert: (newReaction: MessageReaction) => void,
+  onReactionUpdate: (updatedReaction: MessageReaction) => void,
 ) {
-  const handleReadUpdate = useEffectEvent(onReadUpdate);
+  const handleReactionInsert = useEffectEvent(onReactionInsert);
+  const handleReactionUpdate = useEffectEvent(onReactionUpdate);
 
   useEffect(() => {
     const normalizedRoomIds = Array.isArray(roomIds)
@@ -44,19 +46,32 @@ export function useRealtimeReadStatus(
 
       normalizedRoomIds.forEach((roomId) => {
         const channel = supabase
-          .channel(`channel:${roomId}:read_status`, {
+          .channel(`channel:${roomId}:reactions`, {
             config: { private: true },
           })
           .on(
             "broadcast",
-            { event: "READ_UPDATE" },
-            (payload: BroadcastReadUpdatePayload) => {
-              console.log("payload", payload);
-              handleReadUpdate(payload.payload.record);
+            { event: "INSERT" },
+            (payload: BroadcastReactionChangedPayload) => {
+              handleReactionInsert(payload.payload.record as MessageReaction);
+            },
+          )
+          .on(
+            "broadcast",
+            { event: "UPDATE" },
+            (payload: BroadcastReactionChangedPayload) => {
+              handleReactionUpdate(payload.payload.record as MessageReaction);
+            },
+          )
+          .on(
+            "broadcast",
+            { event: "DELETE" },
+            (payload: BroadcastReactionChangedPayload) => {
+              handleReactionUpdate(payload.payload.record as MessageReaction);
             },
           )
           .subscribe((status: RealtimeSubscribeStatus) => {
-            console.log(`Read realtime status [room ${roomId}]:`, status);
+            console.log(`Realtime status [room ${roomId}]:`, status);
           });
 
         channels.push(channel);

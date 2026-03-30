@@ -13,12 +13,16 @@ import {
   updateMessage,
   setMyLastReadMessageId,
   setLatestMessagesByRoom,
+  insertReaction,
+  updateReaction,
 } from "@/lib/redux/features/message/messageSlice";
 import { getUserById } from "@/lib/client/getUserById";
 import { roomUser } from "@/types/api/roomUser";
 import { useLastReadMessageId } from "@/contexts/LastReadMessageIdProvider";
 import { useRealtimeReadStatus } from "@/hooks/useRealtimeReadStatus";
 import { useUser } from "@/contexts/UserProvider";
+import { MessageReaction } from "@/types/api/messageReactions";
+import { useRealtimeMessageReactions } from "@/hooks/useRealtimeMessageReactions";
 
 export const MessageClient = ({
   rooms,
@@ -116,7 +120,22 @@ export const MessageClient = ({
     }
   };
 
-  useRealtimeReadStatus(roomIds, onReadUpdate);
+  useRealtimeReadStatus(realtimeRoomIds, onReadUpdate);
+
+  // realtime update reaction
+  const onReactionInsert = (reaction: MessageReaction) => {
+    dispatch(insertReaction(reaction));
+  };
+
+  const onReactionUpdate = (reaction: MessageReaction) => {
+    dispatch(updateReaction(reaction));
+  };
+
+  useRealtimeMessageReactions(
+    realtimeRoomIds,
+    onReactionInsert,
+    onReactionUpdate,
+  );
 
   return (
     <div className="grid min-w-0 grid-cols-[4fr_9fr]">

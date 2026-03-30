@@ -1,4 +1,5 @@
 import { Message, Room } from "@/types/api/message";
+import { MessageReaction } from "@/types/api/messageReactions";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 type MessageState = {
@@ -85,6 +86,26 @@ const messageSlice = createSlice({
       }
       state.latestMessagesByRoom[message.room_id] = message;
     },
+    insertReaction: (state, action: PayloadAction<MessageReaction>) => {
+      const reaction = action.payload;
+      const current = state.messagesByRoom[reaction.message_id] ?? [];
+      const index = current.findIndex((item) => item.id === reaction.id);
+      if (index !== -1) {
+        current[index].reactions.push(reaction);
+        state.messagesByRoom[reaction.message_id] = current;
+      }
+    },
+    updateReaction: (state, action: PayloadAction<MessageReaction>) => {
+      const reaction = action.payload;
+      const current = state.messagesByRoom[reaction.message_id] ?? [];
+      const index = current.findIndex((item) => item.id === reaction.id);
+      if (index !== -1) {
+        current[index].reactions = current[index].reactions.map((item) =>
+          item.id === reaction.id ? reaction : item,
+        );
+        state.messagesByRoom[reaction.message_id] = current;
+      }
+    },
     setMyLastReadMessageId: (
       state,
       action: PayloadAction<{ roomId: number; messageId: number }>,
@@ -105,6 +126,8 @@ export const {
   setRoomMessages,
   insertMessage,
   updateMessage,
+  insertReaction,
+  updateReaction,
   setMyLastReadMessageId,
 } = messageSlice.actions;
 
