@@ -62,6 +62,7 @@ export const ReactionMenu = ({
 
   return (
     <EmojiPickerButton
+      selectedEmoji={myReaction?.reaction}
       onEmojiClick={onSelectEmoji}
       closeOnEmojiClick={true}
       reactionsDefaultOpen={true}

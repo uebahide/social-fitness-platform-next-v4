@@ -156,7 +156,6 @@ const messageSlice = createSlice({
       message.reactions = message.reactions.filter(
         (item) => item.id !== reaction.id,
       );
-      state.latestMessagesByRoom[location.roomId] = message;
     },
     setMyLastReadMessageId: (
       state,

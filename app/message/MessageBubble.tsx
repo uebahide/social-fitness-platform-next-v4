@@ -1,3 +1,4 @@
+import { useUser } from "@/contexts/UserProvider";
 import { cn } from "@/lib/utils";
 import { Message } from "@/types/api/message";
 import Image from "next/image";
@@ -35,15 +36,24 @@ export const MessageBubble = ({
 };
 
 const ImageMessageBubble = ({ message }: { message: Message }) => {
+  const isMyMessage = message.user_id === useUser().user?.id;
+  const withReactions = message.reactions.length > 0;
   return (
-    <Image
-      src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${message.image_path}`}
-      alt="image"
-      width={200}
-      height={200}
-      className="rounded-sm"
-      unoptimized
-    />
+    <div className={cn("relative", withReactions && "py-3 pt-0")}>
+      <Image
+        src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${message.image_path}`}
+        alt="image"
+        width={200}
+        height={200}
+        className="rounded-sm "
+        unoptimized
+      />
+      <ReactionBubble
+        message={message}
+        isMyMessage={isMyMessage}
+        className="bottom-0 "
+      />
+    </div>
   );
 };
 
@@ -60,9 +70,11 @@ const DeletedMessageBubble = ({ message }: { message: Message }) => {
 const ReactionBubble = ({
   message,
   isMyMessage,
+  className,
 }: {
   message: Message;
   isMyMessage: boolean;
+  className?: string;
 }) => {
   const isDeleted = message.deleted;
   if (!isDeleted && message.reactions?.length > 0) {
@@ -71,6 +83,7 @@ const ReactionBubble = ({
         className={cn(
           "absolute flex items-center rounded-full bg-gray-400 px-1 border border-white bottom-10",
           isMyMessage ? "right-0" : "left-0",
+          className,
         )}
       >
         {message.reactions?.length > 0 &&

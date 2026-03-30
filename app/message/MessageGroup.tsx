@@ -32,9 +32,11 @@ export const MessageGroup = ({ message }: { message: Message }) => {
     );
   }
   return (
-    <section className="flex items-end justify-start gap-2 min-w-0 group">
-      <Avatar size="xsmall" user={message.user} />
-      <MessageBubble message={message} isMyMessage={false} />
+    <section className="flex items-center justify-start gap-2 min-w-0 group">
+      <div className="flex items-end gap-2">
+        <Avatar size="xsmall" user={message.user} />
+        <MessageBubble message={message} isMyMessage={false} />
+      </div>
       {!isDeleted && <MessageSideMenu message={message} />}
     </section>
   );
