@@ -9,6 +9,7 @@ import { useUser } from "@/contexts/UserProvider";
 export const MessageSideMenu = ({ message }: { message: Message }) => {
   const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
   const { user } = useUser();
+  const isMyMessage = message.user_id === user?.id;
 
   return (
     <ul
@@ -19,14 +20,16 @@ export const MessageSideMenu = ({ message }: { message: Message }) => {
           : "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto",
       )}
     >
-      <li className="flex items-center justify-center hover:bg-gray-200 rounded-full p-1 w-8 h-8">
-        <MessageMenu message={message} />
-      </li>
+      {isMyMessage && (
+        <li className="flex items-center justify-center hover:bg-gray-200 rounded-full p-1 w-8 h-8">
+          <MessageMenu message={message} />
+        </li>
+      )}
       <li className="relative flex items-center justify-center hover:bg-gray-200 rounded-full p-1 w-8 h-8">
         <ReactionMenu
           setIsSubMenuOpen={setIsSubMenuOpen}
           message={message}
-          isMyMessage={message.user_id === user?.id}
+          isMyMessage={isMyMessage}
         />
       </li>
       <li className="flex items-center justify-center hover:bg-gray-200 rounded-full p-1 w-8 h-8">
