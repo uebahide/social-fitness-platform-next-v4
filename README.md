@@ -159,6 +159,12 @@ supabase db reset
 
 This applies all files in `supabase/migrations` and then runs `supabase/seed.sql`.
 
+To apply bucket definitions from `supabase/config.toml` locally as well:
+
+```bash
+supabase seed buckets --local
+```
+
 ### 3) Copy local Supabase credentials into `.env.local`
 
 Run:
@@ -256,6 +262,7 @@ If you want to rebuild the local dataset from scratch later, rerun:
 
 ```bash
 supabase db reset
+supabase seed buckets --local
 npm run seed:users
 npm run seed:friends
 npm run seed:activities
