@@ -2,16 +2,16 @@
 
 import { createContext, useContext, useState } from "react";
 
-type LastReadMessageIdContextType = {
+type FriendLastReadMessageIdContextType = {
   friendLastReadMessageId: number | null;
   setFriendLastReadMessageId: (friendLastReadMessageId: number | null) => void;
 };
 
-const LastReadMessageIdContext = createContext<
-  LastReadMessageIdContextType | undefined
+const FriendLastReadMessageIdContext = createContext<
+  FriendLastReadMessageIdContextType | undefined
 >(undefined);
 
-export const LastReadMessageIdProvider = ({
+export const FriendLastReadMessageIdProvider = ({
   children,
 }: {
   children: React.ReactNode;
@@ -21,19 +21,19 @@ export const LastReadMessageIdProvider = ({
   >(null);
 
   return (
-    <LastReadMessageIdContext.Provider
+    <FriendLastReadMessageIdContext.Provider
       value={{ friendLastReadMessageId, setFriendLastReadMessageId }}
     >
       {children}
-    </LastReadMessageIdContext.Provider>
+    </FriendLastReadMessageIdContext.Provider>
   );
 };
 
 export const useLastReadMessageId = () => {
-  const context = useContext(LastReadMessageIdContext);
+  const context = useContext(FriendLastReadMessageIdContext);
   if (!context)
     throw new Error(
-      "useLastReadMessageId must be used within LastReadMessageIdProvider",
+      "useFriendLastReadMessageId must be used within FriendLastReadMessageIdProvider",
     );
   return context;
 };

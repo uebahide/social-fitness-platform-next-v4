@@ -1,4 +1,4 @@
-import { useLastReadMessageId } from "@/contexts/LastReadMessageIdProvider";
+import { useLastReadMessageId } from "@/contexts/FriendLastReadMessageIdProvider";
 import { useUser } from "@/contexts/UserProvider";
 import { Message } from "@/types/api/message";
 import { Avatar } from "@/components/Avatar";
@@ -35,6 +35,7 @@ export const MessageGroup = ({ message }: { message: Message }) => {
     <section className="flex items-end justify-start gap-2 min-w-0 group">
       <Avatar size="xsmall" user={message.user} />
       <MessageBubble message={message} isMyMessage={false} />
+      {!isDeleted && <MessageSideMenu message={message} />}
     </section>
   );
 };

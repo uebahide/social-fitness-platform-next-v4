@@ -2,7 +2,7 @@ import { MessageClient } from "./MessageClient";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
 import { Room } from "@/types/api/message";
-import { LastReadMessageIdProvider } from "@/contexts/LastReadMessageIdProvider";
+import { FriendLastReadMessageIdProvider } from "@/contexts/FriendLastReadMessageIdProvider";
 import { MessageEditorProvider } from "@/contexts/MessageEditorProvider";
 
 export default async function MessagePage({
@@ -125,14 +125,14 @@ export default async function MessagePage({
 
   return (
     <MessageEditorProvider>
-      <LastReadMessageIdProvider>
+      <FriendLastReadMessageIdProvider>
         <MessageClient
           myLastReadMessageIdsByRoom={myLastReadMessageIdsByRoom}
           latestMessagesByRoom={latestMessagesByRoom}
           rooms={rooms as Room[]}
           friendId={friendId}
         />
-      </LastReadMessageIdProvider>
+      </FriendLastReadMessageIdProvider>
     </MessageEditorProvider>
   );
 }

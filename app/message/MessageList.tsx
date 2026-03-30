@@ -7,7 +7,7 @@ import {
   selectSelectedRoomMessages,
 } from "@/lib/redux/features/message/messageSelector";
 import { createClient } from "@/lib/supabase/client";
-import { useLastReadMessageId } from "@/contexts/LastReadMessageIdProvider";
+import { useLastReadMessageId } from "@/contexts/FriendLastReadMessageIdProvider";
 import { useAutoScrollDown } from "@/hooks/useAutoScrollDownByProps";
 import { setMyLastReadMessageId } from "@/lib/redux/features/message/messageSlice";
 import { Room } from "@/types/api/message";
