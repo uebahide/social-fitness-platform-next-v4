@@ -7,9 +7,11 @@ import {
   selectSelectedRoomMessages,
 } from "@/lib/redux/features/message/messageSelector";
 import { createClient } from "@/lib/supabase/client";
-import { useLastReadMessageId } from "@/contexts/FriendLastReadMessageIdProvider";
 import { useAutoScrollDown } from "@/hooks/useAutoScrollDownByProps";
-import { setMyLastReadMessageId } from "@/lib/redux/features/message/messageSlice";
+import {
+  setFriendLastReadMessageId,
+  setMyLastReadMessageId,
+} from "@/lib/redux/features/message/messageSlice";
 import { Room } from "@/types/api/message";
 import { MessageGroup } from "./MessageGroup";
 export const MessageList = () => {
@@ -22,7 +24,6 @@ export const MessageList = () => {
     selectedRoomId,
   ]);
   const selectedRoom = useSelector(selectSelectedRoom) as Room;
-  const { setFriendLastReadMessageId } = useLastReadMessageId();
 
   const user = useUser();
 
@@ -44,16 +45,15 @@ export const MessageList = () => {
         console.error(error);
         return;
       }
-      setFriendLastReadMessageId(data.last_read_message_id);
+      dispatch(
+        setFriendLastReadMessageId({
+          roomId: selectedRoomId,
+          messageId: data.last_read_message_id ?? 0,
+        }),
+      );
     };
     void fetchFriendLastReadMessageId();
-  }, [
-    selectedRoomId,
-    user?.user?.id,
-    supabase,
-    setFriendLastReadMessageId,
-    selectedRoom,
-  ]);
+  }, [selectedRoomId, user?.user?.id, supabase, dispatch, selectedRoom]);
 
   // sync my last read status when the room is selected or receive a new message
   useEffect(() => {

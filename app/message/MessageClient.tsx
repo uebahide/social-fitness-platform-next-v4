@@ -12,6 +12,7 @@ import {
   setSelectedRoom,
   updateMessage,
   setMyLastReadMessageId,
+  setFriendLastReadMessageId,
   setLatestMessagesByRoom,
   insertReaction,
   updateReaction,
@@ -19,7 +20,6 @@ import {
 } from "@/lib/redux/features/message/messageSlice";
 import { getUserById } from "@/lib/client/getUserById";
 import { roomUser } from "@/types/api/roomUser";
-import { useLastReadMessageId } from "@/contexts/FriendLastReadMessageIdProvider";
 import { useRealtimeReadStatus } from "@/hooks/useRealtimeReadStatus";
 import { useUser } from "@/contexts/UserProvider";
 import { MessageReaction } from "@/types/api/messageReactions";
@@ -29,6 +29,7 @@ export const MessageClient = ({
   rooms,
   friendId,
   myLastReadMessageIdsByRoom,
+  friendLastReadMessageIdsByRoom,
   latestMessagesByRoom,
 }: {
   rooms: Room[];
@@ -37,10 +38,13 @@ export const MessageClient = ({
     room_id: number;
     last_read_message_id: number;
   }[];
+  friendLastReadMessageIdsByRoom: {
+    room_id: number;
+    last_read_message_id: number;
+  }[];
   latestMessagesByRoom: Record<number, Message>;
 }) => {
   const dispatch = useDispatch();
-  const { setFriendLastReadMessageId } = useLastReadMessageId();
   const user = useUser();
   const roomIds = useMemo(() => rooms.map((room) => room.id), [rooms]);
   const realtimeRoomIds = useMemo(
@@ -87,6 +91,18 @@ export const MessageClient = ({
     });
   }, [dispatch, myLastReadMessageIdsByRoom]);
 
+  // set friend last read message id for each room in redux
+  useEffect(() => {
+    friendLastReadMessageIdsByRoom.forEach((item) => {
+      dispatch(
+        setFriendLastReadMessageId({
+          roomId: item.room_id,
+          messageId: item.last_read_message_id ?? 0,
+        }),
+      );
+    });
+  }, [dispatch, friendLastReadMessageIdsByRoom]);
+
   // ensure room load statuses in redux
   useEffect(() => {
     dispatch(ensureRoomLoadStatuses(roomIds));
@@ -118,7 +134,12 @@ export const MessageClient = ({
   // realtime update read status
   const onReadUpdate = (roomUser: roomUser) => {
     if (roomUser.user_id !== user.user?.id) {
-      setFriendLastReadMessageId(roomUser.last_read_message_id);
+      dispatch(
+        setFriendLastReadMessageId({
+          roomId: roomUser.room_id,
+          messageId: roomUser.last_read_message_id ?? 0,
+        }),
+      );
     }
   };
 

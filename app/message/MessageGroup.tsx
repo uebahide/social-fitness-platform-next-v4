@@ -1,19 +1,25 @@
-import { useLastReadMessageId } from "@/contexts/FriendLastReadMessageIdProvider";
 import { useUser } from "@/contexts/UserProvider";
 import { Message } from "@/types/api/message";
 import { Avatar } from "@/components/Avatar";
 import { MessageSideMenu } from "./MessgeSideMenu";
 import { MessageBubble } from "./MessageBubble";
+import { selectFriendLastReadMessageIdByRoom } from "@/lib/redux/features/message/messageSelector";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/redux/store";
 
 export const MessageGroup = ({ message }: { message: Message }) => {
   const { user } = useUser();
-  const { friendLastReadMessageId } = useLastReadMessageId();
+  const friendLastReadMessageId = useSelector((state: RootState) =>
+    selectFriendLastReadMessageIdByRoom(state, message.room_id),
+  );
 
   const isMyMessage = message.user_id === user?.id;
   const isDeleted = message.deleted;
   const isEdited = message.updated_at;
   const isSeen =
-    friendLastReadMessageId && friendLastReadMessageId >= message.id;
+    friendLastReadMessageId !== 0 &&
+    friendLastReadMessageId &&
+    friendLastReadMessageId >= message.id;
 
   if (isMyMessage) {
     return (

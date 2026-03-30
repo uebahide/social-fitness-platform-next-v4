@@ -37,3 +37,10 @@ export const selectMyLastReadMessageIdByRoom = (
 ) => {
   return state.message.myLastReadMessageIdsByRoom[roomId] ?? null;
 };
+
+export const selectFriendLastReadMessageIdByRoom = (
+  state: RootState,
+  roomId: number,
+) => {
+  return state.message.friendLastReadMessageIdsByRoom[roomId] ?? null;
+};

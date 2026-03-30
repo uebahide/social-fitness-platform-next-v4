@@ -9,6 +9,7 @@ type MessageState = {
   latestMessagesByRoom: Record<number, Message | null>;
   loadStatusByRoom: Record<number, "idle" | "loading" | "loaded" | "error">;
   myLastReadMessageIdsByRoom: Record<number, number | null>;
+  friendLastReadMessageIdsByRoom: Record<number, number | null>;
 };
 
 const initialState: MessageState = {
@@ -18,6 +19,7 @@ const initialState: MessageState = {
   latestMessagesByRoom: {},
   loadStatusByRoom: {},
   myLastReadMessageIdsByRoom: {},
+  friendLastReadMessageIdsByRoom: {},
 };
 
 const findMessageLocationByReaction = (
@@ -164,6 +166,13 @@ const messageSlice = createSlice({
       state.myLastReadMessageIdsByRoom[action.payload.roomId] =
         action.payload.messageId;
     },
+    setFriendLastReadMessageId: (
+      state,
+      action: PayloadAction<{ roomId: number; messageId: number }>,
+    ) => {
+      state.friendLastReadMessageIdsByRoom[action.payload.roomId] =
+        action.payload.messageId;
+    },
   },
 });
 
@@ -181,6 +190,7 @@ export const {
   updateReaction,
   deleteReaction,
   setMyLastReadMessageId,
+  setFriendLastReadMessageId,
 } = messageSlice.actions;
 
 export default messageSlice.reducer;

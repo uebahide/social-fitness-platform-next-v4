@@ -67,11 +67,17 @@ const RoomListItem = ({ room }: { room: Room }) => {
   const isLatestMessageFromFriend = latestMessage?.user_id === friend?.id;
   const isDeleted = latestMessage?.deleted;
   const isImage = latestMessage?.type === "image";
+
   const isUnread =
-    myLastReadMessageId &&
-    latestMessage?.id &&
-    isLatestMessageFromFriend &&
-    myLastReadMessageId < latestMessage?.id;
+    (myLastReadMessageId === null && isLatestMessageFromFriend) ||
+    (myLastReadMessageId &&
+      latestMessage?.id &&
+      myLastReadMessageId < latestMessage?.id);
+
+  console.log(friend?.display_name, isUnread);
+  console.log(myLastReadMessageId);
+  console.log(latestMessage?.id);
+  console.log(isLatestMessageFromFriend);
 
   const latestMessagePreview = isDeleted ? (
     <span className="italic text-[11px]">This message has been unsent</span>
