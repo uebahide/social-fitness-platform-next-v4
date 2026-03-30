@@ -4,7 +4,6 @@ import { ActivityType } from "@/types/api/activity";
 
 export const FriendActivity = async () => {
   const friendsActivities = await getFriendsActivities();
-  console.log("friendsActivities", friendsActivities);
   return (
     <section className="col-span-1 row-span-2">
       <header>

@@ -1,93 +1,80 @@
-import { useEffect, useState } from "react";
 import { MessageList } from "./MessageList";
-import { Message, Room } from "@/types/api/message";
+import { Room } from "@/types/api/message";
 import { ChatHeader } from "./ChatHeader";
 import { MessageInput } from "./MessageInput";
+import { useMessageEditor } from "@/contexts/MessageEditorProvider";
+import { MessageEditInput } from "./MessageEditInput";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  selectRoomLoadStatus,
+  selectSelectedRoom,
+  selectSelectedRoomId,
+} from "@/lib/redux/features/message/messageSelector";
+import { useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { RootState } from "@/lib/redux/store";
+import { setRoomLoaded } from "@/lib/redux/features/message/messageSlice";
 
-export const MessagePanel = ({
-  selectedRoom,
-  realtimeMessages,
-}: {
-  selectedRoom: Room | null;
-  realtimeMessages: Message[];
-}) => {
-  const [messages, setMessages] = useState<Message[]>([]);
+export const MessagePanel = () => {
+  const { selectedMessage } = useMessageEditor();
+  const selectedRoom = useSelector(selectSelectedRoom) as Room | null;
+  const dispatch = useDispatch();
+  const supabase = createClient();
+  const selectedRoomId = useSelector(selectSelectedRoomId);
+  const roomLoadStatus = useSelector((state: RootState) =>
+    selectRoomLoadStatus(state, selectedRoomId as number),
+  );
 
+  // fetch messages when the room is selected
   useEffect(() => {
-    if (!selectedRoom) {
-      setMessages([]);
-      return;
-    }
-
-    let isActive = true;
-
     const fetchMessages = async () => {
-      const supabase = createClient();
-      const { data: messages, error: messagesError } = await supabase
+      const { data, error } = await supabase
         .from("messages")
-        .select("*")
-        .eq("room_id", selectedRoom.id);
+        .select(
+          "*, user:profiles(id, display_name, email, image_path, created_at), reactions:message_reactions(*)",
+        )
+        .eq("room_id", selectedRoomId as number)
+        .order("created_at", { ascending: true });
 
-      if (messagesError) {
-        throw new Error(
-          `Error while fetching messages: ${messagesError.message}`,
-        );
+      if (error) {
+        console.error(error);
+        return;
       }
 
-      if (!isActive) return;
-
-      setMessages((prev) => {
-        const merged = [...(messages ?? [])];
-
-        prev.forEach((message) => {
-          if (!merged.some((item) => item.id === message.id)) {
-            merged.push(message);
-          }
-        });
-
-        return merged;
-      });
-    };
-
-    setMessages([]);
-    void fetchMessages();
-
-    return () => {
-      isActive = false;
-    };
-  }, [selectedRoom]);
-
-  useEffect(() => {
-    if (!selectedRoom || realtimeMessages.length === 0) return;
-
-    setMessages((prev) => {
-      const newMessages = realtimeMessages.filter(
-        (message) =>
-          message.room_id === selectedRoom.id &&
-          !prev.some((prevMessage) => prevMessage.id === message.id),
+      dispatch(
+        setRoomLoaded({
+          roomId: selectedRoomId as number,
+          messages: data ?? [],
+        }),
       );
+    };
 
-      if (newMessages.length === 0) return prev;
-      return [...prev, ...newMessages];
-    });
-  }, [realtimeMessages, selectedRoom]);
+    if (roomLoadStatus === "idle") {
+      fetchMessages();
+    }
+  }, [roomLoadStatus, selectedRoomId, dispatch, supabase]);
 
   return (
-    <div className="bg-card flex w-full flex-col rounded-r-sm border border-gray-200">
+    <div className="bg-card flex min-w-0 w-full flex-col rounded-r-sm border border-gray-200">
       {!selectedRoom ? (
-        <div className="flex h-[calc(100vh-95px)] flex-col items-center justify-center gap-4">
-          <h1 className="text-center text-sm font-medium text-gray-500">
-            Select a message room to start chatting
-          </h1>
-        </div>
+        <EmptyMessagePanel />
       ) : (
         <>
-          <ChatHeader room={selectedRoom} />
-          <MessageList messages={messages} />
-          <MessageInput selectedRoom={selectedRoom} />
+          <ChatHeader />
+          <MessageList />
+          {selectedMessage ? <MessageEditInput /> : <MessageInput />}
         </>
       )}
+    </div>
+  );
+};
+
+const EmptyMessagePanel = () => {
+  return (
+    <div className="flex h-[calc(100vh-95px)] flex-col items-center justify-center gap-4">
+      <h1 className="text-center text-sm font-medium text-gray-500">
+        Select a message room to start chatting
+      </h1>
     </div>
   );
 };

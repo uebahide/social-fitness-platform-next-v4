@@ -2,29 +2,31 @@
 
 import { useEffect, useEffectEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Message } from "@/types/api/message";
 import { RealtimeChannel } from "@supabase/supabase-js";
+import { MessageReaction } from "@/types/api/messageReactions";
 
 type RealtimeSubscribeCallback = NonNullable<
   Parameters<RealtimeChannel["subscribe"]>[0]
 >;
 type RealtimeSubscribeStatus = Parameters<RealtimeSubscribeCallback>[0];
 
-type BroadcastInsertPayload = {
+type BroadcastReactionChangedPayload = {
   payload: {
-    record: Message;
+    record: MessageReaction;
+    old_record: MessageReaction;
   };
-  eventType: string;
+  eventType: "INSERT" | "UPDATE" | "DELETE";
 };
 
-export function useRealtimeMessages(
+export function useRealtimeMessageReactions(
   roomIds: string | string[] | null,
-  onInsert: (newMessage: Message) => void,
-  onUpdate: (updatedMessage: Message) => void,
+  onReactionInsert: (newReaction: MessageReaction) => void,
+  onReactionUpdate: (updatedReaction: MessageReaction) => void,
+  onReactionDelete: (deletedReaction: MessageReaction) => void,
 ) {
-  const handleInsert = useEffectEvent(onInsert);
-  const handleUpdate = useEffectEvent(onUpdate);
-
+  const handleReactionInsert = useEffectEvent(onReactionInsert);
+  const handleReactionUpdate = useEffectEvent(onReactionUpdate);
+  const handleReactionDelete = useEffectEvent(onReactionDelete);
   useEffect(() => {
     const normalizedRoomIds = Array.isArray(roomIds)
       ? roomIds.filter(Boolean)
@@ -45,32 +47,37 @@ export function useRealtimeMessages(
 
       normalizedRoomIds.forEach((roomId) => {
         const channel = supabase
-          .channel(`channel:${roomId}`, {
+          .channel(`channel:${roomId}:reactions`, {
             config: { private: true },
           })
           .on(
             "broadcast",
             { event: "INSERT" },
-            (payload: BroadcastInsertPayload) => {
-              handleInsert(payload.payload.record as Message);
+            (payload: BroadcastReactionChangedPayload) => {
+              console.log("reaction insert", payload);
+              handleReactionInsert(payload.payload.record as MessageReaction);
             },
           )
           .on(
             "broadcast",
             { event: "UPDATE" },
-            (payload: BroadcastInsertPayload) => {
-              handleUpdate(payload.payload.record as Message);
+            (payload: BroadcastReactionChangedPayload) => {
+              console.log("reaction update", payload);
+              handleReactionUpdate(payload.payload.record as MessageReaction);
             },
           )
           .on(
             "broadcast",
             { event: "DELETE" },
-            (payload: BroadcastInsertPayload) => {
-              handleUpdate(payload.payload.record as Message);
+            (payload: BroadcastReactionChangedPayload) => {
+              console.log("reaction delete", payload);
+              handleReactionDelete(
+                payload.payload.old_record as MessageReaction,
+              );
             },
           )
           .subscribe((status: RealtimeSubscribeStatus) => {
-            console.log(`Realtime status [room ${roomId}]:`, status);
+            console.log(`Reaction realtime status [room ${roomId}]:`, status);
           });
 
         channels.push(channel);

@@ -102,6 +102,7 @@ npm run build  # Build for production
 npm run start  # Start production server
 npm run lint   # Run ESLint
 npm run seed:users      # Create demo auth users and profile rows
+npm run seed:friends    # Create demo friendships between seeded users
 npm run seed:activities # Create demo activities for seeded users
 ```
 
@@ -117,10 +118,12 @@ This repository now includes the database schema and base seed data required to 
   - Base category seed data used by the app
 - `scripts/seed-users.mjs`
   - Creates demo auth users and corresponding `profiles` rows
+- `scripts/seed-friends.mjs`
+  - Creates idempotent friendship records between seeded profiles
 - `scripts/seed-activities.mjs`
   - Creates realistic demo activities for seeded users
 
-The two Node seed scripts are intentionally separate from `supabase/seed.sql` because they rely on Supabase Auth and sign in as demo users before inserting app data.
+The three Node seed scripts are intentionally separate from `supabase/seed.sql` because they rely on app-level Supabase access patterns instead of static SQL alone.
 
 ---
 
@@ -155,6 +158,12 @@ supabase db reset
 ```
 
 This applies all files in `supabase/migrations` and then runs `supabase/seed.sql`.
+
+To apply bucket definitions from `supabase/config.toml` locally as well:
+
+```bash
+supabase seed buckets --local
+```
 
 ### 3) Copy local Supabase credentials into `.env.local`
 
@@ -197,7 +206,20 @@ Demo users use emails like:
 - `alex_walker@example.com`
 - `mia_summers@example.com`
 
-### 5) Seed demo activities
+### 5) Seed demo friendships
+
+```bash
+npm run seed:friends
+```
+
+This script:
+
+- reads the seeded `profiles` rows by email
+- creates bidirectional rows in `public.friends`
+- skips friendships that already exist, so it can be rerun safely
+- ensures `hidekazu_ueba@example.com` has at least 10 seeded friends
+
+### 6) Seed demo activities
 
 ```bash
 npm run seed:activities
@@ -210,7 +232,7 @@ This script:
 - inserts up to 20 activities per user
 - skips users who already have enough activity data
 
-### 6) Start the app
+### 7) Start the app
 
 ```bash
 npm run dev
@@ -231,6 +253,7 @@ supabase db reset
 supabase status
 # update .env.local with the local URL and publishable key
 npm run seed:users
+npm run seed:friends
 npm run seed:activities
 npm run dev
 ```
@@ -239,7 +262,9 @@ If you want to rebuild the local dataset from scratch later, rerun:
 
 ```bash
 supabase db reset
+supabase seed buckets --local
 npm run seed:users
+npm run seed:friends
 npm run seed:activities
 ```
 

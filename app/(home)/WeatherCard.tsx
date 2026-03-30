@@ -148,7 +148,6 @@ export const WeatherCard = ({}) => {
             </p>
           </div>
         </header>
-        <hr />
         <ul className="flex justify-between">
           {dailyForecast?.map((day) => (
             <li key={day.date} className="flex flex-col items-center gap-y-2">

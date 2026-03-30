@@ -22,13 +22,13 @@ export const Avatar = ({
   return imagePath ? (
     <div
       className={cn(
-        size == "xsmall" && "h-9 w-9",
+        size == "xsmall" && "h-8 w-8",
         size == "small" && "h-10 w-10",
         size == "medium" && "h-12 w-12",
         size == "large" && "h-18 w-18",
         size == "xlarge" && "h-24 w-24",
         size == "xxlarge" && "h-30 w-30",
-        "relative overflow-hidden rounded-full",
+        "relative aspect-square shrink-0 overflow-hidden rounded-full",
         className,
       )}
     >

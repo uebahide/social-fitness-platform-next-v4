@@ -1,7 +1,8 @@
 import { MessageClient } from "./MessageClient";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
-import { Room } from "@/types/api/message";
+import { Message, Room } from "@/types/api/message";
+import { MessageEditorProvider } from "@/contexts/MessageEditorProvider";
 
 export default async function MessagePage({
   searchParams,
@@ -82,5 +83,77 @@ export default async function MessagePage({
     throw new Error(`Error while fetching rooms: ${roomsError.message}`);
   }
 
-  return <MessageClient rooms={rooms as Room[]} friendId={friendId} />;
+  // get my last read message id for each room
+  const {
+    data: myLastReadMessageIdsByRoom,
+    error: myLastReadMessageIdsByRoomError,
+  } = await supabase
+    .from("room_user")
+    .select("room_id, last_read_message_id")
+    .in(
+      "room_id",
+      rooms.map((room) => room.id),
+    )
+    .eq("user_id", currentUserId);
+
+  if (myLastReadMessageIdsByRoomError) {
+    throw new Error(
+      `Error while fetching my last read message id by room: ${myLastReadMessageIdsByRoomError.message}`,
+    );
+  }
+
+  // get friend last read message id for each room
+  const {
+    data: friendLastReadMessageIdsByRoom,
+    error: friendLastReadMessageIdsByRoomError,
+  } = await supabase
+    .from("room_user")
+    .select("room_id, last_read_message_id")
+    .in(
+      "room_id",
+      rooms.map((room) => room.id),
+    )
+    .neq("user_id", currentUserId);
+
+  if (friendLastReadMessageIdsByRoomError) {
+    throw new Error(
+      `Error while fetching friend last read message id by room: ${friendLastReadMessageIdsByRoomError.message}`,
+    );
+  }
+
+  //get latest message for each room
+  const roomIds = rooms.map((room) => room.id);
+  const latestMessageEntries = await Promise.all(
+    roomIds.map(async (roomId) => {
+      const { data, error } = await supabase
+        .from("messages")
+        .select(
+          "*, user:profiles(id, display_name, email, image_path, created_at)",
+        )
+        .eq("room_id", roomId)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (error) {
+        throw new Error(
+          `Error while fetching latest message by room: ${error.message}`,
+        );
+      }
+
+      return [roomId, data?.[0] as Message] as const;
+    }),
+  );
+  const latestMessagesByRoom = Object.fromEntries(latestMessageEntries);
+
+  return (
+    <MessageEditorProvider>
+      <MessageClient
+        myLastReadMessageIdsByRoom={myLastReadMessageIdsByRoom}
+        friendLastReadMessageIdsByRoom={friendLastReadMessageIdsByRoom}
+        latestMessagesByRoom={latestMessagesByRoom}
+        rooms={rooms as Room[]}
+        friendId={friendId}
+      />
+    </MessageEditorProvider>
+  );
 }

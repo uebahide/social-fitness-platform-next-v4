@@ -1,19 +1,21 @@
-import * as React from 'react';
-import { DropdownMenu } from 'radix-ui';
-import { cn } from '@/lib/utils';
+import * as React from "react";
+import { DropdownMenu } from "radix-ui";
+import { cn } from "@/lib/utils";
 
 export const DropdownMenuBasic = ({
   buttonText,
   children,
+  className,
 }: {
-  buttonText: string;
+  buttonText: React.ReactNode;
   children: React.ReactNode;
+  className?: string;
 }) => {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
         <button
-          className="cursor-pointer focus-visible:outline-none"
+          className={cn("cursor-pointer focus-visible:outline-none", className)}
           aria-label="Customise options"
         >
           {buttonText}
@@ -44,7 +46,7 @@ export const DropdownMenuItem = ({
   return (
     <DropdownMenu.Item
       className={cn(
-        'group text-violet11 data-highlighted:bg-violet9 data-disabled:text-mauve8 data-highlighted:text-violet1 relative flex h-[25px] cursor-pointer items-center rounded-[3px] px-[10px] text-[13px] leading-none outline-none select-none hover:bg-gray-200 data-disabled:pointer-events-none',
+        "group text-violet11 data-highlighted:bg-violet9 data-disabled:text-mauve8 data-highlighted:text-violet1 relative flex h-[25px] cursor-pointer items-center rounded-[3px] px-[10px] text-[13px] leading-none outline-none select-none hover:bg-gray-200 data-disabled:pointer-events-none",
         className,
       )}
       onSelect={onSelect}
