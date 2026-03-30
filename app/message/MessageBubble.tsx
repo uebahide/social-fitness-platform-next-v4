@@ -81,7 +81,7 @@ const ReactionBubble = ({
     return (
       <div
         className={cn(
-          "absolute flex items-center rounded-full bg-gray-400 px-1 border border-white bottom-10",
+          "absolute flex items-center rounded-full bg-gray-400 px-1 border border-white",
           isMyMessage ? "right-0" : "left-0",
           className,
         )}
