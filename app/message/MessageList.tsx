@@ -16,8 +16,11 @@ export const MessageList = () => {
   const supabase = createClient();
   const dispatch = useDispatch();
   const messages = useSelector(selectSelectedRoomMessages);
-  const { containerRef } = useAutoScrollDown([messages?.length]);
   const selectedRoomId = useSelector(selectSelectedRoomId) as number;
+  const { containerRef } = useAutoScrollDown([
+    messages?.length,
+    selectedRoomId,
+  ]);
   const selectedRoom = useSelector(selectSelectedRoom) as Room;
   const { setFriendLastReadMessageId } = useLastReadMessageId();
 

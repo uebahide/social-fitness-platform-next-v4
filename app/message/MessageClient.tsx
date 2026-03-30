@@ -37,7 +37,7 @@ export const MessageClient = ({
     room_id: number;
     last_read_message_id: number;
   }[];
-  latestMessagesByRoom: Message[];
+  latestMessagesByRoom: Record<number, Message>;
 }) => {
   const dispatch = useDispatch();
   const { setFriendLastReadMessageId } = useLastReadMessageId();
@@ -65,15 +65,15 @@ export const MessageClient = ({
 
   // set latest messages by room in redux
   useEffect(() => {
-    latestMessagesByRoom.forEach((item) => {
+    roomIds.forEach((roomId) => {
       dispatch(
         setLatestMessagesByRoom({
-          roomId: item.room_id,
-          message: item,
+          roomId: roomId,
+          message: latestMessagesByRoom[roomId],
         }),
       );
     });
-  }, [dispatch, latestMessagesByRoom]);
+  }, [dispatch, latestMessagesByRoom, roomIds]);
 
   // set my last read message id for each room in redux
   useEffect(() => {

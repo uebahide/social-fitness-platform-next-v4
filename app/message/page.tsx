@@ -1,7 +1,7 @@
 import { MessageClient } from "./MessageClient";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
-import { Room } from "@/types/api/message";
+import { Message, Room } from "@/types/api/message";
 import { FriendLastReadMessageIdProvider } from "@/contexts/FriendLastReadMessageIdProvider";
 import { MessageEditorProvider } from "@/contexts/MessageEditorProvider";
 
@@ -104,24 +104,26 @@ export default async function MessagePage({
   }
 
   //get latest message for each room
-  const { data: latestMessagesByRoom, error: latestMessagesByRoomError } =
-    await supabase
-      .from("messages")
-      .select(
-        "*, user:profiles(id, display_name, email, image_path, created_at)",
-      )
-      .in(
-        "room_id",
-        rooms.map((room) => room.id),
-      )
-      .order("created_at", { ascending: false })
-      .limit(1);
+  const roomIds = rooms.map((room) => room.id);
+  const latestMessageEntries = await Promise.all(
+    roomIds.map(async (roomId) => {
+      const { data, error } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("room_id", roomId)
+        .order("created_at", { ascending: false })
+        .limit(1);
 
-  if (latestMessagesByRoomError) {
-    throw new Error(
-      `Error while fetching latest messages by room: ${latestMessagesByRoomError.message}`,
-    );
-  }
+      if (error) {
+        throw new Error(
+          `Error while fetching latest message by room: ${error.message}`,
+        );
+      }
+
+      return [roomId, data?.[0] as Message] as const;
+    }),
+  );
+  const latestMessagesByRoom = Object.fromEntries(latestMessageEntries);
 
   return (
     <MessageEditorProvider>
