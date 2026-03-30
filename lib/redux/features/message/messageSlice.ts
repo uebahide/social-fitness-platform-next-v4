@@ -101,7 +101,8 @@ const messageSlice = createSlice({
       const current = state.messagesByRoom[message.room_id] ?? [];
       const index = current.findIndex((item) => item.id === message.id);
       if (index !== -1) {
-        current[index] = message;
+        // update message with same reactions as the original message
+        current[index] = { ...message, reactions: current[index].reactions };
         state.messagesByRoom[message.room_id] = current;
       }
       state.latestMessagesByRoom[message.room_id] = message;
@@ -117,7 +118,7 @@ const messageSlice = createSlice({
 
       const message =
         state.messagesByRoom[location.roomId][location.messageIndex];
-      const alreadyExists = message.reactions.some(
+      const alreadyExists = message.reactions?.some(
         (item) => item.id === reaction.id,
       );
 

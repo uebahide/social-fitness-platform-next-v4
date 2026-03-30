@@ -28,7 +28,7 @@ export const ReactionMenu = ({
   const [, formActionDelete] = useActionState(deleteReaction, initialState);
   const { user } = useUser();
   const reactions = message.reactions;
-  const myReaction = reactions.find(
+  const myReaction = reactions?.find(
     (reaction) => reaction.user_id === user?.id,
   );
   const notReactedYet = myReaction ? false : true;

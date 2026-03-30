@@ -102,6 +102,7 @@ export const MessageClient = ({
   const onInsert = async (newMessage: Message) => {
     const user = await getUserById(newMessage.user_id);
     newMessage.user = user;
+    newMessage.reactions = [];
     dispatch(insertMessage(newMessage));
   };
 
