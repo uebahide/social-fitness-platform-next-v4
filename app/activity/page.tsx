@@ -12,11 +12,12 @@ import { MyAnalyticsSkelton } from "@/components/skeltons/MyAnalyticsSkeleton";
 type PageProps = {
   searchParams: Promise<{
     page?: string;
+    forceError?: string;
   }>;
 };
 
 export default async function Activity({ searchParams }: PageProps) {
-  const { page: pageNumber } = await searchParams;
+  const { page: pageNumber, forceError } = await searchParams;
   const page: number = parseInt(pageNumber ?? "1") || 1;
 
   const supabase = await createClient();
@@ -30,8 +31,13 @@ export default async function Activity({ searchParams }: PageProps) {
     .order("created_at", { ascending: false })
     .limit(PER_PAGE)
     .range((page - 1) * PER_PAGE, page * PER_PAGE - 1);
+
+  if (process.env.APP_ENV === "test" && forceError === "1") {
+    throw new Error("Test error");
+  }
+
   if (activitiesError) {
-    return <div>Error: {activitiesError.message}</div>;
+    throw new Error(activitiesError.message);
   }
 
   return (
@@ -43,7 +49,7 @@ export default async function Activity({ searchParams }: PageProps) {
       </div>
       <div className="space-y-6">
         <header className="flex items-center gap-3">
-          <h2 className="">My Activity</h2>
+          <h2 data-testid="activity-title">My Activity</h2>
           <AddActivityButton />
         </header>
 

@@ -3,12 +3,16 @@ import { Card } from "@/components/Card";
 import { createClient } from "@/lib/supabase/server";
 import ActivityCard from "@/components/ActivityCard";
 import { UserProfileCard } from "@/app/(home)/UserProfileCard";
+import { notFound } from "next/navigation";
 
 export default async function OtherUserProfilePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ userId: string }>;
+  searchParams: Promise<{ forceError?: string }>;
 }) {
+  const { forceError } = await searchParams;
   const { userId } = await params;
   const supabase = await createClient();
 
@@ -16,10 +20,10 @@ export default async function OtherUserProfilePage({
     .from("profiles")
     .select("*")
     .eq("id", userId)
-    .single();
+    .maybeSingle();
 
   if (userError) {
-    return <div>Error: {userError.message}</div>;
+    throw new Error(userError.message);
   }
 
   const { data: activities, error: activitiesError } = await supabase
@@ -29,8 +33,16 @@ export default async function OtherUserProfilePage({
     )
     .eq("user_id", userId);
 
+  if (process.env.APP_ENV === "test" && forceError === "1") {
+    throw new Error("Test error");
+  }
+
   if (activitiesError) {
-    return <div>Error: {activitiesError.message}</div>;
+    throw new Error(activitiesError.message);
+  }
+
+  if (!user) {
+    notFound();
   }
 
   return (

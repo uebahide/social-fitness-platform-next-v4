@@ -9,6 +9,7 @@ export const Button = ({
   disabled = false,
   onClick,
   children,
+  ...props
 }: {
   color: buttonColor;
   type?: "submit" | "reset" | "button" | "button" | undefined;
@@ -34,6 +35,7 @@ export const Button = ({
       )}
       onClick={onClick}
       disabled={disabled}
+      {...props}
     >
       {children}
     </button>
