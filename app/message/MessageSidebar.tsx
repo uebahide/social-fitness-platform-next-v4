@@ -33,7 +33,10 @@ export const MessageSidebar = ({ rooms }: { rooms: Room[] }) => {
     });
   }, [rooms, search, currentUser]);
   return (
-    <aside className="bg-card flex flex-col gap-4 rounded-l-sm border border-r-0 border-gray-200 p-3">
+    <aside
+      className="bg-card flex flex-col gap-4 rounded-l-sm border border-r-0 border-gray-200 p-3"
+      data-testid="message-sidebar"
+    >
       <Input
         id="search"
         name="search"
@@ -76,11 +79,6 @@ const RoomListItem = ({ room }: { room: Room }) => {
       latestMessage?.id &&
       isLatestMessageFromFriend &&
       myLastReadMessageId < latestMessage?.id);
-
-  console.log(friend?.display_name, isUnread);
-  console.log(myLastReadMessageId);
-  console.log(latestMessage?.id);
-  console.log(isLatestMessageFromFriend);
 
   const latestMessagePreview = isDeleted ? (
     <span className="italic text-[11px]">This message has been unsent</span>

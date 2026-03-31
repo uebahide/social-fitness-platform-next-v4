@@ -55,7 +55,10 @@ export const MessagePanel = () => {
   }, [roomLoadStatus, selectedRoomId, dispatch, supabase]);
 
   return (
-    <div className="bg-card flex min-w-0 w-full flex-col rounded-r-sm border border-gray-200">
+    <div
+      className="bg-card flex min-w-0 w-full flex-col rounded-r-sm border border-gray-200"
+      data-testid="message-panel"
+    >
       {!selectedRoom ? (
         <EmptyMessagePanel />
       ) : (
