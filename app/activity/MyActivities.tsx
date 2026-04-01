@@ -1,34 +1,32 @@
 import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
-import { createClient } from "@/lib/supabase/server";
-import { PER_PAGE } from "@/constants";
 import { EmptyState } from "@/components/states/EmptyState";
 import { MyActivitiesClient } from "./MyActicitiesClient";
+import { CategoryType } from "@/types/api/category";
+import { ActivityType } from "@/types/api/activity";
+import { getActivitiesByCategory } from "@/lib/server/getActivitiesByCategory";
+import { getActivities } from "@/lib/server/getActivities";
 
 export const MyActivities = async ({
   page,
+  categoryFilter,
   forceError,
 }: {
   page: number;
+  categoryFilter: CategoryType | null;
   forceError?: string;
 }) => {
-  const supabase = await createClient();
   const userId = await getCurrentUserId();
-  const { data: activities, error: activitiesError } = await supabase
-    .from("activities")
-    .select(
-      "*, user:user_id(*), category:category_id(name), details:activity_details(location, distance, duration)",
-    )
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(PER_PAGE)
-    .range((page - 1) * PER_PAGE, page * PER_PAGE - 1);
+  let activities: ActivityType[];
 
-  if (process.env.APP_ENV === "test" && forceError === "1") {
-    throw new Error("Test error");
-  }
-
-  if (activitiesError) {
-    throw new Error(activitiesError.message);
+  if (categoryFilter) {
+    activities = await getActivitiesByCategory(
+      userId,
+      categoryFilter,
+      page,
+      forceError,
+    );
+  } else {
+    activities = await getActivities(userId, page, forceError);
   }
 
   if (activities && activities.length > 0) {

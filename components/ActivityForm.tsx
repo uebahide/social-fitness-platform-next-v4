@@ -68,13 +68,13 @@ export const CategoryAndDetailsFields = ({
   activity?: ActivityType;
 }) => {
   const [category, setCategory] = useState<Category>(
-    defaultValue as unknown as Category,
+    (categories.find((c: Category) => c.name === defaultValue) ??
+      categories[0]) as Category,
   );
 
   const handleCategoryChange = (value: string) => {
     setCategory(
-      categories.find((c: Category) => String(c) === value) ||
-        ("Running" as unknown as Category),
+      categories.find((c: Category) => c.name === value) || categories[0],
     );
   };
 
@@ -83,8 +83,8 @@ export const CategoryAndDetailsFields = ({
       <InputFields category={category} activity={activity} />
       <SelectSimple
         items={categories.map((c: Category) => ({
-          value: String(c),
-          label: String(c),
+          value: c.name,
+          label: c.name,
         }))}
         onValueChange={handleCategoryChange}
         id="category"
@@ -104,7 +104,7 @@ const InputFields = ({
   category: Category;
   activity?: ActivityType;
 }) => {
-  if (String(category) === "running") {
+  if (category.name === "running") {
     return (
       <DistanceAndDurationFields
         defaultDistance={activity?.details.distance}
@@ -112,7 +112,7 @@ const InputFields = ({
       />
     );
   }
-  if (String(category) === "walking") {
+  if (category.name === "walking") {
     return (
       <DistanceAndDurationFields
         defaultDistance={activity?.details.distance}
@@ -120,7 +120,7 @@ const InputFields = ({
       />
     );
   }
-  if (String(category) === "cycling") {
+  if (category.name === "cycling") {
     return (
       <DistanceAndDurationFields
         defaultDistance={activity?.details.distance}
@@ -128,7 +128,7 @@ const InputFields = ({
       />
     );
   }
-  if (String(category) === "swimming") {
+  if (category.name === "swimming") {
     return (
       <DistanceAndDurationFields
         defaultDistance={activity?.details.distance}
@@ -136,7 +136,7 @@ const InputFields = ({
       />
     );
   }
-  if (String(category) === "hiking") {
+  if (category.name === "hiking") {
     const hikingDetails = activity?.details;
     return (
       <>

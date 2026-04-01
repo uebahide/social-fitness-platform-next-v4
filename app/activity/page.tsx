@@ -7,17 +7,20 @@ import { MyAnalytics } from "./MyAnalytics";
 import { MyAnalyticsSkeleton } from "@/components/skeletons/MyAnalyticsSkeleton";
 import { MyActivitiesSkeleton } from "@/components/skeletons/MyActivitiesSkeleton";
 import { PageContainer } from "@/components/PageContainer";
+import { CategoryType } from "@/types/api/category";
 
 type PageProps = {
   searchParams: Promise<{
     page?: string;
+    category?: CategoryType;
     forceError?: string;
   }>;
 };
 
 export default async function Activity({ searchParams }: PageProps) {
-  const { page: pageNumber, forceError } = await searchParams;
+  const { page: pageNumber, category, forceError } = await searchParams;
   const page: number = parseInt(pageNumber ?? "1") || 1;
+  const categoryFilter: CategoryType | null = category ?? null;
 
   return (
     <PageContainer
@@ -38,9 +41,13 @@ export default async function Activity({ searchParams }: PageProps) {
           <AddActivityButton />
         </header>
         <Suspense fallback={<MyActivitiesSkeleton />}>
-          <MyActivities page={page} forceError={forceError} />
+          <MyActivities
+            page={page}
+            categoryFilter={categoryFilter}
+            forceError={forceError}
+          />
         </Suspense>
-        <PaginationSimple page={page} />
+        <PaginationSimple page={page} categoryFilter={categoryFilter} />
       </div>
     </PageContainer>
   );
