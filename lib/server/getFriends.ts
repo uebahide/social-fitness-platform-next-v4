@@ -1,7 +1,8 @@
 import { createClient } from "../supabase/server";
 import { getCurrentUserId } from "./getCurrentUserId";
+import { User } from "@/types/api/user";
 
-export async function getFriends() {
+export async function getFriends(): Promise<User[]> {
   const supabase = await createClient();
   const userId = await getCurrentUserId();
 
@@ -14,9 +15,9 @@ export async function getFriends() {
     throw new Error(friendsError.message);
   }
 
-  const friends = friendsData?.map((friend) => friend.profile);
+  const friends = friendsData?.map((friend) => friend.profile) as User[];
 
-  return friends;
+  return friends as User[];
 }
 
 async function getFriendsIds() {

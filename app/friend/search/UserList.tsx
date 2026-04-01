@@ -1,17 +1,14 @@
 "use client";
 
-import { Avatar } from "@/components/Avatar";
-import { SubmitButton } from "@/components/buttons/SubmitButton";
 import { Input } from "@/components/ui/input";
-import { FriendRequest, User } from "@/types/api/user";
-import React, { useActionState, useEffect, useState } from "react";
+import { User } from "@/types/api/user";
+import { useEffect, useState } from "react";
 
 import { useUser } from "@/contexts/UserProvider";
-import { RequestItem } from "@/components/RequestItem";
-import { sendFriendRequest } from "../action";
 import { createClient } from "@/lib/supabase/client";
-import Link from "next/link";
-import { MessageCircleIcon } from "lucide-react";
+import { UserItem } from "./UserItem";
+import { EmptyState } from "@/components/states/EmptyState";
+import { UserListSkeleton } from "@/components/skeletons/UserListSkeleton";
 import { Button } from "@/components/buttons/Button";
 
 export const UserList = () => {
@@ -19,7 +16,10 @@ export const UserList = () => {
   const [search, setSearch] = useState("");
   const [searchResult, setSearchResult] = useState<User[]>([]);
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -35,35 +35,45 @@ export const UserList = () => {
     async function fetchSearchResult() {
       if (!debouncedSearch) {
         setSearchResult([]);
+        setStatus("idle");
         return;
       }
 
       try {
-        setLoading(true);
+        setStatus("loading");
 
         const supabase = createClient();
-
-        const { data: users, error: usersError } = await supabase
+        const { data: users, error } = await supabase
           .from("profiles")
           .select(
             "*, friend_requests_sent:friend_requests!sender_id(id, sender_id, receiver_id, status), friend_requests_received:friend_requests!receiver_id(id, sender_id, receiver_id, status), friends:friends!user_id(id, user_id, friend_id)",
           )
           .not("id", "eq", currentUser?.id.toString())
-          .ilike("display_name", `%${debouncedSearch}%`);
+          .ilike("display_name", `%${debouncedSearch}%`)
+          .abortSignal(controller.signal);
 
-        if (usersError) {
-          return <div>Error: {usersError.message}</div>;
+        if (controller.signal.aborted) return;
+
+        if (error) {
+          setStatus("error");
+          return;
         }
 
         setSearchResult(users ?? []);
-      } finally {
-        setLoading(false);
+        setStatus("success");
+      } catch {
+        if (controller.signal.aborted) return;
+        setStatus("error");
       }
     }
 
-    fetchSearchResult();
-    return () => controller.abort();
-  }, [debouncedSearch, currentUser?.id]);
+    void fetchSearchResult();
+
+    return () => {
+      controller.abort();
+    };
+  }, [debouncedSearch, currentUser?.id, retryKey]);
+
   return (
     <aside className="bg-card flex h-[calc(100vh-92px)] flex-col gap-4 rounded-sm border border-gray-200 p-3">
       <Input
@@ -77,88 +87,45 @@ export const UserList = () => {
       />
 
       <ul className="flex flex-col overflow-y-auto">
-        {loading && <li className="p-2 text-xs text-gray-500">Loading...</li>}
-        {searchResult &&
+        {status === "idle" && (
+          <li>
+            <EmptyState description="Search for a user by name 🔎" />
+          </li>
+        )}
+
+        {status === "loading" && <UserListSkeleton />}
+
+        {status === "success" && searchResult.length === 0 && (
+          <li>
+            <EmptyState
+              title="No users found"
+              description="Try another name."
+            />
+          </li>
+        )}
+
+        {status === "success" &&
           searchResult.map((user) => (
             <UserItem key={user.id} user={user} currentUser={currentUser} />
           ))}
+
+        {status === "error" && (
+          <li className="p-2">
+            <div className="flex flex-col items-center gap-3 py-6">
+              <p className="text-sm font-medium text-gray-700">
+                Could not load users.
+              </p>
+              <Button
+                color="secondary"
+                onClick={() => setRetryKey((prev) => prev + 1)}
+                className="cursor-pointer"
+              >
+                Try again
+              </Button>
+            </div>
+          </li>
+        )}
       </ul>
     </aside>
-  );
-};
-
-const UserItem = ({
-  user,
-  currentUser,
-}: {
-  user: User;
-  currentUser: User | null;
-}) => {
-  const [state, formAction] = useActionState(sendFriendRequest, {
-    message: "",
-    error: "",
-    ok: false,
-    data: {},
-  });
-  const sentRequest = {
-    ...user.friend_requests_sent.find(
-      (request) =>
-        request.status === "pending" && request.receiver_id === currentUser?.id,
-    ),
-    sender: user,
-  } as FriendRequest;
-
-  const requestHasAlreadyBeenSentByMe =
-    user.friend_requests_received.some(
-      (request) =>
-        request.status === "pending" && request.sender_id === currentUser?.id,
-    ) || state.ok;
-  const isFriend = user.friends.some(
-    (friend) => friend.friend_id === currentUser?.id,
-  );
-  const requestHasAlreadyBeenSentByHim = user.friend_requests_sent.some(
-    (request) =>
-      request.status === "pending" && request.receiver_id === currentUser?.id,
-  );
-
-  if (requestHasAlreadyBeenSentByHim) {
-    return <RequestItem request={sentRequest ?? ({} as FriendRequest)} />;
-  }
-
-  return (
-    <li className="flex cursor-pointer items-center justify-between gap-5 rounded-sm p-2 ">
-      <Link
-        href={`/profile/${user.id}`}
-        className="flex items-center gap-5 w-full hover:bg-gray-50 rounded-sm p-2"
-      >
-        <Avatar size="small" user={user} />
-        <div>{user.display_name}</div>
-      </Link>
-      <form className="flex items-center gap-2" action={formAction}>
-        <input
-          type="hidden"
-          name="friendId"
-          id="friendId"
-          value={user.id.toString()}
-        />
-        {requestHasAlreadyBeenSentByMe && (
-          <div className="text-xs text-gray-500">Request already sent</div>
-        )}
-        {isFriend && (
-          <Link href={`/message?friendId=${user.id}`}>
-            <Button color="secondary">
-              <MessageCircleIcon className="size-5 cursor-pointer text-gray-500 hover:text-gray-700" />
-            </Button>
-          </Link>
-        )}
-        {!requestHasAlreadyBeenSentByMe &&
-          !requestHasAlreadyBeenSentByHim &&
-          !isFriend && (
-            <SubmitButton className="cursor-pointer rounded-sm bg-gray-100 p-2 text-gray-500 hover:bg-gray-200 disabled:bg-gray-50 disabled:text-gray-300">
-              Request
-            </SubmitButton>
-          )}
-      </form>
-    </li>
   );
 };
