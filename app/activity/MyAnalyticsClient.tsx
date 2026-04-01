@@ -89,18 +89,14 @@ export const MyAnalyticsClient = ({
           categoryFilter={categoryFilter}
           categoryBreakDownData={categoryBreakDownData}
         />
-
         <DistanceTrendCard days={days} distanceTrendData={distanceTrendData} />
-
         <QuickStatsCard
           categoryFilter={categoryFilter}
           totalActivityCount={totalActivityCount}
           totalDistance={totalDistance}
           analyticsDashboardData={analyticsDashboardData}
         />
-
         <ConsistencyBarCard weeklyConsistencyData={weeklyConsistencyData} />
-
         <DurationTrendCard days={days} durationTrendData={durationTrendData} />
       </main>
     </section>
