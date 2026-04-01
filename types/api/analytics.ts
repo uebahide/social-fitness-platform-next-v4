@@ -1,4 +1,4 @@
-export type dashboard = {
+export type DashboardAnalyticsType = {
   last7DaysActivityTotal: number;
   last30DaysActivityTotal: number;
   last60DaysActivityTotal: number;
@@ -7,7 +7,7 @@ export type dashboard = {
   last30DaysCategoryActivityTotal: CategoryActivityTotal[];
   last60DaysCategoryActivityTotal: CategoryActivityTotal[];
   last90DaysCategoryActivityTotal: CategoryActivityTotal[];
-  dailyDistanceAndDurationValues: dailyDistanceAndDurationValues[];
+  dailyDistanceAndDurationValues: DailyDistanceAndDurationValues[];
 };
 
 export type CategoryActivityTotal = {
@@ -15,7 +15,7 @@ export type CategoryActivityTotal = {
   total: number;
 };
 
-export type dailyDistanceAndDurationValues = {
+export type DailyDistanceAndDurationValues = {
   date: string;
   distance: number;
   duration: number;

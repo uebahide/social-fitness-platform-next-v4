@@ -1,4 +1,5 @@
 import ActivityCard from "@/components/ActivityCard";
+import { EmptyState } from "@/components/states/EmptyState";
 import { getFriendsActivities } from "@/lib/server/getFriends";
 import { ActivityType } from "@/types/api/activity";
 
@@ -11,9 +12,9 @@ export const FriendActivity = async () => {
       </header>
       <ul className="h-[740px] overflow-y-auto p-1 space-y-4">
         {friendsActivities.length === 0 ? (
-          <p className="text-center text-sm text-gray-500 h-full flex items-center justify-center">
-            No friend activities found
-          </p>
+          <li className="h-full flex items-center justify-center">
+            <EmptyState description="No friend activities found" />
+          </li>
         ) : (
           friendsActivities.map((activity: ActivityType) => (
             <ActivityCard

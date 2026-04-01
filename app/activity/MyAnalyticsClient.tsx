@@ -2,35 +2,28 @@
 
 import { CategoryBreakDownChart } from "./CategoryBreakDownChart";
 import { useState } from "react";
-import {
-  dailyDistanceAndDurationValues,
-  CategoryActivityTotal,
-} from "@/types/api/analytics";
+import { DashboardAnalyticsType } from "@/types/api/analytics";
 
 import { TrendLineChart } from "./TrendLineChart";
 import { Card } from "@/components/Card";
 
 export const MyAnalyticsClient = ({
-  last7DaysActivityTotal,
-  last30DaysActivityTotal,
-  last60DaysActivityTotal,
-  last90DaysActivityTotal,
-  last7DaysCategoryActivityTotal,
-  last30DaysCategoryActivityTotal,
-  last60DaysCategoryActivityTotal,
-  last90DaysCategoryActivityTotal,
-  dailyDistanceAndDurationValues,
+  analyticsDashboardData,
 }: {
-  last7DaysActivityTotal: number;
-  last30DaysActivityTotal: number;
-  last60DaysActivityTotal: number;
-  last90DaysActivityTotal: number;
-  last7DaysCategoryActivityTotal: CategoryActivityTotal[];
-  last30DaysCategoryActivityTotal: CategoryActivityTotal[];
-  last60DaysCategoryActivityTotal: CategoryActivityTotal[];
-  last90DaysCategoryActivityTotal: CategoryActivityTotal[];
-  dailyDistanceAndDurationValues: dailyDistanceAndDurationValues[];
+  analyticsDashboardData: DashboardAnalyticsType;
 }) => {
+  const {
+    last7DaysActivityTotal,
+    last30DaysActivityTotal,
+    last60DaysActivityTotal,
+    last90DaysActivityTotal,
+    last7DaysCategoryActivityTotal,
+    last30DaysCategoryActivityTotal,
+    last60DaysCategoryActivityTotal,
+    last90DaysCategoryActivityTotal,
+    dailyDistanceAndDurationValues,
+  } = analyticsDashboardData;
+
   const [days, setDays] = useState<number>(7);
   const categoryBreakDownData =
     days === 7
@@ -64,7 +57,7 @@ export const MyAnalyticsClient = ({
   );
 
   return (
-    <div className="space-y-4 mt-4">
+    <section className="space-y-4 mt-4">
       <h1>Activity Overview</h1>
       <nav className="flex justify-start gap-2">
         <select
@@ -78,7 +71,7 @@ export const MyAnalyticsClient = ({
         </select>
       </nav>
 
-      <div className="flex gap-4">
+      <main className="flex gap-4">
         <Card className="h-[300px] flex items-center justify-center">
           <TrendLineChart trendData={trendData} />
         </Card>
@@ -90,7 +83,7 @@ export const MyAnalyticsClient = ({
           <div>Activity count: {totalActivityCount}</div>
           <div>Total distance: {totalDistance.toFixed(2)} km</div>
         </Card>
-      </div>
-    </div>
+      </main>
+    </section>
   );
 };

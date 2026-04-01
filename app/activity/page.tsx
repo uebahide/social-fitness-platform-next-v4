@@ -7,7 +7,8 @@ import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
 import { createClient } from "@/lib/supabase/server";
 import { PER_PAGE } from "@/constants";
 import { MyAnalytics } from "./MyAnalytics";
-import { MyAnalyticsSkelton } from "@/components/skeltons/MyAnalyticsSkeleton";
+import { MyAnalyticsSkeleton } from "@/components/skeletons/MyAnalyticsSkeleton";
+import { EmptyState } from "@/components/states/EmptyState";
 
 type PageProps = {
   searchParams: Promise<{
@@ -43,7 +44,7 @@ export default async function Activity({ searchParams }: PageProps) {
   return (
     <section className="flex flex-col gap-6">
       <div>
-        <Suspense fallback={<MyAnalyticsSkelton />}>
+        <Suspense fallback={<MyAnalyticsSkeleton />}>
           <MyAnalytics />
         </Suspense>
       </div>
@@ -52,8 +53,14 @@ export default async function Activity({ searchParams }: PageProps) {
           <h2 data-testid="activity-title">My Activity</h2>
           <AddActivityButton />
         </header>
-
-        <MyActivities activities={activities ?? []} />
+        {activities && activities.length > 0 ? (
+          <MyActivities activities={activities ?? []} />
+        ) : (
+          <EmptyState
+            title="No activities yet"
+            description="Start an activity to see your activities here 💪"
+          />
+        )}
         <PaginationSimple page={page} />
       </div>
     </section>

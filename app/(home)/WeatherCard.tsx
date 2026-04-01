@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { WeatherCardSkeleton } from "@/components/skeltons/WeatherCardSkeleton";
+import { WeatherCardSkeleton } from "@/components/skeletons/WeatherCardSkeleton";
 
 type DailyForecast = {
   time: string[];
