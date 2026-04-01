@@ -1,16 +1,15 @@
 import { Input } from "@/components/ui/input";
 import { EmptyMessagePanel } from "./MessagePanel";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PageHeader } from "@/components/PageHeader";
+import { PageContainer } from "@/components/PageContainer";
 
 export default function loading() {
   return (
-    <section className="flex flex-col gap-6">
-      <PageHeader
-        eyebrow="Communication"
-        title="Messages"
-        description="Catch up with your conversations, check unread updates, and stay in sync with your training partners."
-      />
+    <PageContainer
+      eyebrow="Communication"
+      title="Messages"
+      description="Catch up with your conversations, check unread updates, and stay in sync with your training partners."
+    >
       <div
         className="grid min-w-0 grid-cols-[4fr_9fr]"
         data-testid="message-page-skeleton"
@@ -42,6 +41,6 @@ export default function loading() {
           <EmptyMessagePanel />
         </div>
       </div>
-    </section>
+    </PageContainer>
   );
 }

@@ -54,10 +54,7 @@ export default async function RootLayout({
     .select("*");
   const categories = categoriesData?.map((category) => category.name);
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable}`}
-    >
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="antialiased">
         <StoreProvider>
           <SidebarProvider>
@@ -69,6 +66,7 @@ export default async function RootLayout({
                   <AppSidebar />
                   <Main>
                     <SidebarTrigger />
+
                     {children}
                   </Main>
                 </CategoriesProvider>

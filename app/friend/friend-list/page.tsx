@@ -2,8 +2,8 @@ import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
 import { FriendList } from "./FriendList";
 import { getFriends } from "@/lib/server/getFriends";
 import { getReceivedRequests } from "@/lib/server/getReceivedRequests";
-import { PageHeader } from "@/components/PageHeader";
 import { PageGuidePanel } from "@/components/PageGuidePanel";
+import { PageContainer } from "@/components/PageContainer";
 
 export default async function FriendListPage({
   searchParams,
@@ -20,12 +20,11 @@ export default async function FriendListPage({
   }
 
   return (
-    <section className="flex flex-col gap-6">
-      <PageHeader
-        eyebrow="Connections"
-        title="Friend List"
-        description="Browse your current connections, review incoming requests, and jump into a conversation or profile view."
-      />
+    <PageContainer
+      eyebrow="Connections"
+      title="Friend List"
+      description="Browse your current connections, review incoming requests, and jump into a conversation or profile view."
+    >
       <div className="grid grid-cols-[3fr_7fr] gap-4">
         <FriendList friends={friends} requests={receivedRequests} />
         <PageGuidePanel
@@ -48,6 +47,6 @@ export default async function FriendListPage({
           }}
         />
       </div>
-    </section>
+    </PageContainer>
   );
 }

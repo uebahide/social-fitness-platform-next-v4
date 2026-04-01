@@ -1,16 +1,15 @@
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PageHeader } from "@/components/PageHeader";
 import { PageGuidePanel } from "@/components/PageGuidePanel";
+import { PageContainer } from "@/components/PageContainer";
 
 export default function loading() {
   return (
-    <section className="flex flex-col gap-6">
-      <PageHeader
-        eyebrow="Connections"
-        title="Friend List"
-        description="Browse your current connections, review incoming requests, and jump into a conversation or profile view."
-      />
+    <PageContainer
+      eyebrow="Connections"
+      title="Friend List"
+      description="Browse your current connections, review incoming requests, and jump into a conversation or profile view."
+    >
       <div className="grid grid-cols-[3fr_7fr] gap-4">
         <aside className="bg-card flex h-[calc(100vh-92px)] flex-col gap-4 rounded-sm border border-gray-200 p-3">
           <Input type="text" placeholder="Search" className="w-full" />
@@ -57,6 +56,6 @@ export default function loading() {
           }}
         />
       </div>
-    </section>
+    </PageContainer>
   );
 }
