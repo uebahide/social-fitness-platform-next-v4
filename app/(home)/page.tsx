@@ -3,10 +3,11 @@ import { FriendActivity } from "./FriendActivity";
 import { UserProfileCard } from "./UserProfileCard";
 import { Card } from "@/components/Card";
 import { EventCard } from "./EventCard";
+import { PageHeader } from "@/components/PageHeader";
 
 export default async function Home() {
   return (
-    <section className="relative min-h-screen overflow-hidden px-5 pb-8 pt-5">
+    <section className="relative min-h-screen overflow-hidden  pb-8 ">
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-0 top-0 h-72 w-72 rounded-full bg-brand-secondary-100/60 blur-3xl" />
         <div className="absolute right-16 top-16 h-64 w-64 rounded-full bg-brand-primary-100/35 blur-3xl" />
@@ -14,36 +15,12 @@ export default async function Home() {
       </div>
 
       <div className="relative z-10 mx-auto flex max-w-[1560px] flex-col gap-6">
-        <header className="rounded-[28px] border border-white/70 bg-white/75 px-6 py-5 shadow-sm backdrop-blur">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div className="space-y-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-500">
-                Social Fitness Dashboard
-              </p>
-              <div className="space-y-2">
-                <h1 className="text-4xl font-semibold tracking-tight text-gray-900">
-                  Your training world, in one place
-                </h1>
-                <p className="max-w-3xl text-sm leading-6 text-gray-600">
-                  Keep an eye on your profile, check what your network has been
-                  up to, and stay ready for the week ahead.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap gap-2">
-              <div className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm">
-                Profile snapshot
-              </div>
-              <div className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm">
-                Friend feed
-              </div>
-              <div className="rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-600 shadow-sm">
-                Weekly outlook
-              </div>
-            </div>
-          </div>
-        </header>
+        <PageHeader
+          eyebrow="Social Fitness Dashboard"
+          title="Your training world, in one place"
+          description="Keep an eye on your profile, check what your network has been up to, and stay ready for the week ahead."
+          badges={["Profile snapshot", "Friend feed", "Weekly outlook"]}
+        />
 
         <div className="grid grid-cols-[3fr_4fr_3fr] gap-6">
           <div className="flex flex-col gap-6">

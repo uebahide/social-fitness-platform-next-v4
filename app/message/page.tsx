@@ -7,6 +7,7 @@ import { getMyLastReadMessageIdsByRoom } from "@/lib/server/getMyLastReadMessage
 import { getFriendLastReadMessageIdsByRoom } from "@/lib/server/getFriendLastReadMessageIdsByRoom";
 import { getLatestMessagesByRoom } from "@/lib/server/getLatestMessagesByRoom";
 import { getOrCreatePrivateRoom } from "@/lib/server/getOrCreatePrivateRoom";
+import { PageHeader } from "@/components/PageHeader";
 
 export default async function MessagePage({
   searchParams,
@@ -50,13 +51,20 @@ export default async function MessagePage({
 
   return (
     <MessageEditorProvider>
-      <MessageClient
-        myLastReadMessageIdsByRoom={myLastReadMessageIdsByRoom}
-        friendLastReadMessageIdsByRoom={friendLastReadMessageIdsByRoom}
-        latestMessagesByRoom={latestMessagesByRoom}
-        rooms={rooms as Room[]}
-        friendId={friendId}
-      />
+      <section className="flex flex-col gap-6">
+        <PageHeader
+          eyebrow="Communication"
+          title="Messages"
+          description="Catch up with your conversations, check unread updates, and stay in sync with your training partners."
+        />
+        <MessageClient
+          myLastReadMessageIdsByRoom={myLastReadMessageIdsByRoom}
+          friendLastReadMessageIdsByRoom={friendLastReadMessageIdsByRoom}
+          latestMessagesByRoom={latestMessagesByRoom}
+          rooms={rooms as Room[]}
+          friendId={friendId}
+        />
+      </section>
     </MessageEditorProvider>
   );
 }

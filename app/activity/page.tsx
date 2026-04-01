@@ -9,6 +9,7 @@ import { PER_PAGE } from "@/constants";
 import { MyAnalytics } from "./MyAnalytics";
 import { MyAnalyticsSkeleton } from "@/components/skeletons/MyAnalyticsSkeleton";
 import { EmptyState } from "@/components/states/EmptyState";
+import { PageHeader } from "@/components/PageHeader";
 
 type PageProps = {
   searchParams: Promise<{
@@ -43,6 +44,11 @@ export default async function Activity({ searchParams }: PageProps) {
 
   return (
     <section className="flex flex-col gap-6">
+      <PageHeader
+        eyebrow="Training Log"
+        title="My Activity"
+        description="Review your recent sessions, track your patterns, and keep your personal training history organized."
+      />
       <div>
         <Suspense fallback={<MyAnalyticsSkeleton />}>
           <MyAnalytics />
@@ -50,7 +56,9 @@ export default async function Activity({ searchParams }: PageProps) {
       </div>
       <div className="space-y-6">
         <header className="flex items-center gap-3">
-          <h2 data-testid="activity-title">My Activity</h2>
+          <h2 data-testid="activity-title" className="text-lg font-semibold">
+            Activity Feed
+          </h2>
           <AddActivityButton />
         </header>
         {activities && activities.length > 0 ? (
