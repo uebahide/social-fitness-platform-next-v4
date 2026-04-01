@@ -3,13 +3,13 @@
 import { CategoryBreakDownChart } from "./CategoryBreakDownChart";
 import { useState } from "react";
 import { DashboardAnalyticsType } from "@/types/api/analytics";
-
-import { TrendLineChart } from "./TrendLineChart";
 import { Card } from "@/components/Card";
 import { CategoryFilter } from "./CategoryFilter";
 import { CategoryType } from "@/types/api/category";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { cn, formatDate, uppercaseFirstLetter } from "@/lib/utils";
+import { MetricLineChart } from "./MetricLineChart";
+import { ConsistencyBarChart } from "./ConsistencyBarChart";
 
 export const MyAnalyticsClient = ({
   analyticsDashboardData,
@@ -28,15 +28,6 @@ export const MyAnalyticsClient = ({
     last60DaysCategoryActivityTotal,
     last90DaysCategoryActivityTotal,
     dailyDistanceAndDurationValues,
-    longestDistance,
-    longestDuration,
-    totalDuration,
-    averageDistance,
-    averageDuration,
-    activeDays,
-    currentStreak,
-    latestActivityDate,
-    mostFrequentCategory,
   } = analyticsDashboardData;
 
   const [days, setDays] = useState<number>(7);
@@ -58,22 +49,27 @@ export const MyAnalyticsClient = ({
           ? last60DaysActivityTotal
           : last90DaysActivityTotal;
 
-  const trendData = dailyDistanceAndDurationValues
-    .slice(
-      dailyDistanceAndDurationValues.length - days,
-      dailyDistanceAndDurationValues.length,
-    )
-    .map((item) => ({
-      name: item.date,
-      distance: item.distance,
-    }));
-  const totalDistance = trendData.reduce(
-    (acc, curr) => acc + Number(curr.distance),
+  const selectedDailyValues = dailyDistanceAndDurationValues.slice(
+    dailyDistanceAndDurationValues.length - days,
+    dailyDistanceAndDurationValues.length,
+  );
+
+  const distanceTrendData = selectedDailyValues.map((item) => ({
+    name: formatChartDate(item.date),
+    value: Number(item.distance),
+  }));
+
+  const durationTrendData = selectedDailyValues.map((item) => ({
+    name: formatChartDate(item.date),
+    value: Number(item.duration),
+  }));
+
+  const weeklyConsistencyData = buildWeeklyConsistencyData(selectedDailyValues);
+
+  const totalDistance = distanceTrendData.reduce(
+    (acc, curr) => acc + Number(curr.value),
     0,
   );
-  const filteredCategoryLabel = categoryFilter
-    ? uppercaseFirstLetter(categoryFilter)
-    : null;
 
   return (
     <section className="space-y-5">
@@ -85,130 +81,27 @@ export const MyAnalyticsClient = ({
       </h2>
       <nav className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <CategoryFilter currentFilter={categoryFilter} />
-        <select
-          className="bg-card rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 shadow-sm"
-          onChange={(e) => setDays(Number(e.target.value))}
-          value={days}
-        >
-          <option value="7">Last 7 days</option>
-          <option value="30">Last 30 days</option>
-          <option value="60">Last 60 days</option>
-          <option value="90">Last 90 days</option>
-        </select>
+        <DateRangePicker days={days} setDays={setDays} />
       </nav>
 
-      <main className="grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1.3fr)_minmax(320px,1fr)]">
-        {categoryFilter ? (
-          <Card className="flex min-h-[320px] items-center justify-center bg-gradient-to-br from-brand-secondary-50 via-white to-brand-primary-50 p-8">
-            <div className="flex h-full w-full flex-col items-center justify-center gap-5 text-center">
-              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-gray-200">
-                <CategoryIcon category={categoryFilter} size="large" />
-              </div>
-              <div className="space-y-2">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-500">
-                  Focus Mode
-                </p>
-                <h3 className="text-xl font-semibold text-gray-900 md:text-2xl">
-                  Viewing {filteredCategoryLabel} only
-                </h3>
-                <p className="mx-auto max-w-sm text-sm leading-6 text-gray-500">
-                  Breakdown is available when all categories are selected.
-                </p>
-              </div>
-            </div>
-          </Card>
-        ) : (
-          <Card className="min-h-[320px] space-y-4 p-5">
-            <div className="space-y-1">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-500">
-                Category Mix
-              </p>
-              <h3 className="text-base font-semibold text-gray-900">
-                Breakdown by activity type
-              </h3>
-            </div>
-            <div className="flex items-center justify-center">
-              <CategoryBreakDownChart data={categoryBreakDownData} />
-            </div>
-          </Card>
-        )}
+      <main className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(320px,0.95fr)]">
+        <CategoryMixCard
+          categoryFilter={categoryFilter}
+          categoryBreakDownData={categoryBreakDownData}
+        />
 
-        <Card className="min-h-[320px] space-y-4 p-5">
-          <div className="space-y-1">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-500">
-              Distance Trend
-            </p>
-            <h3 className="text-base font-semibold text-gray-900">
-              Movement over the last {days} days
-            </h3>
-          </div>
-          <div className="flex items-center justify-center">
-            <TrendLineChart trendData={trendData} />
-          </div>
-        </Card>
+        <DistanceTrendCard days={days} distanceTrendData={distanceTrendData} />
 
-        <Card className="min-h-[320px] space-y-4 p-5">
-          <div className="space-y-1">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-500">
-              Quick Stats
-            </p>
-            <h3 className="text-base font-semibold text-gray-900">
-              Snapshot for the current view
-            </h3>
-          </div>
+        <QuickStatsCard
+          categoryFilter={categoryFilter}
+          totalActivityCount={totalActivityCount}
+          totalDistance={totalDistance}
+          analyticsDashboardData={analyticsDashboardData}
+        />
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <MetricTile
-              label="Activity count"
-              value={String(totalActivityCount)}
-              tone="primary"
-            />
-            <MetricTile
-              label="Total distance"
-              value={`${totalDistance.toFixed(2)} km`}
-            />
-            <MetricTile
-              label="Longest distance"
-              value={`${longestDistance.toFixed(2)} km`}
-            />
-            <MetricTile
-              label="Longest duration"
-              value={`${longestDuration.toFixed(2)} min`}
-            />
-            <MetricTile
-              label="Total duration"
-              value={`${totalDuration.toFixed(2)} min`}
-            />
-            <MetricTile
-              label="Average distance"
-              value={`${averageDistance.toFixed(2)} km`}
-            />
-            <MetricTile
-              label="Average duration"
-              value={`${averageDuration.toFixed(2)} min`}
-            />
-            <MetricTile label="Active days" value={String(activeDays)} />
-            <MetricTile
-              label="Current streak"
-              value={`${currentStreak} day${currentStreak === 1 ? "" : "s"}`}
-            />
-            <MetricTile
-              label="Latest activity"
-              value={latestActivityDate ? formatDate(latestActivityDate) : "-"}
-            />
-            {!categoryFilter && (
-              <MetricTile
-                label="Most frequent category"
-                value={
-                  mostFrequentCategory
-                    ? uppercaseFirstLetter(mostFrequentCategory)
-                    : "-"
-                }
-                className="sm:col-span-2"
-              />
-            )}
-          </div>
-        </Card>
+        <ConsistencyBarCard weeklyConsistencyData={weeklyConsistencyData} />
+
+        <DurationTrendCard days={days} durationTrendData={durationTrendData} />
       </main>
     </section>
   );
@@ -243,3 +136,265 @@ function MetricTile({
     </div>
   );
 }
+
+function formatChartDate(dateString: string) {
+  return new Date(dateString).toLocaleDateString("en-GB", {
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function buildWeeklyConsistencyData(
+  values: DashboardAnalyticsType["dailyDistanceAndDurationValues"],
+) {
+  const weekMap = new Map<string, number>();
+
+  values.forEach((item) => {
+    const isActive = Number(item.distance) > 0 || Number(item.duration) > 0;
+    if (!isActive) return;
+
+    const date = new Date(item.date);
+    const weekStart = new Date(date);
+    const day = weekStart.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    weekStart.setDate(weekStart.getDate() + diff);
+
+    const key = weekStart.toISOString().slice(0, 10);
+    weekMap.set(key, (weekMap.get(key) ?? 0) + 1);
+  });
+
+  return Array.from(weekMap.entries()).map(([weekStart, activeDays]) => ({
+    name: formatChartDate(weekStart),
+    activeDays,
+  }));
+}
+
+const CategoryMixCard = ({
+  categoryFilter,
+  categoryBreakDownData,
+}: {
+  categoryFilter: CategoryType | null;
+  categoryBreakDownData: DashboardAnalyticsType["last7DaysCategoryActivityTotal"];
+}) => {
+  const filteredCategoryLabel = categoryFilter
+    ? uppercaseFirstLetter(categoryFilter)
+    : null;
+  if (categoryFilter) {
+    return (
+      <Card className="flex min-h-[280px] items-center justify-center bg-gradient-to-br from-brand-secondary-50 via-white to-brand-primary-50 p-8">
+        <div className="flex h-full w-full flex-col items-center justify-center gap-5 text-center">
+          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-gray-200">
+            <CategoryIcon category={categoryFilter} size="large" />
+          </div>
+          <div className="space-y-2">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-500">
+              Focus Mode
+            </p>
+            <h3 className="text-xl font-semibold text-gray-900 md:text-2xl">
+              Viewing {filteredCategoryLabel} only
+            </h3>
+            <p className="mx-auto max-w-sm text-sm leading-6 text-gray-500">
+              Breakdown is available when all categories are selected.
+            </p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+  return (
+    <Card className="min-h-[280px] space-y-4 p-5">
+      <div className="space-y-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-500">
+          Category Mix
+        </p>
+        <h3 className="text-base font-semibold text-gray-900">
+          Breakdown by activity type
+        </h3>
+      </div>
+      <div className="flex items-center justify-center">
+        <CategoryBreakDownChart data={categoryBreakDownData} />
+      </div>
+    </Card>
+  );
+};
+
+const DateRangePicker = ({
+  days,
+  setDays,
+}: {
+  days: number;
+  setDays: (days: number) => void;
+}) => {
+  return (
+    <select
+      className="bg-card rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 shadow-sm"
+      onChange={(e) => setDays(Number(e.target.value))}
+      value={days}
+    >
+      <option value="7">Last 7 days</option>
+      <option value="30">Last 30 days</option>
+      <option value="60">Last 60 days</option>
+      <option value="90">Last 90 days</option>
+    </select>
+  );
+};
+
+const DistanceTrendCard = ({
+  days,
+  distanceTrendData,
+}: {
+  days: number;
+  distanceTrendData: { name: string; value: number }[];
+}) => {
+  return (
+    <Card className="min-h-[280px] space-y-4 p-5">
+      <div className="space-y-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-500">
+          Distance Trend
+        </p>
+        <h3 className="text-base font-semibold text-gray-900">
+          Movement over the last {days} days
+        </h3>
+      </div>
+      <MetricLineChart
+        data={distanceTrendData}
+        stroke="#0F766E"
+        valueLabel="Distance"
+      />
+    </Card>
+  );
+};
+
+const DurationTrendCard = ({
+  days,
+  durationTrendData,
+}: {
+  days: number;
+  durationTrendData: { name: string; value: number }[];
+}) => {
+  return (
+    <Card className="min-h-[280px] space-y-4 p-5">
+      <div className="space-y-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-500">
+          Duration Trend
+        </p>
+        <h3 className="text-base font-semibold text-gray-900">
+          Time spent over the last {days} days
+        </h3>
+      </div>
+      <MetricLineChart
+        data={durationTrendData}
+        stroke="#C2410C"
+        valueLabel="Duration"
+      />
+    </Card>
+  );
+};
+
+const ConsistencyBarCard = ({
+  weeklyConsistencyData,
+}: {
+  weeklyConsistencyData: { name: string; activeDays: number }[];
+}) => {
+  return (
+    <Card className="min-h-[280px] space-y-4 p-5">
+      <div className="space-y-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-500">
+          Consistency
+        </p>
+        <h3 className="text-base font-semibold text-gray-900">
+          Active days by week
+        </h3>
+      </div>
+      <ConsistencyBarChart data={weeklyConsistencyData} />
+    </Card>
+  );
+};
+
+const QuickStatsCard = ({
+  totalActivityCount,
+  totalDistance,
+  categoryFilter,
+  analyticsDashboardData,
+}: {
+  totalActivityCount: number;
+  totalDistance: number;
+  categoryFilter: CategoryType | null;
+  analyticsDashboardData: DashboardAnalyticsType;
+}) => {
+  const {
+    longestDistance,
+    longestDuration,
+    totalDuration,
+    averageDistance,
+    averageDuration,
+    activeDays,
+    currentStreak,
+    latestActivityDate,
+    mostFrequentCategory,
+  } = analyticsDashboardData;
+  return (
+    <Card className="space-y-4 p-5 xl:row-span-2">
+      <div className="space-y-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-500">
+          Quick Stats
+        </p>
+        <h3 className="text-base font-semibold text-gray-900">
+          Snapshot for the current view
+        </h3>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <MetricTile
+          label="Activity count"
+          value={String(totalActivityCount)}
+          tone="primary"
+        />
+        <MetricTile
+          label="Total distance"
+          value={`${totalDistance.toFixed(2)} km`}
+        />
+        <MetricTile
+          label="Longest distance"
+          value={`${longestDistance.toFixed(2)} km`}
+        />
+        <MetricTile
+          label="Longest duration"
+          value={`${longestDuration.toFixed(2)} min`}
+        />
+        <MetricTile
+          label="Total duration"
+          value={`${totalDuration.toFixed(2)} min`}
+        />
+        <MetricTile
+          label="Average distance"
+          value={`${averageDistance.toFixed(2)} km`}
+        />
+        <MetricTile
+          label="Average duration"
+          value={`${averageDuration.toFixed(2)} min`}
+        />
+        <MetricTile label="Active days" value={String(activeDays)} />
+        <MetricTile
+          label="Current streak"
+          value={`${currentStreak} day${currentStreak === 1 ? "" : "s"}`}
+        />
+        <MetricTile
+          label="Latest activity"
+          value={latestActivityDate ? formatDate(latestActivityDate) : "-"}
+        />
+        {!categoryFilter && (
+          <MetricTile
+            label="Most frequent category"
+            value={
+              mostFrequentCategory
+                ? uppercaseFirstLetter(mostFrequentCategory)
+                : "-"
+            }
+            className="sm:col-span-2"
+          />
+        )}
+      </div>
+    </Card>
+  );
+};

@@ -1,7 +1,7 @@
 "use client";
 
 import { getCategoryColor } from "@/lib/utils";
-import { PieChart, Pie, Tooltip, Legend } from "recharts";
+import { PieChart, Pie, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { CategoryActivityTotal } from "@/types/api/analytics";
 import { EmptyState } from "@/components/states/EmptyState";
 
@@ -19,24 +19,28 @@ export const CategoryBreakDownChart = ({
     return (
       <EmptyState
         description="Breakdown chart is not available yet"
-        containerClassName="w-[400px] h-[300px]"
+        containerClassName="h-[220px] w-full"
       />
     );
   }
   return (
-    <PieChart width={400} height={300}>
-      <Pie
-        data={dataWithColors}
-        dataKey="total"
-        nameKey="category"
-        cx="50%"
-        cy="50%"
-        outerRadius={100}
-        label
-      />
+    <div className="h-[220px] w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={dataWithColors}
+            dataKey="total"
+            nameKey="category"
+            cx="50%"
+            cy="50%"
+            outerRadius={88}
+            label
+          />
 
-      <Tooltip />
-      <Legend />
-    </PieChart>
+          <Tooltip />
+          <Legend />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
   );
 };
