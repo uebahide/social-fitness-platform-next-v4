@@ -7,16 +7,16 @@ import { Category, CategoryType } from "@/types/api/category";
 import { cn } from "@/lib/utils";
 
 export function CategoryFilter({
-  categoryFilter,
+  currentFilter,
 }: {
-  categoryFilter: CategoryType | null;
+  currentFilter: CategoryType | null;
 }) {
   const { categories } = useCategories();
 
   return (
     <nav className="flex gap-2">
       {categories.map((category: Category) => {
-        const isSelected = categoryFilter === category.name;
+        const isSelected = currentFilter === category.name;
         const href = isSelected
           ? "/activity?page=1"
           : `/activity?page=1&category=${category.name}`;

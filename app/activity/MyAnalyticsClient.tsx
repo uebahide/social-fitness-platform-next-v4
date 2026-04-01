@@ -69,7 +69,7 @@ export const MyAnalyticsClient = ({
         Activity Overview
       </h2>
       <nav className="flex justify-between gap-2">
-        <CategoryFilter categoryFilter={categoryFilter} />
+        <CategoryFilter currentFilter={categoryFilter} />
         <select
           className="bg-card rounded-lg border border-gray-300 px-2 py-1"
           onChange={(e) => setDays(Number(e.target.value))}
