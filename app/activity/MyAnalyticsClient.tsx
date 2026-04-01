@@ -8,6 +8,8 @@ import { TrendLineChart } from "./TrendLineChart";
 import { Card } from "@/components/Card";
 import { CategoryFilter } from "./CategoryFilter";
 import { CategoryType } from "@/types/api/category";
+import { CategoryIcon } from "@/components/CategoryIcon";
+import { formatDate, uppercaseFirstLetter } from "@/lib/utils";
 
 export const MyAnalyticsClient = ({
   analyticsDashboardData,
@@ -26,9 +28,19 @@ export const MyAnalyticsClient = ({
     last60DaysCategoryActivityTotal,
     last90DaysCategoryActivityTotal,
     dailyDistanceAndDurationValues,
+    longestDistance,
+    longestDuration,
+    totalDuration,
+    averageDistance,
+    averageDuration,
+    activeDays,
+    currentStreak,
+    latestActivityDate,
+    mostFrequentCategory,
   } = analyticsDashboardData;
 
   const [days, setDays] = useState<number>(7);
+
   const categoryBreakDownData =
     days === 7
       ? last7DaysCategoryActivityTotal
@@ -59,6 +71,9 @@ export const MyAnalyticsClient = ({
     (acc, curr) => acc + Number(curr.distance),
     0,
   );
+  const filteredCategoryLabel = categoryFilter
+    ? uppercaseFirstLetter(categoryFilter)
+    : null;
 
   return (
     <section className="space-y-4 ">
@@ -82,16 +97,53 @@ export const MyAnalyticsClient = ({
       </nav>
 
       <main className="flex gap-4">
+        {categoryFilter ? (
+          <Card className="h-[300px] flex items-center justify-center bg-gradient-to-br from-brand-secondary-50 via-white to-brand-primary-50">
+            <div className="flex h-full w-full flex-col items-center justify-center gap-4 px-8 text-center">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-gray-200">
+                <CategoryIcon category={categoryFilter} size="large" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-semibold text-gray-900">
+                  Viewing {filteredCategoryLabel} only
+                </h3>
+                <p className="text-sm leading-6 text-gray-500">
+                  Breakdown is available when all categories are selected.
+                </p>
+              </div>
+            </div>
+          </Card>
+        ) : (
+          <Card className="h-[300px] flex items-center justify-center">
+            <CategoryBreakDownChart data={categoryBreakDownData} />
+          </Card>
+        )}
+
         <Card className="h-[300px] flex items-center justify-center">
           <TrendLineChart trendData={trendData} />
         </Card>
 
-        <Card className="h-[300px] flex items-center justify-center">
-          <CategoryBreakDownChart data={categoryBreakDownData} />
-        </Card>
         <Card className="h-[300px] flex flex-col flex-1 w-full">
           <div>Activity count: {totalActivityCount}</div>
           <div>Total distance: {totalDistance.toFixed(2)} km</div>
+          <div>Longest distance: {longestDistance.toFixed(2)} km</div>
+          <div>Longest duration: {longestDuration.toFixed(2)} hours</div>
+          <div>Total duration: {totalDuration.toFixed(2)} hours</div>
+          <div>Average distance: {averageDistance.toFixed(2)} km</div>
+          <div>Average duration: {averageDuration.toFixed(2)} hours</div>
+          <div>Active days: {activeDays}</div>
+          <div>Current streak: {currentStreak}</div>
+          {latestActivityDate && (
+            <div>Latest activity: {formatDate(latestActivityDate)}</div>
+          )}
+          {!categoryFilter && (
+            <div>
+              Most frequent category:{" "}
+              {mostFrequentCategory
+                ? uppercaseFirstLetter(mostFrequentCategory)
+                : "-"}
+            </div>
+          )}
         </Card>
       </main>
     </section>

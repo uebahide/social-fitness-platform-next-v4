@@ -1,3 +1,5 @@
+import { CategoryType } from "./category";
+
 export type DashboardAnalyticsType = {
   last7DaysActivityTotal: number;
   last30DaysActivityTotal: number;
@@ -8,6 +10,15 @@ export type DashboardAnalyticsType = {
   last60DaysCategoryActivityTotal: CategoryActivityTotal[];
   last90DaysCategoryActivityTotal: CategoryActivityTotal[];
   dailyDistanceAndDurationValues: DailyDistanceAndDurationValues[];
+  longestDistance: number;
+  longestDuration: number;
+  totalDuration: number;
+  averageDistance: number;
+  averageDuration: number;
+  activeDays: number;
+  latestActivityDate: string | null;
+  currentStreak: number;
+  mostFrequentCategory: CategoryType | null;
 };
 
 export type CategoryActivityTotal = {
