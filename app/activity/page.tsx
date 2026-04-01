@@ -3,13 +3,10 @@ import { MyActivities } from "./MyActivities";
 import { Suspense } from "react";
 
 import { PaginationSimple } from "@/components/Pagination";
-import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
-import { createClient } from "@/lib/supabase/server";
-import { PER_PAGE } from "@/constants";
 import { MyAnalytics } from "./MyAnalytics";
 import { MyAnalyticsSkeleton } from "@/components/skeletons/MyAnalyticsSkeleton";
-import { EmptyState } from "@/components/states/EmptyState";
-import { PageHeader } from "@/components/PageHeader";
+import { MyActivitiesSkeleton } from "@/components/skeletons/MyActivitiesSkeleton";
+import { PageContainer } from "@/components/PageContainer";
 
 type PageProps = {
   searchParams: Promise<{
@@ -22,34 +19,13 @@ export default async function Activity({ searchParams }: PageProps) {
   const { page: pageNumber, forceError } = await searchParams;
   const page: number = parseInt(pageNumber ?? "1") || 1;
 
-  const supabase = await createClient();
-  const userId = await getCurrentUserId();
-  const { data: activities, error: activitiesError } = await supabase
-    .from("activities")
-    .select(
-      "*, user:user_id(*), category:category_id(name), details:activity_details(location, distance, duration)",
-    )
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(PER_PAGE)
-    .range((page - 1) * PER_PAGE, page * PER_PAGE - 1);
-
-  if (process.env.APP_ENV === "test" && forceError === "1") {
-    throw new Error("Test error");
-  }
-
-  if (activitiesError) {
-    throw new Error(activitiesError.message);
-  }
-
   return (
-    <section className="flex flex-col gap-6">
-      <PageHeader
-        eyebrow="Training Log"
-        title="My Activity"
-        description="Review your recent sessions, track your patterns, and keep your personal training history organized."
-      />
-      <div>
+    <PageContainer
+      eyebrow="Training Log"
+      title="My Activity"
+      description="Review your recent sessions, track your patterns, and keep your personal training history organized."
+    >
+      <div className="z-10">
         <Suspense fallback={<MyAnalyticsSkeleton />}>
           <MyAnalytics />
         </Suspense>
@@ -61,16 +37,11 @@ export default async function Activity({ searchParams }: PageProps) {
           </h2>
           <AddActivityButton />
         </header>
-        {activities && activities.length > 0 ? (
-          <MyActivities activities={activities ?? []} />
-        ) : (
-          <EmptyState
-            title="No activities yet"
-            description="Start an activity to see your activities here 💪"
-          />
-        )}
+        <Suspense fallback={<MyActivitiesSkeleton />}>
+          <MyActivities page={page} forceError={forceError} />
+        </Suspense>
         <PaginationSimple page={page} />
       </div>
-    </section>
+    </PageContainer>
   );
 }
