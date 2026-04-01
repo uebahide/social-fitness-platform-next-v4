@@ -81,11 +81,11 @@ export default async function Home() {
                   </p>
                   <p className="text-lg font-medium">Community race season</p>
                 </div>
-                <div className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-right">
+                <div className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-right shrink-0">
                   <p className="text-[11px] uppercase tracking-[0.2em] text-white/60">
                     Status
                   </p>
-                  <p className="text-sm font-medium">In planning</p>
+                  <p className="text-sm font-medium ">In planning</p>
                 </div>
               </div>
             </Card>
