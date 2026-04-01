@@ -30,7 +30,7 @@ export default async function Activity({ searchParams }: PageProps) {
     >
       <div className="z-10">
         <Suspense fallback={<MyAnalyticsSkeleton />}>
-          <MyAnalytics />
+          <MyAnalytics categoryFilter={categoryFilter} />
         </Suspense>
       </div>
       <div className="space-y-6">

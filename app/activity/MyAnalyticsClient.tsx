@@ -6,11 +6,15 @@ import { DashboardAnalyticsType } from "@/types/api/analytics";
 
 import { TrendLineChart } from "./TrendLineChart";
 import { Card } from "@/components/Card";
+import { CategoryFilter } from "./CategoryFilter";
+import { CategoryType } from "@/types/api/category";
 
 export const MyAnalyticsClient = ({
   analyticsDashboardData,
+  categoryFilter,
 }: {
   analyticsDashboardData: DashboardAnalyticsType;
+  categoryFilter: CategoryType | null;
 }) => {
   const {
     last7DaysActivityTotal,
@@ -64,7 +68,8 @@ export const MyAnalyticsClient = ({
       >
         Activity Overview
       </h2>
-      <nav className="flex justify-start gap-2">
+      <nav className="flex justify-between gap-2">
+        <CategoryFilter categoryFilter={categoryFilter} />
         <select
           className="bg-card rounded-lg border border-gray-300 px-2 py-1"
           onChange={(e) => setDays(Number(e.target.value))}
