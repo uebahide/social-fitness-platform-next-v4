@@ -1,7 +1,7 @@
 export const WeatherCardSkeleton = () => {
   return (
     <section className="col-span-1 row-span-1 animate-pulse">
-      <div className="bg-card relative mt-9 space-y-8 rounded-sm border border-gray-200 px-7 py-6">
+      <div className="bg-card relative space-y-8 rounded-sm border border-gray-200 px-7 py-6">
         {/* Date */}
         <div className="flex items-end gap-x-4">
           <div className="h-8 w-32 bg-gray-200 rounded" />
