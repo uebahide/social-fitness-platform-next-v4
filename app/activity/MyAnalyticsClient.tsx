@@ -57,8 +57,13 @@ export const MyAnalyticsClient = ({
   );
 
   return (
-    <section className="space-y-4 mt-4">
-      <h1>Activity Overview</h1>
+    <section className="space-y-4 ">
+      <h2
+        data-testid="activity-overview-title"
+        className="text-lg font-semibold"
+      >
+        Activity Overview
+      </h2>
       <nav className="flex justify-start gap-2">
         <select
           className="bg-card rounded-lg border border-gray-300 px-2 py-1"
