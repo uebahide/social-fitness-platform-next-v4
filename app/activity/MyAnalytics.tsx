@@ -7,7 +7,9 @@ export const MyAnalytics = async ({
 }: {
   categoryFilter: CategoryType | null;
 }) => {
-  const analyticsDashboardData = await getDashboardAnalytics();
+  const analyticsDashboardData = await getDashboardAnalytics({
+    categoryFilter: categoryFilter as CategoryType | null,
+  });
 
   return (
     <MyAnalyticsClient
