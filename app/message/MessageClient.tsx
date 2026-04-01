@@ -42,7 +42,7 @@ export const MessageClient = ({
     room_id: number;
     last_read_message_id: number;
   }[];
-  latestMessagesByRoom: Record<number, Message>;
+  latestMessagesByRoom: Record<number, Message | null>;
 }) => {
   const dispatch = useDispatch();
   const user = useUser();
@@ -73,7 +73,7 @@ export const MessageClient = ({
       dispatch(
         setLatestMessagesByRoom({
           roomId: roomId,
-          message: latestMessagesByRoom[roomId],
+          message: latestMessagesByRoom[roomId] ?? null,
         }),
       );
     });

@@ -64,8 +64,8 @@ const RoomListItem = ({ room }: { room: Room }) => {
   const myLastReadMessageId = useSelector((state: RootState) =>
     selectMyLastReadMessageIdByRoom(state, room.id),
   );
-  const latestMessage =
-    useSelector(selectLatestMessagesByRoom)[room.id] ?? null;
+  const latestMessage = useSelector(selectLatestMessagesByRoom)[room.id];
+  const isLatestMessagePending = latestMessage === undefined;
 
   const isLatestMessageFromFriend = latestMessage?.user_id === friend?.id;
   const isDeleted = latestMessage?.deleted;
@@ -80,7 +80,7 @@ const RoomListItem = ({ room }: { room: Room }) => {
       isLatestMessageFromFriend &&
       myLastReadMessageId < latestMessage?.id);
 
-  const latestMessagePreview = isDeleted ? (
+  const latestMessagePreview = isLatestMessagePending ? null : isDeleted ? (
     <span className="italic text-[11px]">This message has been unsent</span>
   ) : isImage ? (
     <span className="italic text-[11px]">

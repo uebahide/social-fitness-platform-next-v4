@@ -20,7 +20,7 @@ export async function getLatestMessagesByRoom(roomIds: number[]) {
         );
       }
 
-      return [roomId, data?.[0] as Message] as const;
+      return [roomId, (data?.[0] ?? null) as Message | null] as const;
     }),
   );
   const latestMessagesByRoom = Object.fromEntries(latestMessageEntries);

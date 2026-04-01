@@ -1,3 +1,5 @@
+"use client";
+
 import { MessageList } from "./MessageList";
 import { Room } from "@/types/api/message";
 import { ChatHeader } from "./ChatHeader";
@@ -10,24 +12,40 @@ import {
   selectSelectedRoom,
   selectSelectedRoomId,
 } from "@/lib/redux/features/message/messageSelector";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { RootState } from "@/lib/redux/store";
-import { setRoomLoaded } from "@/lib/redux/features/message/messageSlice";
+import {
+  setRoomLoaded,
+  setRoomLoading,
+  setRoomError,
+  setRoomIdle,
+} from "@/lib/redux/features/message/messageSlice";
+import { MessageListSkeleton } from "@/components/skeletons/MessageListSkeleton";
+import { Button } from "@/components/ui/button";
 
 export const MessagePanel = () => {
   const { selectedMessage } = useMessageEditor();
   const selectedRoom = useSelector(selectSelectedRoom) as Room | null;
   const dispatch = useDispatch();
-  const supabase = createClient();
   const selectedRoomId = useSelector(selectSelectedRoomId);
   const roomLoadStatus = useSelector((state: RootState) =>
     selectRoomLoadStatus(state, selectedRoomId as number),
   );
+  const [retryKey, setRetryKey] = useState<number>(0);
+
+  const handleRetry = () => {
+    dispatch(setRoomIdle(selectedRoomId as number));
+    setRetryKey((prev) => prev + 1);
+  };
 
   // fetch messages when the room is selected
   useEffect(() => {
+    if (selectedRoomId == null) return;
+
+    const supabase = createClient();
     const fetchMessages = async () => {
+      dispatch(setRoomLoading(selectedRoomId as number));
       const { data, error } = await supabase
         .from("messages")
         .select(
@@ -38,6 +56,7 @@ export const MessagePanel = () => {
 
       if (error) {
         console.error(error);
+        dispatch(setRoomError(selectedRoomId as number));
         return;
       }
 
@@ -52,7 +71,7 @@ export const MessagePanel = () => {
     if (roomLoadStatus === "idle") {
       fetchMessages();
     }
-  }, [roomLoadStatus, selectedRoomId, dispatch, supabase]);
+  }, [selectedRoomId, dispatch, retryKey, roomLoadStatus]);
 
   return (
     <div
@@ -64,7 +83,18 @@ export const MessagePanel = () => {
       ) : (
         <>
           <ChatHeader />
-          <MessageList />
+          {roomLoadStatus === "loading" && <MessageListSkeleton />}
+          {roomLoadStatus === "loaded" && <MessageList />}
+          {roomLoadStatus === "error" && (
+            <div className="flex h-[calc(100vh-95px)] flex-col items-center justify-center gap-4">
+              <p className="text-center text-sm font-medium text-gray-500">
+                Could not load messages.
+              </p>
+              <Button variant="outline" onClick={handleRetry}>
+                Retry
+              </Button>
+            </div>
+          )}
           {selectedMessage ? <MessageEditInput /> : <MessageInput />}
         </>
       )}
@@ -72,7 +102,7 @@ export const MessagePanel = () => {
   );
 };
 
-const EmptyMessagePanel = () => {
+export const EmptyMessagePanel = () => {
   return (
     <div className="flex h-[calc(100vh-95px)] flex-col items-center justify-center gap-4">
       <h1 className="text-center text-sm font-medium text-gray-500">
