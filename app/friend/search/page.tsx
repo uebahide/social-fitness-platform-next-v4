@@ -1,5 +1,6 @@
 import { UserList } from "./UserList";
 import { PageHeader } from "@/components/PageHeader";
+import { PageGuidePanel } from "@/components/PageGuidePanel";
 
 export default async function SearchPage() {
   return (
@@ -11,9 +12,24 @@ export default async function SearchPage() {
       />
       <div className="grid grid-cols-[3fr_7fr] gap-4">
         <UserList />
-        <article className="flex items-center justify-center">
-          <p>Search for a user by name.</p>
-        </article>
+        <PageGuidePanel
+          eyebrow="Search Tips"
+          title="Find your next training partner"
+          description="Look up members by display name, then decide whether to connect, view their profile, or start chatting if you are already friends."
+          highlights={[
+            "Search works best with display names, so even partial matches can help you find someone quickly.",
+            "If you are already connected, you can jump straight into a message from the result list.",
+            "If you are not connected yet, send a request and come back later to continue the conversation.",
+          ]}
+          primaryAction={{
+            href: "/friend/friend-list",
+            label: "View friend list",
+          }}
+          secondaryAction={{
+            href: "/message",
+            label: "Go to messages",
+          }}
+        />
       </div>
     </section>
   );

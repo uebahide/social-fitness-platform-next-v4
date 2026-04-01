@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/PageHeader";
+import { PageGuidePanel } from "@/components/PageGuidePanel";
 
 export default function loading() {
   return (
@@ -36,11 +37,25 @@ export default function loading() {
             ))}
           </ul>
         </aside>
-        <div className="flex justify-center items-center">
-          <p data-testid="friend-list-description">
-            Select a friend from the list to view their profile
-          </p>
-        </div>
+        <PageGuidePanel
+          testId="friend-list-description"
+          eyebrow="Network Guide"
+          title="Your circle, organized"
+          description="Use the left panel to explore your current friends, review pending requests, and jump straight into the next action."
+          highlights={[
+            "Select a friend to open their profile and review their latest public activity.",
+            "Switch to the request tab to accept or review new connection requests.",
+            "Start a message directly from the list when you are ready to chat.",
+          ]}
+          primaryAction={{
+            href: "/friend/search",
+            label: "Search for more people",
+          }}
+          secondaryAction={{
+            href: "/message",
+            label: "Open messages",
+          }}
+        />
       </div>
     </section>
   );
