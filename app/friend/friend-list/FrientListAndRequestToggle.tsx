@@ -33,6 +33,7 @@ export const FriendListAndRequestToggle = ({
             currentTab === "request" ? "text-black" : "text-gray-500",
             "cursor-pointer select-none",
           )}
+          data-testid="friend-list-and-request-toggle-request"
         >
           Request
         </li>

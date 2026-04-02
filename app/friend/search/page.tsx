@@ -2,7 +2,12 @@ import { UserList } from "./UserList";
 import { PageGuidePanel } from "@/components/PageGuidePanel";
 import { PageContainer } from "@/components/PageContainer";
 
-export default async function SearchPage() {
+export default async function SearchPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ forceError?: string }>;
+}) {
+  const { forceError } = await searchParams;
   return (
     <PageContainer
       eyebrow="Connections"
@@ -10,7 +15,7 @@ export default async function SearchPage() {
       description="Look up other members by name, send requests, and discover new training partners."
     >
       <div className="grid grid-cols-[3fr_7fr] gap-4">
-        <UserList />
+        <UserList forceError={forceError} />
         <PageGuidePanel
           eyebrow="Search Tips"
           title="Find your next training partner"
@@ -28,6 +33,7 @@ export default async function SearchPage() {
             href: "/message",
             label: "Go to messages",
           }}
+          testId="friend-search-guide-panel"
         />
       </div>
     </PageContainer>

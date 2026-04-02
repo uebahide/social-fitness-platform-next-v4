@@ -2,7 +2,10 @@ import { Skeleton } from "../ui/skeleton";
 
 export const MyAnalyticsSkeleton = () => {
   return (
-    <div className="mt-4 space-y-5 animate-pulse">
+    <div
+      className="mt-4 space-y-5 animate-pulse"
+      data-testid="analytics-skeleton"
+    >
       <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
         <Skeleton className="h-6 w-40 rounded" />
         <Skeleton className="h-10 w-36 rounded-lg" />

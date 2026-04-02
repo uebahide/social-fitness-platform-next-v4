@@ -52,7 +52,11 @@ export const FriendList = ({
           filteredFriends &&
           filteredFriends.length === 0 && (
             <li>
-              <EmptyState title="No friends" description="No friends found" />
+              <EmptyState
+                title="No friends"
+                description="No friends found"
+                data-testid="friend-list-empty-friends-state"
+              />
             </li>
           )}
         {currentTab === "friend" &&
@@ -65,7 +69,11 @@ export const FriendList = ({
           filteredRequests &&
           filteredRequests.length === 0 && (
             <li>
-              <EmptyState title="No requests" description="No requests found" />
+              <EmptyState
+                title="No requests"
+                description="No requests found"
+                data-testid="friend-list-empty-requests-state"
+              />
             </li>
           )}
         {currentTab === "request" &&

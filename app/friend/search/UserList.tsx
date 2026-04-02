@@ -11,7 +11,7 @@ import { EmptyState } from "@/components/states/EmptyState";
 import { UserListSkeleton } from "@/components/skeletons/UserListSkeleton";
 import { Button } from "@/components/buttons/Button";
 
-export const UserList = () => {
+export const UserList = ({ forceError }: { forceError?: string }) => {
   const { user: currentUser } = useUser();
   const [search, setSearch] = useState("");
   const [searchResult, setSearchResult] = useState<User[]>([]);
@@ -59,6 +59,11 @@ export const UserList = () => {
           return;
         }
 
+        if (forceError === "1") {
+          throw new Error("Force error");
+          return;
+        }
+
         setSearchResult(users ?? []);
         setStatus("success");
       } catch {
@@ -84,12 +89,16 @@ export const UserList = () => {
         className="w-full"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
+        data-testid="friend-search-search-input"
       />
 
       <ul className="flex flex-col overflow-y-auto">
         {status === "idle" && (
           <li>
-            <EmptyState description="Search for a user by name 🔎" />
+            <EmptyState
+              description="Search for a user by name 🔎"
+              data-testid="friend-search-idle-state"
+            />
           </li>
         )}
 
@@ -100,17 +109,23 @@ export const UserList = () => {
             <EmptyState
               title="No users found"
               description="Try another name."
+              data-testid="friend-search-empty-state"
             />
           </li>
         )}
 
         {status === "success" &&
-          searchResult.map((user) => (
-            <UserItem key={user.id} user={user} currentUser={currentUser} />
+          searchResult.map((user, index) => (
+            <UserItem
+              key={user.id}
+              user={user}
+              currentUser={currentUser}
+              data-testid={`friend-search-result-${index}`}
+            />
           ))}
 
         {status === "error" && (
-          <li className="p-2">
+          <li className="p-2" data-testid="friend-search-error-state">
             <div className="flex flex-col items-center gap-3 py-6">
               <p className="text-sm font-medium text-gray-700">
                 Could not load users.

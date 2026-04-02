@@ -123,6 +123,7 @@ export function PaginationSimple({
                   ? `/activity?page=${page + 1}&category=${categoryFilter}`
                   : `/activity?page=${page + 1}`
               }
+              data-testid="my-activity-pagination-next"
             />
           </PaginationItem>
         )}

@@ -36,6 +36,7 @@ export const MyActivities = async ({
     <EmptyState
       title="No activities yet"
       description="Start an activity to see your activities here 💪"
+      data-testid="my-activities-empty-state"
     />
   );
 };

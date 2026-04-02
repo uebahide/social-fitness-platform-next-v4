@@ -16,7 +16,7 @@ export default function loading() {
       >
         <aside
           className="bg-card flex flex-col gap-4 rounded-l-sm border border-r-0 border-gray-200 p-3"
-          data-testid="message-sidebar"
+          data-testid="message-sidebar-skeleton"
         >
           <Input type="text" placeholder="Search" className="w-full" />
           <ul className="flex h-[calc(100vh-200px)] flex-col gap-3 overflow-y-auto">

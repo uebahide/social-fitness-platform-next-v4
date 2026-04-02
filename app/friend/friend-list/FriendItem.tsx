@@ -8,6 +8,7 @@ export const FriendItem = ({ friend }: { friend: User }) => {
   return (
     <li className="flex items-center justify-between gap-5">
       <Link
+        data-testid={`friend-item-${friend.id}`}
         href={`/profile/${friend.id}`}
         className="flex w-full cursor-pointer items-center gap-2 rounded-sm p-2 hover:bg-gray-50"
       >
@@ -15,7 +16,10 @@ export const FriendItem = ({ friend }: { friend: User }) => {
         <div>{friend.display_name}</div>
       </Link>
       <Link href={`/message?friendId=${friend.id}`}>
-        <Button color="secondary">
+        <Button
+          color="secondary"
+          data-testid={`friend-item-${friend.id}-chat-button`}
+        >
           <MessageCircleIcon className="size-5 cursor-pointer text-gray-500 hover:text-gray-700" />
         </Button>
       </Link>

@@ -120,6 +120,7 @@ export const MessageList = () => {
         ))
       ) : (
         <EmptyState
+          data-testid="message-empty-conversation-state"
           title="No messages yet"
           description={`Start a conversation with ${friendDisplayName} to see your messages here 💬`}
         />

@@ -5,6 +5,7 @@ export const EmptyState = ({
   title,
   description,
   containerClassName,
+  ...props
 }: {
   title?: string;
   description?: string;
@@ -17,6 +18,7 @@ export const EmptyState = ({
         "flex flex-col items-center justify-center gap-4",
         containerClassName,
       )}
+      {...props}
     >
       {title && <h2 className="text-2xl font-bold">{title}</h2>}
       {description && <p className="text-sm text-gray-500">{description}</p>}

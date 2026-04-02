@@ -12,6 +12,7 @@ import { SubmitButton } from "@/components/buttons/SubmitButton";
 export const UserItem = ({
   user,
   currentUser,
+  ...props
 }: {
   user: User;
   currentUser: User | null;
@@ -48,7 +49,10 @@ export const UserItem = ({
   }
 
   return (
-    <li className="flex cursor-pointer items-center justify-between gap-5 rounded-sm p-2 ">
+    <li
+      className="flex cursor-pointer items-center justify-between gap-5 rounded-sm p-2 "
+      {...props}
+    >
       <Link
         href={`/profile/${user.id}`}
         className="flex items-center gap-5 w-full hover:bg-gray-50 rounded-sm p-2"

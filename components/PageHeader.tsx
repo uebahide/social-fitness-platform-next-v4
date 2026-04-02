@@ -14,7 +14,7 @@ export const PageHeader = ({
   badges = [],
 }: PageHeaderProps) => {
   return (
-    <header className="px-1 py-2">
+    <header data-testid="page-header" className="px-1 py-2">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-3">
           <div className="flex items-center gap-3">

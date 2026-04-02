@@ -17,7 +17,7 @@ export const MyActivitiesClient = ({
 
 function ActivityList({ activities }: { activities: ActivityType[] }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="activities-list-section">
       {activities &&
         activities.length > 0 &&
         activities.map((activity: ActivityType) => {

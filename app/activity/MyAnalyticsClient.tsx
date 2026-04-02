@@ -72,7 +72,7 @@ export const MyAnalyticsClient = ({
   );
 
   return (
-    <section className="space-y-5">
+    <section className="space-y-5" data-testid="analytics-section">
       <h2
         data-testid="activity-overview-title"
         className="text-lg font-semibold"
@@ -108,6 +108,7 @@ function MetricTile({
   value,
   tone = "neutral",
   className,
+  ...props
 }: {
   label: string;
   value: string;
@@ -122,6 +123,7 @@ function MetricTile({
           "border-brand-primary-200 bg-gradient-to-br from-brand-primary-50 via-white to-brand-secondary-50",
         className,
       )}
+      {...props}
     >
       <p className="text-xs font-medium uppercase tracking-[0.18em] text-gray-500">
         {label}
@@ -177,7 +179,10 @@ const CategoryMixCard = ({
     : null;
   if (categoryFilter) {
     return (
-      <Card className="flex min-h-[280px] items-center justify-center bg-gradient-to-br from-brand-secondary-50 via-white to-brand-primary-50 p-8">
+      <Card
+        className="flex min-h-[280px] items-center justify-center bg-gradient-to-br from-brand-secondary-50 via-white to-brand-primary-50 p-8"
+        data-testid="category-mix-card-focus-mode"
+      >
         <div className="flex h-full w-full flex-col items-center justify-center gap-5 text-center">
           <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-gray-200">
             <CategoryIcon category={categoryFilter} size="large" />
@@ -198,7 +203,10 @@ const CategoryMixCard = ({
     );
   }
   return (
-    <Card className="min-h-[280px] space-y-4 p-5">
+    <Card
+      className="min-h-[280px] space-y-4 p-5"
+      data-testid="category-mix-card"
+    >
       <div className="space-y-1">
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-500">
           Category Mix
@@ -226,6 +234,7 @@ const DateRangePicker = ({
       className="bg-card rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 shadow-sm"
       onChange={(e) => setDays(Number(e.target.value))}
       value={days}
+      data-testid="date-range-picker"
     >
       <option value="7">Last 7 days</option>
       <option value="30">Last 30 days</option>
@@ -243,7 +252,10 @@ const DistanceTrendCard = ({
   distanceTrendData: { name: string; value: number }[];
 }) => {
   return (
-    <Card className="min-h-[280px] space-y-4 p-5">
+    <Card
+      className="min-h-[280px] space-y-4 p-5"
+      data-testid="distance-trend-card"
+    >
       <div className="space-y-1">
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-500">
           Distance Trend
@@ -269,7 +281,10 @@ const DurationTrendCard = ({
   durationTrendData: { name: string; value: number }[];
 }) => {
   return (
-    <Card className="min-h-[280px] space-y-4 p-5">
+    <Card
+      className="min-h-[280px] space-y-4 p-5"
+      data-testid="duration-trend-card"
+    >
       <div className="space-y-1">
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-500">
           Duration Trend
@@ -293,7 +308,10 @@ const ConsistencyBarCard = ({
   weeklyConsistencyData: { name: string; activeDays: number }[];
 }) => {
   return (
-    <Card className="min-h-[280px] space-y-4 p-5">
+    <Card
+      className="min-h-[280px] space-y-4 p-5"
+      data-testid="consistency-bar-card"
+    >
       <div className="space-y-1">
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-500">
           Consistency
@@ -330,7 +348,10 @@ const QuickStatsCard = ({
     mostFrequentCategory,
   } = analyticsDashboardData;
   return (
-    <Card className="space-y-4 p-5 xl:row-span-2">
+    <Card
+      className="space-y-4 p-5 xl:row-span-2"
+      data-testid="quick-stats-card"
+    >
       <div className="space-y-1">
         <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gray-500">
           Quick Stats
@@ -388,6 +409,7 @@ const QuickStatsCard = ({
                 : "-"
             }
             className="sm:col-span-2"
+            data-testid="most-frequent-category-metric"
           />
         )}
       </div>

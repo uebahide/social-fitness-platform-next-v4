@@ -7,7 +7,6 @@ import { getMyLastReadMessageIdsByRoom } from "@/lib/server/getMyLastReadMessage
 import { getFriendLastReadMessageIdsByRoom } from "@/lib/server/getFriendLastReadMessageIdsByRoom";
 import { getLatestMessagesByRoom } from "@/lib/server/getLatestMessagesByRoom";
 import { getOrCreatePrivateRoom } from "@/lib/server/getOrCreatePrivateRoom";
-import { PageHeader } from "@/components/PageHeader";
 import { PageContainer } from "@/components/PageContainer";
 
 export default async function MessagePage({

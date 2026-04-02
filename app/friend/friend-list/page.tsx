@@ -28,7 +28,7 @@ export default async function FriendListPage({
       <div className="grid grid-cols-[3fr_7fr] gap-4">
         <FriendList friends={friends} requests={receivedRequests} />
         <PageGuidePanel
-          testId="friend-list-description"
+          testId="friend-list-guide-panel"
           eyebrow="Network Guide"
           title="Your circle, organized"
           description="Use the left panel to explore your current friends, review pending requests, and jump straight into the next action."
