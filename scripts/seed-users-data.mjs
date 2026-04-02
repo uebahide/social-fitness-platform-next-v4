@@ -20,6 +20,7 @@ const names = [
   ["Lily", "Cooper"],
   ["Benjamin", "Bailey"],
   ["Zoe", "Rivera"],
+  ["Empty", "Friends"],
 ];
 
 function toEmailLocalPart(firstName, lastName) {

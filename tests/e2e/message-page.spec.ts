@@ -11,3 +11,10 @@ test("message error", async ({ page }) => {
   await expect(page.getByTestId("route-error-title")).toBeVisible();
   await expect(page.getByTestId("route-error-reset")).toBeVisible();
 });
+
+test("message empty conversation state", async ({ page }) => {
+  await page.goto("/message?friendId=2");
+  await expect(
+    page.getByTestId("message-empty-conversation-state"),
+  ).toBeVisible();
+});

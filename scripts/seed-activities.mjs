@@ -10,7 +10,7 @@ const publishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
   process.env.PUBLISHABLE_KEY;
 const defaultPassword = process.env.SEED_USER_PASSWORD || "password";
-const activitiesPerUser = 20;
+const activitiesPerUser = 50;
 
 if (!publishableKey) {
   throw new Error(
@@ -270,25 +270,48 @@ function buildActivityPlan(profile) {
   const now = new Date();
   const categories = [
     "running",
+    "running",
     "walking",
     "cycling",
     "running",
-    "swimming",
+    "running",
     "walking",
     "cycling",
     "hiking",
     "running",
     "walking",
-    "swimming",
+    "running",
     "cycling",
     "hiking",
     "running",
     "walking",
     "cycling",
-    "swimming",
     "running",
+    "running",
+    "cycling",
     "hiking",
     "walking",
+    "running",
+    "running",
+    "walking",
+    "cycling",
+    "running",
+    "running",
+    "running",
+    "walking",
+    "cycling",
+    "running",
+    "running",
+    "walking",
+    "running",
+    "running",
+    "running",
+    "cycling",
+    "running",
+    "running",
+    "walking",
+    "running",
+    "running",
   ];
 
   let daysAgo = intBetween(rng, 2, 5);
