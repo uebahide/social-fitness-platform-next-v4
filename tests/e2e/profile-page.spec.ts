@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { getFriendProfileHref } from "./helpers/seededFriendRoutes";
 
 test("profile not found", async ({ page }) => {
   await page.goto("/profile/1000");
@@ -6,12 +7,14 @@ test("profile not found", async ({ page }) => {
 });
 
 test("profile found", async ({ page }) => {
-  await page.goto("/profile/2");
+  const profileHref = await getFriendProfileHref(page, "Alex Walker");
+  await page.goto(profileHref);
   await expect(page.getByTestId("user-display-name")).toBeVisible();
 });
 
 test("profile error", async ({ page }) => {
-  await page.goto("/profile/2?forceError=1");
+  const profileHref = await getFriendProfileHref(page, "Alex Walker");
+  await page.goto(`${profileHref}?forceError=1`);
   await expect(page.getByTestId("route-error-title")).toBeVisible();
   await expect(page.getByTestId("route-error-reset")).toBeVisible();
 });

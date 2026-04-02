@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { getFriendMessageHref } from "./helpers/seededFriendRoutes";
 
 test("message page", async ({ page }) => {
   await page.goto("/message");
@@ -13,7 +14,8 @@ test("message error", async ({ page }) => {
 });
 
 test("message empty conversation state", async ({ page }) => {
-  await page.goto("/message?friendId=2");
+  const messageHref = await getFriendMessageHref(page, "Alex Walker");
+  await page.goto(messageHref);
   await expect(
     page.getByTestId("message-empty-conversation-state"),
   ).toBeVisible();
