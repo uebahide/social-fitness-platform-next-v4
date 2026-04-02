@@ -136,10 +136,15 @@ function MetricTile({
 }
 
 function formatChartDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString("en-GB", {
+  return parseLocalDate(dateString).toLocaleDateString("en-GB", {
     month: "short",
     day: "numeric",
   });
+}
+
+function parseLocalDate(dateString: string) {
+  const [year, month, day] = dateString.split("-").map(Number);
+  return new Date(year, month - 1, day);
 }
 
 function buildWeeklyConsistencyData(
@@ -151,13 +156,17 @@ function buildWeeklyConsistencyData(
     const isActive = Number(item.distance) > 0 || Number(item.duration) > 0;
     if (!isActive) return;
 
-    const date = new Date(item.date);
+    const date = parseLocalDate(item.date);
     const weekStart = new Date(date);
     const day = weekStart.getDay();
     const diff = day === 0 ? -6 : 1 - day;
     weekStart.setDate(weekStart.getDate() + diff);
 
-    const key = weekStart.toISOString().slice(0, 10);
+    const key = [
+      weekStart.getFullYear(),
+      String(weekStart.getMonth() + 1).padStart(2, "0"),
+      String(weekStart.getDate()).padStart(2, "0"),
+    ].join("-");
     weekMap.set(key, (weekMap.get(key) ?? 0) + 1);
   });
 
