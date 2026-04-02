@@ -9,15 +9,36 @@ const supabaseUrl =
 const publishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
   process.env.PUBLISHABLE_KEY;
+const serviceRoleKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_SECRET_KEY ||
+  process.env.SECRET_KEY;
 const defaultPassword = process.env.SEED_USER_PASSWORD || "password";
 
-if (!publishableKey) {
+if (!serviceRoleKey) {
   throw new Error(
-    "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY is required to seed local users.",
+    "SUPABASE_SECRET_KEY, SECRET_KEY, SUPABASE_SERVICE_ROLE_KEY, or SERVICE_ROLE_KEY is required to seed users.",
   );
 }
 
+function createAdminClient() {
+  return createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+      detectSessionInUrl: false,
+    },
+  });
+}
+
 function createPublicClient() {
+  if (!publishableKey) {
+    throw new Error(
+      "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY or PUBLISHABLE_KEY is required for public auth fallback.",
+    );
+  }
+
   return createClient(supabaseUrl, publishableKey, {
     auth: {
       autoRefreshToken: false,
@@ -27,7 +48,60 @@ function createPublicClient() {
   });
 }
 
-async function ensureSignedInUser(user) {
+async function ensureAuthUserWithAdminClient(supabase, user) {
+  const { data: listedUsers, error: listUsersError } =
+    await supabase.auth.admin.listUsers({
+      page: 1,
+      perPage: 1000,
+    });
+
+  if (listUsersError) {
+    throw listUsersError;
+  }
+
+  const existingUser = listedUsers.users.find(
+    (authUser) => authUser.email?.toLowerCase() === user.email.toLowerCase(),
+  );
+
+  const userPayload = {
+    email: user.email,
+    password: defaultPassword,
+    email_confirm: true,
+    user_metadata: {
+      first_name: user.firstName,
+      last_name: user.lastName,
+      display_name: user.displayName,
+    },
+  };
+
+  if (!existingUser) {
+    const { data: createdUserData, error: createUserError } =
+      await supabase.auth.admin.createUser(userPayload);
+
+    if (createUserError || !createdUserData.user) {
+      throw createUserError ?? new Error(`Could not create ${user.email}`);
+    }
+
+    return {
+      authUser: createdUserData.user,
+      authStatus: "created",
+    };
+  }
+
+  const { data: updatedUserData, error: updateUserError } =
+    await supabase.auth.admin.updateUserById(existingUser.id, userPayload);
+
+  if (updateUserError || !updatedUserData.user) {
+    throw updateUserError ?? new Error(`Could not update ${user.email}`);
+  }
+
+  return {
+    authUser: updatedUserData.user,
+    authStatus: "existing",
+  };
+}
+
+async function ensureAuthUserWithPublicClient(user) {
   const supabase = createPublicClient();
 
   const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
@@ -44,7 +118,6 @@ async function ensureSignedInUser(user) {
 
   if (!signUpError && signUpData.user) {
     return {
-      supabase,
       authUser: signUpData.user,
       authStatus: "created",
     };
@@ -68,11 +141,30 @@ async function ensureSignedInUser(user) {
     throw signInError ?? new Error(`Could not sign in ${user.email}`);
   }
 
+  await supabase.auth.signOut();
+
   return {
-    supabase,
     authUser: signInData.user,
     authStatus: "existing",
   };
+}
+
+async function ensureAuthUser(adminSupabase, user) {
+  try {
+    return await ensureAuthUserWithAdminClient(adminSupabase, user);
+  } catch (error) {
+    const isBadJwt =
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "bad_jwt";
+
+    if (!isBadJwt) {
+      throw error;
+    }
+
+    return await ensureAuthUserWithPublicClient(user);
+  }
 }
 
 async function ensureProfile(supabase, userId, user) {
@@ -119,10 +211,11 @@ async function ensureProfile(supabase, userId, user) {
 }
 
 async function main() {
+  const supabase = createAdminClient();
   const results = [];
 
   for (const user of users) {
-    const { supabase, authUser, authStatus } = await ensureSignedInUser(user);
+    const { authUser, authStatus } = await ensureAuthUser(supabase, user);
     const profileStatus = await ensureProfile(supabase, authUser.id, user);
 
     results.push({
@@ -131,8 +224,6 @@ async function main() {
       confirmed: Boolean(authUser.email_confirmed_at),
       profileStatus,
     });
-
-    await supabase.auth.signOut();
   }
 
   console.table(results);
