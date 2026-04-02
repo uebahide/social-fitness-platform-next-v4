@@ -16,7 +16,7 @@ test("activity route error", async ({ page }) => {
 });
 
 test("activity empty state", async ({ page }) => {
-  await page.goto("/activity?category=swimming"); // hidekazu_ueba@example.com has no swimming activities
+  await page.goto("/activity?category=swimming"); // hidekazu.ueba@example.com has no swimming activities
   await expect(page.getByTestId("page-header")).toBeVisible();
   //analytics section
   await expect(page.getByTestId("analytics-section")).toBeVisible();
