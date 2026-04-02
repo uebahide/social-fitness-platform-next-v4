@@ -24,19 +24,24 @@ test("activity empty state", async ({ page }) => {
   await expect(page.getByTestId("my-activities-empty-state")).toBeVisible();
 });
 
-test("activity category filter persists in URL", async ({ page }) => {
+test("activity category filter adds category to URL", async ({ page }) => {
   await page.goto("/activity");
 
-  const runningFilter = page.getByTestId("category-filter-running");
+  await page.getByTestId("category-filter-running").click();
+  await expect(page).toHaveURL(/\/activity\?page=1&category=running$/);
+});
 
-  await runningFilter.click();
-  await expect(page).toHaveURL(/category=running/);
+test("activity category filter can be cleared", async ({ page }) => {
+  await page.goto("/activity?category=running");
 
-  // URL だけでなく、selected state の再描画まで待つ
-  await expect(runningFilter).toHaveAttribute("href", "/activity?page=1");
+  const clearFilterLink = page.locator(
+    'a[data-testid="category-filter-running"][href="/activity?page=1"]',
+  );
 
-  await runningFilter.click();
-  await expect(page).toHaveURL(/\/activity(?:\?page=1)?$/);
+  await expect(clearFilterLink).toBeVisible();
+  await clearFilterLink.click();
+
+  await expect(page).toHaveURL(/\/activity\?page=1$/);
 });
 
 test("activity pagination preserves category filter", async ({ page }) => {
