@@ -21,6 +21,7 @@ const names = [
   ["Benjamin", "Bailey"],
   ["Zoe", "Rivera"],
   ["Empty", "Friends"],
+  ["Empty", "Messages"],
 ];
 
 function toEmailLocalPart(firstName, lastName) {
@@ -43,6 +44,7 @@ const seededLocalParts = new Set(
 );
 
 const friendshipPairs = [
+  ["hidekazu.ueba", "empty.messages"], // hidekazu.ueba has no messages
   ["hidekazu.ueba", "alex.walker"],
   ["hidekazu.ueba", "mia.summers"],
   ["hidekazu.ueba", "noah.brooks"],

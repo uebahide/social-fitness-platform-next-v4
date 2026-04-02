@@ -14,7 +14,7 @@ test("message error", async ({ page }) => {
 });
 
 test("message empty conversation state", async ({ page }) => {
-  const messageHref = await getFriendMessageHref(page, "Alex Walker");
+  const messageHref = await getFriendMessageHref(page, "Empty Messages");
   await page.goto(messageHref);
   await expect(
     page.getByTestId("message-empty-conversation-state"),
