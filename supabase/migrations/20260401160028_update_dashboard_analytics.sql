@@ -1,5 +1,25 @@
 drop function if exists "public"."get_dashboard_analytics"();
 
+with ranked_room_users as (
+  select
+    id,
+    row_number() over (
+      partition by room_id, user_id
+      order by
+        (last_read_message_id is not null) desc,
+        last_read_message_id desc nulls last,
+        created_at desc,
+        id desc
+    ) as row_number
+  from public.room_user
+)
+delete from public.room_user
+where id in (
+  select id
+  from ranked_room_users
+  where row_number > 1
+);
+
 CREATE UNIQUE INDEX room_user_room_id_user_id_key ON public.room_user USING btree (room_id, user_id);
 
 alter table "public"."room_user" add constraint "room_user_room_id_user_id_key" UNIQUE using index "room_user_room_id_user_id_key";
@@ -311,16 +331,35 @@ CREATE OR REPLACE FUNCTION public.get_or_create_private_room(user1_id bigint, us
  SET search_path TO 'public'
 AS $function$
 declare
+  v_auth_user_id uuid := auth.uid();
+  v_caller_profile_id bigint;
   v_user_a bigint := least(user1_id, user2_id);
   v_user_b bigint := greatest(user1_id, user2_id);
   v_room_id bigint;
 begin
+  if v_auth_user_id is null then
+    raise exception 'not authenticated';
+  end if;
+
   if user1_id is null or user2_id is null then
     raise exception 'user ids are required';
   end if;
 
   if user1_id = user2_id then
     raise exception 'cannot create a private room with the same user';
+  end if;
+
+  select p.id
+    into v_caller_profile_id
+  from public.profiles p
+  where p.user_id = v_auth_user_id;
+
+  if v_caller_profile_id is null then
+    raise exception 'profile not found';
+  end if;
+
+  if v_caller_profile_id not in (user1_id, user2_id) then
+    raise exception 'caller must be one of the private room participants';
   end if;
 
   perform pg_advisory_xact_lock(
@@ -358,5 +397,4 @@ begin
 end;
 $function$
 ;
-
 
