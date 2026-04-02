@@ -44,7 +44,7 @@ export const ConsistencyBarChart = ({
             axisLine={false}
           />
           <Tooltip
-            formatter={(value: number) => [`${value}`, "Active days"]}
+            formatter={(value) => [`${value ?? 0}`, "Active days"]}
             contentStyle={{
               borderRadius: "12px",
               borderColor: "#E5E7EB",

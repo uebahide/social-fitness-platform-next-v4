@@ -37,7 +37,7 @@ export const MetricLineChart = ({
             axisLine={false}
           />
           <Tooltip
-            formatter={(value: number) => [`${value}`, valueLabel]}
+            formatter={(value) => [`${value ?? 0}`, valueLabel]}
             contentStyle={{
               borderRadius: "12px",
               borderColor: "#E5E7EB",
