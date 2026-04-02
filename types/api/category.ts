@@ -1,16 +1,14 @@
 export type Category = {
   id: string;
-  name: string;
-  category: CategoryType;
+  name: CategoryType;
 };
 
-type CategoryType = [
-  "running",
-  "cycling",
-  "swimming",
-  "walking",
-  "gym",
-  "boxing",
-  "yoga",
-  "hiking",
-];
+export type CategoryType =
+  | "running"
+  | "cycling"
+  | "swimming"
+  | "walking"
+  | "gym"
+  | "boxing"
+  | "yoga"
+  | "hiking";

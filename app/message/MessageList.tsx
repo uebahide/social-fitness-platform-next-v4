@@ -14,8 +14,8 @@ import {
 } from "@/lib/redux/features/message/messageSlice";
 import { Room } from "@/types/api/message";
 import { MessageGroup } from "./MessageGroup";
+import { EmptyState } from "@/components/states/EmptyState";
 export const MessageList = () => {
-  const supabase = createClient();
   const dispatch = useDispatch();
   const messages = useSelector(selectSelectedRoomMessages);
   const selectedRoomId = useSelector(selectSelectedRoomId) as number;
@@ -31,6 +31,7 @@ export const MessageList = () => {
 
   // fetch friend's last read message id when the room is selected
   useEffect(() => {
+    const supabase = createClient();
     const fetchFriendLastReadMessageId = async () => {
       const { data, error } = await supabase
         .from("room_user")
@@ -53,7 +54,7 @@ export const MessageList = () => {
       );
     };
     void fetchFriendLastReadMessageId();
-  }, [selectedRoomId, user?.user?.id, supabase, dispatch, selectedRoom]);
+  }, [selectedRoomId, user?.user?.id, dispatch, selectedRoom]);
 
   // sync my last read status when the room is selected or receive a new message
   useEffect(() => {
@@ -76,6 +77,7 @@ export const MessageList = () => {
 
     // sync my last read status to the database
     const syncFriendLastReadMessageId = async () => {
+      const supabase = createClient();
       const { error } = await supabase
         .from("room_user")
         .update({
@@ -102,8 +104,11 @@ export const MessageList = () => {
     handledMessageIdRef.current = latestMessage.id;
 
     void syncFriendLastReadMessageId();
-  }, [selectedRoomId, messages, supabase, user.user?.id, dispatch]);
+  }, [selectedRoomId, messages, user.user?.id, dispatch]);
 
+  const friendDisplayName = selectedRoom.users.find(
+    (_user) => _user.id !== user.user?.id,
+  )?.display_name;
   return (
     <div
       ref={containerRef}
@@ -114,9 +119,11 @@ export const MessageList = () => {
           <MessageGroup key={message.id} message={message} />
         ))
       ) : (
-        <div className="flex items-center justify-center h-full">
-          <p className="text-gray-500">Start a conversation 💬</p>
-        </div>
+        <EmptyState
+          data-testid="message-empty-conversation-state"
+          title="No messages yet"
+          description={`Start a conversation with ${friendDisplayName} to see your messages here 💬`}
+        />
       )}
     </div>
   );

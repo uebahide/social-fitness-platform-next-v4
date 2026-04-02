@@ -52,22 +52,20 @@ export default async function RootLayout({
   const { data: categoriesData } = await supabase
     .from("categories")
     .select("*");
-  const categories = categoriesData?.map((category) => category.name);
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className="antialiased">
         <StoreProvider>
           <SidebarProvider>
             <TooltipProvider>
               <UserProvider initialUser={profile as User | null}>
                 <CategoriesProvider
-                  initialCategories={categories as Category[]}
+                  initialCategories={(categoriesData ?? []) as Category[]}
                 >
                   <AppSidebar />
                   <Main>
                     <SidebarTrigger />
+
                     {children}
                   </Main>
                 </CategoriesProvider>

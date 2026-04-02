@@ -202,9 +202,9 @@ This script:
 
 Demo users use emails like:
 
-- `hidekazu_ueba@example.com`
-- `alex_walker@example.com`
-- `mia_summers@example.com`
+- `hidekazu.ueba@example.com`
+- `alex.walker@example.com`
+- `mia.summers@example.com`
 
 ### 5) Seed demo friendships
 
@@ -217,7 +217,7 @@ This script:
 - reads the seeded `profiles` rows by email
 - creates bidirectional rows in `public.friends`
 - skips friendships that already exist, so it can be rerun safely
-- ensures `hidekazu_ueba@example.com` has at least 10 seeded friends
+- ensures `hidekazu.ueba@example.com` has at least 10 seeded friends
 
 ### 6) Seed demo activities
 

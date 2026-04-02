@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { WeatherCardSkeleton } from "@/components/skeltons/WeatherCardSkeleton";
+import { WeatherCardSkeleton } from "@/components/skeletons/WeatherCardSkeleton";
 
 type DailyForecast = {
   time: string[];
@@ -111,7 +111,7 @@ export const WeatherCard = ({}) => {
 
   return (
     <section className="col-span-1 row-span-1">
-      <div className="bg-card relative mt-9 space-y-8 rounded-xl border border-gray-200 px-7 py-6">
+      <div className="bg-card relative space-y-8 rounded-xl border border-gray-200 px-7 py-6">
         <div className="flex items-end gap-x-4">
           <p className="text-4xl font-medium">
             {new Date().toLocaleDateString("en-US", { month: "long" })}

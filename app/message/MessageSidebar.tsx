@@ -33,7 +33,10 @@ export const MessageSidebar = ({ rooms }: { rooms: Room[] }) => {
     });
   }, [rooms, search, currentUser]);
   return (
-    <aside className="bg-card flex flex-col gap-4 rounded-l-sm border border-r-0 border-gray-200 p-3">
+    <aside
+      className="bg-card flex flex-col gap-4 rounded-l-sm border border-r-0 border-gray-200 p-3"
+      data-testid="message-sidebar"
+    >
       <Input
         id="search"
         name="search"
@@ -61,8 +64,8 @@ const RoomListItem = ({ room }: { room: Room }) => {
   const myLastReadMessageId = useSelector((state: RootState) =>
     selectMyLastReadMessageIdByRoom(state, room.id),
   );
-  const latestMessage =
-    useSelector(selectLatestMessagesByRoom)[room.id] ?? null;
+  const latestMessage = useSelector(selectLatestMessagesByRoom)[room.id];
+  const isLatestMessagePending = latestMessage === undefined;
 
   const isLatestMessageFromFriend = latestMessage?.user_id === friend?.id;
   const isDeleted = latestMessage?.deleted;
@@ -77,12 +80,7 @@ const RoomListItem = ({ room }: { room: Room }) => {
       isLatestMessageFromFriend &&
       myLastReadMessageId < latestMessage?.id);
 
-  console.log(friend?.display_name, isUnread);
-  console.log(myLastReadMessageId);
-  console.log(latestMessage?.id);
-  console.log(isLatestMessageFromFriend);
-
-  const latestMessagePreview = isDeleted ? (
+  const latestMessagePreview = isLatestMessagePending ? null : isDeleted ? (
     <span className="italic text-[11px]">This message has been unsent</span>
   ) : isImage ? (
     <span className="italic text-[11px]">

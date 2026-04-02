@@ -2,7 +2,13 @@
 
 import { ActivityType } from "@/types/api/activity";
 import { Avatar } from "./Avatar";
-import { getTimeOfDay, getUnit, uppercaseFirstLetter } from "@/lib/utils";
+import {
+  formatDate,
+  formatTime,
+  getTimeOfDay,
+  getUnit,
+  uppercaseFirstLetter,
+} from "@/lib/utils";
 import { CategoryIcon } from "./CategoryIcon";
 import { DropdownMenuBasic, DropdownMenuItem } from "./DropdownMenuBasic";
 import { Pencil, Trash2Icon } from "lucide-react";
@@ -36,7 +42,11 @@ export default function ActivityCard({
         </span>
         <header>
           <p className="text-sm font-medium">{created_user.display_name}</p>
-          <p className="text-xs text-gray-400">{activity.created_at}</p>
+          <p className="text-xs text-gray-400">
+            {formatDate(activity.created_at) +
+              " " +
+              formatTime(activity.created_at)}
+          </p>
         </header>
         <span className="flex justify-center">
           <CategoryIcon category={activity.category.name} />

@@ -55,15 +55,17 @@ const messageSlice = createSlice({
     },
     setLatestMessagesByRoom(
       state,
-      action: PayloadAction<{ roomId: number; message: Message }>,
+      action: PayloadAction<{ roomId: number; message: Message | null }>,
     ) {
       state.latestMessagesByRoom[action.payload.roomId] =
         action.payload.message;
     },
+    setRoomIdle(state, action: PayloadAction<number>) {
+      state.loadStatusByRoom[action.payload] = "idle";
+    },
     setRoomLoading(state, action: PayloadAction<number>) {
       state.loadStatusByRoom[action.payload] = "loading";
     },
-
     setRoomLoaded(
       state,
       action: PayloadAction<{ roomId: number; messages: Message[] }>,
@@ -71,7 +73,6 @@ const messageSlice = createSlice({
       state.messagesByRoom[action.payload.roomId] = action.payload.messages;
       state.loadStatusByRoom[action.payload.roomId] = "loaded";
     },
-
     setRoomError(state, action: PayloadAction<number>) {
       state.loadStatusByRoom[action.payload] = "error";
     },
@@ -191,6 +192,7 @@ export const {
   deleteReaction,
   setMyLastReadMessageId,
   setFriendLastReadMessageId,
+  setRoomIdle,
 } = messageSlice.actions;
 
 export default messageSlice.reducer;

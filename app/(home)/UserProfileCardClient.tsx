@@ -100,7 +100,10 @@ export const UserProfileCardClient = ({
           </form>
         )}
 
-        <p className="text-center text-2xl font-bold">
+        <p
+          className="text-center text-2xl font-bold"
+          data-testid="user-display-name"
+        >
           {target_user?.display_name}
         </p>
       </header>

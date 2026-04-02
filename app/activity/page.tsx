@@ -3,53 +3,52 @@ import { MyActivities } from "./MyActivities";
 import { Suspense } from "react";
 
 import { PaginationSimple } from "@/components/Pagination";
-import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
-import { createClient } from "@/lib/supabase/server";
-import { PER_PAGE } from "@/constants";
 import { MyAnalytics } from "./MyAnalytics";
-import { MyAnalyticsSkelton } from "@/components/skeltons/MyAnalyticsSkeleton";
+import { MyAnalyticsSkeleton } from "@/components/skeletons/MyAnalyticsSkeleton";
+import { MyActivitiesSkeleton } from "@/components/skeletons/MyActivitiesSkeleton";
+import { PageContainer } from "@/components/PageContainer";
+import { CategoryType } from "@/types/api/category";
 
 type PageProps = {
   searchParams: Promise<{
     page?: string;
+    category?: CategoryType;
+    forceError?: string;
   }>;
 };
 
 export default async function Activity({ searchParams }: PageProps) {
-  const { page: pageNumber } = await searchParams;
+  const { page: pageNumber, category, forceError } = await searchParams;
   const page: number = parseInt(pageNumber ?? "1") || 1;
-
-  const supabase = await createClient();
-  const userId = await getCurrentUserId();
-  const { data: activities, error: activitiesError } = await supabase
-    .from("activities")
-    .select(
-      "*, user:user_id(*), category:category_id(name), details:activity_details(location, distance, duration)",
-    )
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(PER_PAGE)
-    .range((page - 1) * PER_PAGE, page * PER_PAGE - 1);
-  if (activitiesError) {
-    return <div>Error: {activitiesError.message}</div>;
-  }
+  const categoryFilter: CategoryType | null = category ?? null;
 
   return (
-    <section className="flex flex-col gap-6">
-      <div>
-        <Suspense fallback={<MyAnalyticsSkelton />}>
-          <MyAnalytics />
+    <PageContainer
+      eyebrow="Training Log"
+      title="My Activity"
+      description="Review your recent sessions, track your patterns, and keep your personal training history organized."
+    >
+      <div className="z-10">
+        <Suspense fallback={<MyAnalyticsSkeleton />}>
+          <MyAnalytics categoryFilter={categoryFilter} />
         </Suspense>
       </div>
       <div className="space-y-6">
         <header className="flex items-center gap-3">
-          <h2 className="">My Activity</h2>
+          <h2 data-testid="activity-title" className="text-lg font-semibold">
+            Activity Feed
+          </h2>
           <AddActivityButton />
         </header>
-
-        <MyActivities activities={activities ?? []} />
-        <PaginationSimple page={page} />
+        <Suspense fallback={<MyActivitiesSkeleton />}>
+          <MyActivities
+            page={page}
+            categoryFilter={categoryFilter}
+            forceError={forceError}
+          />
+        </Suspense>
+        <PaginationSimple page={page} categoryFilter={categoryFilter} />
       </div>
-    </section>
+    </PageContainer>
   );
 }

@@ -10,7 +10,7 @@ const publishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
   process.env.PUBLISHABLE_KEY;
 const defaultPassword = process.env.SEED_USER_PASSWORD || "password";
-const seedReaderEmail = "hidekazu_ueba@example.com";
+const seedReaderEmail = "hidekazu.ueba@example.com";
 
 if (!publishableKey) {
   throw new Error(
@@ -142,7 +142,7 @@ async function main() {
     }
   }
 
-  const hidekazuEmail = "hidekazu_ueba@example.com";
+  const hidekazuEmail = "hidekazu.ueba@example.com";
   const hidekazuProfile = profilesByEmail.get(hidekazuEmail);
   const hidekazuFriendCount = seedFriendships.filter(
     ({ userEmail, friendEmail }) =>
