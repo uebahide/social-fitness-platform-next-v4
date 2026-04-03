@@ -10,7 +10,7 @@ import {
   insertMessage,
   ensureRoomLoadStatuses,
   setSelectedRoom,
-  updateMessage,
+  reconcileUpdateMessage,
   setMyLastReadMessageId,
   setFriendLastReadMessageId,
   setLatestMessagesByRoom,
@@ -126,7 +126,7 @@ export const MessageClient = ({
   const onUpdate = async (message: Message) => {
     const user = await getUserById(message.user_id);
     message.user = user;
-    dispatch(updateMessage(message));
+    dispatch(reconcileUpdateMessage(message));
   };
 
   useRealtimeMessages(realtimeRoomIds, onInsert, onUpdate);

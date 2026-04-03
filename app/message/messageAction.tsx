@@ -2,6 +2,7 @@
 
 import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
 import { createClient } from "@/lib/supabase/server";
+import { Message } from "@/types/api/message";
 
 type SendMessageState = {
   errors: string | Record<string, never>;
@@ -66,39 +67,63 @@ export async function sendMessage(
   };
 }
 
+export type EditMessageState = {
+  error: string;
+  message: string;
+  data: Message | null;
+  ok: boolean;
+  snapshotSelectedMessage: Message;
+};
+
+//update message
 export async function editTextMessage(
-  _prevState: SendMessageState,
+  _prevState: EditMessageState,
   formData: FormData,
 ) {
   const supabase = await createClient();
   const body = formData.get("message") as string;
   const messageId = formData.get("messageId") as string;
+  const snapshotSelectedMessageRaw = formData.get("snapshotSelectedMessage");
+  if (typeof snapshotSelectedMessageRaw !== "string") {
+    throw new Error("snapshotSelectedMessage is required");
+  }
+  const snapshotSelectedMessage = JSON.parse(
+    snapshotSelectedMessageRaw,
+  ) as Message;
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("messages")
     .update({
       body,
       updated_at: new Date().toISOString(),
     })
-    .eq("id", messageId);
+    .eq("id", messageId)
+    .select(
+      "*, user:profiles(id, display_name, email, image_path, created_at), reactions:message_reactions(*)",
+    )
+    .single();
 
   if (error) {
+    console.error(error);
     return {
-      errors: error.message,
-      message: "error while editing message",
-      data: {},
+      error: `updating mesage failed: ${error.message}`,
+      message: "",
+      data: null,
       ok: false,
+      snapshotSelectedMessage,
     };
   }
 
   return {
-    errors: {},
+    error: "",
     message: "Message was edited successfully",
-    data: {},
+    data: data,
     ok: true,
+    snapshotSelectedMessage,
   };
 }
 
+//delete message
 export async function deleteMessage(
   _prevState: SendMessageState,
   formData: FormData,

@@ -99,7 +99,30 @@ const messageSlice = createSlice({
       }
       state.latestMessagesByRoom[message.room_id] = message;
     },
-    updateMessage: (state, action: PayloadAction<Message>) => {
+    optimisticUpdateMessage: (
+      state,
+      action: PayloadAction<{ selectedMessage: Message; newBody: string }>,
+    ) => {
+      const { selectedMessage, newBody } = action.payload;
+      const current = state.messagesByRoom[selectedMessage.room_id] ?? [];
+      const index = current.findIndex((item) => item.id === selectedMessage.id);
+      if (index !== -1) {
+        // update message with same reactions as the original message
+        current[index] = {
+          ...selectedMessage,
+          reactions: current[index].reactions,
+          body: newBody,
+        };
+        state.messagesByRoom[selectedMessage.room_id] = current;
+      }
+      if (
+        selectedMessage.id ===
+        state.latestMessagesByRoom[selectedMessage.room_id]?.id
+      ) {
+        state.latestMessagesByRoom[selectedMessage.room_id] = current[index];
+      }
+    },
+    reconcileUpdateMessage: (state, action: PayloadAction<Message>) => {
       const message = action.payload;
       const current = state.messagesByRoom[message.room_id] ?? [];
       const index = current.findIndex((item) => item.id === message.id);
@@ -108,7 +131,26 @@ const messageSlice = createSlice({
         current[index] = { ...message, reactions: current[index].reactions };
         state.messagesByRoom[message.room_id] = current;
       }
-      state.latestMessagesByRoom[message.room_id] = message;
+      if (message.id === state.latestMessagesByRoom[message.room_id]?.id) {
+        state.latestMessagesByRoom[message.room_id] = current[index];
+      }
+    },
+    rollbackUpdateMessage: (state, action: PayloadAction<Message>) => {
+      const message = action.payload;
+      const current = state.messagesByRoom[message.room_id] ?? [];
+      const index = current.findIndex((item) => item.id === message.id);
+      if (index !== -1) {
+        // update message with same reactions as the original message
+        current[index] = {
+          ...current[index],
+          body: message.body,
+          updated_at: message.updated_at,
+        };
+        state.messagesByRoom[message.room_id] = current;
+      }
+      if (message.id === state.latestMessagesByRoom[message.room_id]?.id) {
+        state.latestMessagesByRoom[message.room_id] = current[index];
+      }
     },
     optimisticInsertReaction: (
       state,
@@ -314,7 +356,8 @@ export const {
   setRoomError,
   setRoomMessages,
   insertMessage,
-  updateMessage,
+  optimisticUpdateMessage,
+  reconcileUpdateMessage,
   optimisticInsertReaction,
   optimisticUpdateReaction,
   optimisticDeleteReaction,
@@ -324,6 +367,7 @@ export const {
   rollbackReactionInsert,
   rollbackUpdateReaction,
   rollbackDeleteReaction,
+  rollbackUpdateMessage,
   setMyLastReadMessageId,
   setFriendLastReadMessageId,
   setRoomIdle,
