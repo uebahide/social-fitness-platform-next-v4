@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { User } from '@/types/api/user';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { User } from "@/types/api/user";
+import { createContext, useContext, useEffect, useState } from "react";
 
 type UserState = {
   user: User | null;
@@ -24,12 +24,14 @@ export const UserProvider = ({
   }, [initialUser]);
 
   return (
-    <userContext.Provider value={{ user, setUser }}>{children}</userContext.Provider>
+    <userContext.Provider value={{ user, setUser }}>
+      {children}
+    </userContext.Provider>
   );
 };
 
 export const useUser = () => {
   const context = useContext(userContext);
-  if (!context) throw new Error('useUser must be used within UserProvider');
+  if (!context) throw new Error("useUser must be used within UserProvider");
   return context;
 };
