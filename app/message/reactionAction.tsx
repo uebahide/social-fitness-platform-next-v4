@@ -58,7 +58,7 @@ export type ReactionUpdateActionState = {
   data: MessageReaction | null;
   ok: boolean;
   oldEmoji: string;
-  snapshotReaction: MessageReaction | null;
+  snapshotReaction: MessageReaction;
 };
 
 export async function updateReaction(
@@ -69,7 +69,12 @@ export async function updateReaction(
   const reactionId = formData.get("reactionId") as string;
   const emoji = formData.get("emoji") as string;
   const oldEmoji = formData.get("oldEmoji") as string;
-  const snapshotReaction = formData.get("snapshotReaction") as string;
+  const snapshotReactionRaw = formData.get("snapshotReaction");
+  if (typeof snapshotReactionRaw !== "string") {
+    throw new Error("snapshotReaction is required");
+  }
+
+  const snapshotReaction = JSON.parse(snapshotReactionRaw) as MessageReaction;
 
   const { data, error } = await supabase
     .from("message_reactions")
@@ -88,7 +93,7 @@ export async function updateReaction(
       data: null,
       ok: false,
       oldEmoji: oldEmoji as string,
-      snapshotReaction: JSON.parse(snapshotReaction) as MessageReaction,
+      snapshotReaction: snapshotReaction,
     };
   }
 
@@ -98,16 +103,32 @@ export async function updateReaction(
     data: data as MessageReaction,
     ok: true,
     oldEmoji: oldEmoji as string,
-    snapshotReaction: JSON.parse(snapshotReaction) as MessageReaction,
+    snapshotReaction: snapshotReaction,
   };
 }
 
+export type ReactionDeleteActionState = {
+  errors: {
+    reaction?: string[];
+  };
+  message: string;
+  data: MessageReaction | null;
+  ok: boolean;
+  snapshotReaction: MessageReaction;
+};
+
 export async function deleteReaction(
-  _prevState: ReactionActionState,
+  _prevState: ReactionDeleteActionState,
   formData: FormData,
 ) {
   const supabase = await createClient();
   const reactionId = formData.get("reactionId") as string;
+  const snapshotReactionRaw = formData.get("snapshotReaction");
+  if (typeof snapshotReactionRaw !== "string") {
+    throw new Error("snapshotReaction is required");
+  }
+
+  const snapshotReaction = JSON.parse(snapshotReactionRaw) as MessageReaction;
 
   const { data, error } = await supabase
     .from("message_reactions")
@@ -123,6 +144,7 @@ export async function deleteReaction(
       message: "",
       data: null,
       ok: false,
+      snapshotReaction: snapshotReaction,
     };
   }
 
@@ -131,5 +153,6 @@ export async function deleteReaction(
     message: "Reaction was deleted successfully",
     data: data as MessageReaction,
     ok: true,
+    snapshotReaction: snapshotReaction,
   };
 }

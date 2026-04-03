@@ -6,6 +6,7 @@ import {
   addReaction,
   deleteReaction,
   ReactionActionState,
+  ReactionDeleteActionState,
   ReactionUpdateActionState,
   updateReaction,
 } from "./reactionAction";
@@ -19,6 +20,9 @@ import {
   optimisticUpdateReaction,
   rollbackUpdateReaction,
   reconcileUpdateReaction,
+  optimisticDeleteReaction,
+  reconcileDeleteReaction,
+  rollbackDeleteReaction,
 } from "@/lib/redux/features/message/messageSlice";
 import { useDispatch } from "react-redux";
 import { toast } from "sonner";
@@ -37,7 +41,15 @@ const initialStateUpdate: ReactionUpdateActionState = {
   data: null,
   ok: false,
   oldEmoji: "",
-  snapshotReaction: null,
+  snapshotReaction: {} as MessageReaction,
+};
+
+const initialStateDelete: ReactionDeleteActionState = {
+  errors: {},
+  message: "",
+  data: null,
+  ok: false,
+  snapshotReaction: {} as MessageReaction,
 };
 
 export const ReactionMenu = ({
@@ -57,8 +69,12 @@ export const ReactionMenu = ({
     updateReaction,
     initialStateUpdate,
   );
-  const [, formActionDelete] = useActionState(deleteReaction, initialState);
+  const [stateDelete, formActionDelete] = useActionState(
+    deleteReaction,
+    initialStateDelete,
+  );
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { user } = useUser();
   const dispatch = useDispatch();
   const reactions = message.reactions;
@@ -72,7 +88,7 @@ export const ReactionMenu = ({
 
   const onSelectEmoji = (emojiObject: EmojiClickData) => {
     // if there is a pending reaction or is updating, do not allow to select / update / delete an emoji
-    if (pendingReaction || isUpdating) {
+    if (pendingReaction || isUpdating || isDeleting) {
       return;
     }
     // if there is a confirmed reaction, update the reaction
@@ -100,28 +116,35 @@ export const ReactionMenu = ({
     }
 
     const isSameReaction = confirmedReaction?.emoji === emojiObject.emoji;
+    //save snapshot of reaction to rollback
+    formData.append(
+      "snapshotReaction",
+      JSON.stringify(confirmedReaction as MessageReaction),
+    );
     if (isSameReaction) {
       //delete reaction
+      setIsDeleting(true);
+      dispatch(
+        optimisticDeleteReaction({
+          confirmedReaction: confirmedReaction as MessageReaction,
+        }),
+      );
       startTransition(() => {
         console.log("delete reaction");
         formActionDelete(formData);
       });
     } else {
+      //update reaction
       setIsUpdating(true);
       const newEmoji = emojiObject.emoji;
       const oldEmoji = confirmedReaction?.emoji;
+      formData.append("oldEmoji", oldEmoji as string);
       dispatch(
         optimisticUpdateReaction({
           confirmedReaction: confirmedReaction as MessageReaction,
           newEmoji: newEmoji,
         }),
       );
-      formData.append("oldEmoji", oldEmoji as string);
-      formData.append(
-        "snapshotReaction",
-        JSON.stringify(confirmedReaction as MessageReaction),
-      );
-      //update reaction
       startTransition(() => {
         console.log("update reaction");
         formActionUpdate(formData);
@@ -180,6 +203,29 @@ export const ReactionMenu = ({
       });
     }
   }, [stateUpdate.ok, dispatch, stateUpdate.data]);
+
+  // rollback delete reaction if deleting failed
+  useEffect(() => {
+    if (Object.keys(stateDelete.errors).length > 0) {
+      toast.error("Failed to delete reaction");
+      dispatch(
+        rollbackDeleteReaction(stateDelete.snapshotReaction as MessageReaction),
+      );
+      startTransition(() => {
+        setIsDeleting(false);
+      });
+    }
+  }, [stateDelete.errors, dispatch, stateDelete.snapshotReaction]);
+
+  // reconcile delete reaction if deleting succeeded
+  useEffect(() => {
+    if (stateDelete.ok) {
+      dispatch(reconcileDeleteReaction(stateDelete.data as MessageReaction));
+      startTransition(() => {
+        setIsDeleting(false);
+      });
+    }
+  }, [stateDelete.ok, dispatch, stateDelete.data]);
 
   return (
     <EmojiPickerButton
