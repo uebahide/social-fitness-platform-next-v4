@@ -62,12 +62,14 @@ export type ReactionUpdateActionState = {
 };
 
 export async function updateReaction(
-  _prevState: ReactionActionState,
+  _prevState: ReactionUpdateActionState,
   formData: FormData,
 ) {
   const supabase = await createClient();
   const reactionId = formData.get("reactionId") as string;
   const emoji = formData.get("emoji") as string;
+  const oldEmoji = formData.get("oldEmoji") as string;
+  const snapshotReaction = formData.get("snapshotReaction") as string;
 
   const { data, error } = await supabase
     .from("message_reactions")
@@ -85,6 +87,8 @@ export async function updateReaction(
       message: "",
       data: null,
       ok: false,
+      oldEmoji: oldEmoji as string,
+      snapshotReaction: JSON.parse(snapshotReaction) as MessageReaction,
     };
   }
 
@@ -93,6 +97,8 @@ export async function updateReaction(
     message: "Reaction was updated successfully",
     data: data as MessageReaction,
     ok: true,
+    oldEmoji: oldEmoji as string,
+    snapshotReaction: JSON.parse(snapshotReaction) as MessageReaction,
   };
 }
 

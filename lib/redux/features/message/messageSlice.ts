@@ -132,6 +132,25 @@ const messageSlice = createSlice({
         created_at: new Date().toISOString(),
       });
     },
+    optimisticUpdateReaction: (
+      state,
+      action: PayloadAction<{
+        confirmedReaction: MessageReaction;
+        newEmoji: string;
+      }>,
+    ) => {
+      const { confirmedReaction, newEmoji } = action.payload;
+      const location = findMessageLocationByReaction(
+        state.messagesByRoom,
+        confirmedReaction,
+      );
+      if (!location) return;
+      const message =
+        state.messagesByRoom[location.roomId][location.messageIndex];
+      message.reactions = message.reactions.map((item) =>
+        item.id === confirmedReaction.id ? { ...item, emoji: newEmoji } : item,
+      );
+    },
     reconcileInsertReaction: (
       state,
       action: PayloadAction<MessageReaction>,
@@ -221,6 +240,25 @@ const messageSlice = createSlice({
           ),
       );
     },
+    rollbackUpdateReaction: (
+      state,
+      action: PayloadAction<{
+        confirmedReaction: MessageReaction;
+        oldEmoji: string;
+      }>,
+    ) => {
+      const { confirmedReaction, oldEmoji } = action.payload;
+      const location = findMessageLocationByReaction(
+        state.messagesByRoom,
+        confirmedReaction,
+      );
+      if (!location) return;
+      const message =
+        state.messagesByRoom[location.roomId][location.messageIndex];
+      message.reactions = message.reactions.map((item) =>
+        item.id === confirmedReaction.id ? { ...item, emoji: oldEmoji } : item,
+      );
+    },
     setMyLastReadMessageId: (
       state,
       action: PayloadAction<{ roomId: number; messageId: number }>,
@@ -249,10 +287,12 @@ export const {
   insertMessage,
   updateMessage,
   optimisticInsertReaction,
+  optimisticUpdateReaction,
   reconcileInsertReaction,
   reconcileUpdateReaction,
   reconcileDeleteReaction,
   rollbackReactionInsert,
+  rollbackUpdateReaction,
   setMyLastReadMessageId,
   setFriendLastReadMessageId,
   setRoomIdle,

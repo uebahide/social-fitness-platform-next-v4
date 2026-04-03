@@ -1,11 +1,12 @@
 import { EmojiPickerButton } from "@/components/buttons/EmojiPickerButton";
 import { FaceIcon } from "@radix-ui/react-icons";
 import { EmojiClickData } from "emoji-picker-react";
-import { startTransition, useActionState, useEffect } from "react";
+import { startTransition, useActionState, useEffect, useState } from "react";
 import {
   addReaction,
   deleteReaction,
   ReactionActionState,
+  ReactionUpdateActionState,
   updateReaction,
 } from "./reactionAction";
 import { cn } from "@/lib/utils";
@@ -15,6 +16,9 @@ import {
   optimisticInsertReaction,
   rollbackReactionInsert,
   reconcileInsertReaction,
+  optimisticUpdateReaction,
+  rollbackUpdateReaction,
+  reconcileUpdateReaction,
 } from "@/lib/redux/features/message/messageSlice";
 import { useDispatch } from "react-redux";
 import { toast } from "sonner";
@@ -25,6 +29,15 @@ const initialState: ReactionActionState = {
   message: "",
   data: null,
   ok: false,
+};
+
+const initialStateUpdate: ReactionUpdateActionState = {
+  errors: {},
+  message: "",
+  data: null,
+  ok: false,
+  oldEmoji: "",
+  snapshotReaction: null,
 };
 
 export const ReactionMenu = ({
@@ -40,8 +53,12 @@ export const ReactionMenu = ({
     addReaction,
     initialState,
   );
-  const [, formActionUpdate] = useActionState(updateReaction, initialState);
+  const [stateUpdate, formActionUpdate] = useActionState(
+    updateReaction,
+    initialStateUpdate,
+  );
   const [, formActionDelete] = useActionState(deleteReaction, initialState);
+  const [isUpdating, setIsUpdating] = useState(false);
   const { user } = useUser();
   const dispatch = useDispatch();
   const reactions = message.reactions;
@@ -54,8 +71,8 @@ export const ReactionMenu = ({
   const notReactedYet = confirmedReaction ? false : true;
 
   const onSelectEmoji = (emojiObject: EmojiClickData) => {
-    // if there is a pending reaction, do not allow to select / update / delete an emoji
-    if (pendingReaction) {
+    // if there is a pending reaction or is updating, do not allow to select / update / delete an emoji
+    if (pendingReaction || isUpdating) {
       return;
     }
     // if there is a confirmed reaction, update the reaction
@@ -90,6 +107,20 @@ export const ReactionMenu = ({
         formActionDelete(formData);
       });
     } else {
+      setIsUpdating(true);
+      const newEmoji = emojiObject.emoji;
+      const oldEmoji = confirmedReaction?.emoji;
+      dispatch(
+        optimisticUpdateReaction({
+          confirmedReaction: confirmedReaction as MessageReaction,
+          newEmoji: newEmoji,
+        }),
+      );
+      formData.append("oldEmoji", oldEmoji as string);
+      formData.append(
+        "snapshotReaction",
+        JSON.stringify(confirmedReaction as MessageReaction),
+      );
       //update reaction
       startTransition(() => {
         console.log("update reaction");
@@ -98,6 +129,7 @@ export const ReactionMenu = ({
     }
   };
 
+  // rollback insert reaction if inserting failed
   useEffect(() => {
     if (Object.keys(stateInsert.errors).length > 0) {
       toast.error("Failed to add reaction");
@@ -111,11 +143,43 @@ export const ReactionMenu = ({
     }
   }, [stateInsert.errors, dispatch, message.room_id, message.id, user?.id]);
 
+  // reconcile insert reaction if inserting succeeded
   useEffect(() => {
     if (stateInsert.ok) {
       dispatch(reconcileInsertReaction(stateInsert.data as MessageReaction));
     }
   }, [stateInsert.ok, dispatch, stateInsert.data]);
+
+  // rollback update reaction if updating failed
+  useEffect(() => {
+    if (Object.keys(stateUpdate.errors).length > 0) {
+      toast.error("Failed to update reaction");
+      dispatch(
+        rollbackUpdateReaction({
+          confirmedReaction: stateUpdate.snapshotReaction as MessageReaction,
+          oldEmoji: stateUpdate.oldEmoji,
+        }),
+      );
+      startTransition(() => {
+        setIsUpdating(false);
+      });
+    }
+  }, [
+    stateUpdate.errors,
+    dispatch,
+    stateUpdate.snapshotReaction,
+    stateUpdate.oldEmoji,
+  ]);
+
+  // reconcile update reaction if updating succeeded
+  useEffect(() => {
+    if (stateUpdate.ok) {
+      dispatch(reconcileUpdateReaction(stateUpdate.data as MessageReaction));
+      startTransition(() => {
+        setIsUpdating(false);
+      });
+    }
+  }, [stateUpdate.ok, dispatch, stateUpdate.data]);
 
   return (
     <EmojiPickerButton
@@ -125,6 +189,7 @@ export const ReactionMenu = ({
       pickerClassName={cn(
         "absolute bottom-12",
         isMyMessage ? "right-0" : "left-0",
+        isUpdating ? "opacity-50" : "",
       )}
       onShowChange={(show: boolean) => setIsSubMenuOpen(show)}
     >
