@@ -3,24 +3,27 @@ import { MessageSubmitButton, MessageTextarea } from "./MessageInput";
 
 import { useMessageEditor } from "@/contexts/MessageEditorProvider";
 import { CheckIcon, XIcon } from "lucide-react";
-import { useActionState } from "react";
-import { editTextMessage } from "./messageAction";
 import { EmojiPickerButton } from "@/components/buttons/EmojiPickerButton";
 import { EmojiClickData } from "emoji-picker-react";
 import { FaceIcon } from "@radix-ui/react-icons";
-export const MessageEditInput = () => {
+import { optimisticUpdateMessage } from "@/lib/redux/features/message/messageSlice";
+import { useDispatch } from "react-redux";
+
+export const MessageEditInput = ({
+  isUpdating,
+  setIsUpdating,
+  editTextMessageformAction,
+}: {
+  isUpdating: boolean;
+  setIsUpdating: (isUpdating: boolean) => void;
+  editTextMessageformAction: (formData: FormData) => void;
+}) => {
+  const dispatch = useDispatch();
   const formRef = useRef<HTMLFormElement | null>(null);
   const emojiPickerRef = useRef<HTMLDivElement | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const { selectedMessage, setSelectedMessage } = useMessageEditor();
   const [message, setMessage] = useState(selectedMessage?.body ?? "");
-
-  const [, formAction] = useActionState(editTextMessage, {
-    errors: {},
-    message: "",
-    data: {},
-    ok: false,
-  });
 
   //handle click outside emoji picker
   useEffect(() => {
@@ -42,14 +45,24 @@ export const MessageEditInput = () => {
   //handle submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedMessage || isUpdating) return;
     if (!message.trim()) return;
+
+    setIsUpdating(true);
+    dispatch(
+      optimisticUpdateMessage({
+        selectedMessage: selectedMessage,
+        newBody: message,
+      }),
+    );
 
     const formData = new FormData();
     formData.append("message", message);
     formData.append("messageId", String(selectedMessage?.id));
+    formData.append("snapshotSelectedMessage", JSON.stringify(selectedMessage));
 
     startTransition(() => {
-      formAction(formData);
+      editTextMessageformAction(formData);
     });
 
     setMessage("");
