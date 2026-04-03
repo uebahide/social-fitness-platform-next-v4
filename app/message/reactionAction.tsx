@@ -20,14 +20,14 @@ export async function addReaction(
   const supabase = await createClient();
   const messageId = formData.get("messageId") as string;
   const userId = await getCurrentUserId();
-  const reaction = formData.get("reaction") as string;
+  const emoji = formData.get("emoji") as string;
 
   const { data, error } = await supabase
     .from("message_reactions")
     .insert({
       message_id: messageId,
       user_id: userId,
-      reaction,
+      emoji: emoji,
     })
     .select("*")
     .single();
@@ -50,18 +50,29 @@ export async function addReaction(
   };
 }
 
+export type ReactionUpdateActionState = {
+  errors: {
+    reaction?: string[];
+  };
+  message: string;
+  data: MessageReaction | null;
+  ok: boolean;
+  oldEmoji: string;
+  snapshotReaction: MessageReaction | null;
+};
+
 export async function updateReaction(
   _prevState: ReactionActionState,
   formData: FormData,
 ) {
   const supabase = await createClient();
   const reactionId = formData.get("reactionId") as string;
-  const reaction = formData.get("reaction") as string;
+  const emoji = formData.get("emoji") as string;
 
   const { data, error } = await supabase
     .from("message_reactions")
     .update({
-      reaction,
+      emoji,
     })
     .eq("id", reactionId)
     .select("*")

@@ -61,7 +61,7 @@ export const ReactionMenu = ({
     // if there is a confirmed reaction, update the reaction
     const formData = new FormData();
     formData.append("messageId", String(message.id));
-    formData.append("reaction", emojiObject.emoji);
+    formData.append("emoji", emojiObject.emoji);
     formData.append("reactionId", String(confirmedReaction?.id));
 
     // insert new reaction
@@ -70,7 +70,7 @@ export const ReactionMenu = ({
       dispatch(
         optimisticInsertReaction({
           roomId: message.room_id,
-          reaction: emojiObject.emoji,
+          emoji: emojiObject.emoji,
           messageId: message.id,
           userId: user?.id as number,
         }),
@@ -82,7 +82,7 @@ export const ReactionMenu = ({
       return;
     }
 
-    const isSameReaction = confirmedReaction?.reaction === emojiObject.emoji;
+    const isSameReaction = confirmedReaction?.emoji === emojiObject.emoji;
     if (isSameReaction) {
       //delete reaction
       startTransition(() => {
@@ -113,37 +113,22 @@ export const ReactionMenu = ({
 
   useEffect(() => {
     if (stateInsert.ok) {
-      dispatch(
-        reconcileInsertReaction({
-          reaction: stateInsert.data as MessageReaction,
-          userId: user?.id as number,
-          messageId: message.id,
-        }),
-      );
+      dispatch(reconcileInsertReaction(stateInsert.data as MessageReaction));
     }
-  }, [
-    stateInsert.ok,
-    dispatch,
-    message.room_id,
-    message.id,
-    stateInsert.data,
-    user?.id,
-  ]);
+  }, [stateInsert.ok, dispatch, stateInsert.data]);
 
   return (
-    <>
-      <EmojiPickerButton
-        onEmojiClick={onSelectEmoji}
-        closeOnEmojiClick={true}
-        reactionsDefaultOpen={true}
-        pickerClassName={cn(
-          "absolute bottom-12",
-          isMyMessage ? "right-0" : "left-0",
-        )}
-        onShowChange={(show: boolean) => setIsSubMenuOpen(show)}
-      >
-        <FaceIcon className="size-4" />
-      </EmojiPickerButton>
-    </>
+    <EmojiPickerButton
+      onEmojiClick={onSelectEmoji}
+      closeOnEmojiClick={true}
+      reactionsDefaultOpen={true}
+      pickerClassName={cn(
+        "absolute bottom-12",
+        isMyMessage ? "right-0" : "left-0",
+      )}
+      onShowChange={(show: boolean) => setIsSubMenuOpen(show)}
+    >
+      <FaceIcon className="size-4" />
+    </EmojiPickerButton>
   );
 };

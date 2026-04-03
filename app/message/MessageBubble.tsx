@@ -92,9 +92,7 @@ const ReactionBubble = ({
               key={reaction.id}
               className="flex items-center justify-center "
             >
-              <span className="text-xs text-gray-500 ">
-                {reaction.reaction}
-              </span>
+              <span className="text-xs text-gray-500 ">{reaction.emoji}</span>
             </div>
           ))}
       </div>

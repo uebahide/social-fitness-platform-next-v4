@@ -147,13 +147,7 @@ export const MessageClient = ({
 
   // realtime update reaction
   const onReactionInsert = (reaction: MessageReaction) => {
-    dispatch(
-      reconcileInsertReaction({
-        reaction: reaction,
-        userId: user.user?.id as number,
-        messageId: reaction.message_id,
-      }),
-    );
+    dispatch(reconcileInsertReaction(reaction));
   };
 
   const onReactionUpdate = (reaction: MessageReaction) => {
