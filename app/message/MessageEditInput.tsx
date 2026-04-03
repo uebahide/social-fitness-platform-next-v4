@@ -4,7 +4,7 @@ import { MessageSubmitButton, MessageTextarea } from "./MessageInput";
 import { useMessageEditor } from "@/contexts/MessageEditorProvider";
 import { CheckIcon, XIcon } from "lucide-react";
 import { useActionState } from "react";
-import { editTextMessage } from "./action";
+import { editTextMessage } from "./messageAction";
 import { EmojiPickerButton } from "@/components/buttons/EmojiPickerButton";
 import { EmojiClickData } from "emoji-picker-react";
 import { FaceIcon } from "@radix-ui/react-icons";
@@ -15,7 +15,7 @@ export const MessageEditInput = () => {
   const { selectedMessage, setSelectedMessage } = useMessageEditor();
   const [message, setMessage] = useState(selectedMessage?.body ?? "");
 
-  const [state, formAction] = useActionState(editTextMessage, {
+  const [, formAction] = useActionState(editTextMessage, {
     errors: {},
     message: "",
     data: {},

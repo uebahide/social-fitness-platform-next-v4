@@ -14,9 +14,9 @@ import {
   setMyLastReadMessageId,
   setFriendLastReadMessageId,
   setLatestMessagesByRoom,
-  insertReaction,
-  updateReaction,
-  deleteReaction,
+  reconcileUpdateReaction,
+  reconcileDeleteReaction,
+  reconcileInsertReaction,
 } from "@/lib/redux/features/message/messageSlice";
 import { getUserById } from "@/lib/client/getUserById";
 import { roomUser } from "@/types/api/roomUser";
@@ -147,15 +147,21 @@ export const MessageClient = ({
 
   // realtime update reaction
   const onReactionInsert = (reaction: MessageReaction) => {
-    dispatch(insertReaction(reaction));
+    dispatch(
+      reconcileInsertReaction({
+        reaction: reaction,
+        userId: user.user?.id as number,
+        messageId: reaction.message_id,
+      }),
+    );
   };
 
   const onReactionUpdate = (reaction: MessageReaction) => {
-    dispatch(updateReaction(reaction));
+    dispatch(reconcileUpdateReaction(reaction));
   };
 
   const onReactionDelete = (reaction: MessageReaction) => {
-    dispatch(deleteReaction(reaction));
+    dispatch(reconcileDeleteReaction(reaction));
   };
 
   useRealtimeMessageReactions(

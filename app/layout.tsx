@@ -12,6 +12,7 @@ import { User } from "@/types/api/user";
 import { CategoriesProvider } from "@/contexts/CategoriesProvider";
 import { Category } from "@/types/api/category";
 import StoreProvider from "./StoreProvider";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -65,7 +66,7 @@ export default async function RootLayout({
                   <AppSidebar />
                   <Main>
                     <SidebarTrigger />
-
+                    <Toaster />
                     {children}
                   </Main>
                 </CategoriesProvider>

@@ -6,7 +6,7 @@ import { MoreVerticalIcon, Pencil, Trash2Icon } from "lucide-react";
 import { Message } from "@/types/api/message";
 import { formatDate, formatTime } from "@/lib/utils";
 import { useMessageEditor } from "@/contexts/MessageEditorProvider";
-import { deleteMessage } from "./action";
+import { deleteMessage } from "./messageAction";
 import { startTransition, useActionState } from "react";
 
 export const MessageMenu = ({ message }: { message: Message }) => {

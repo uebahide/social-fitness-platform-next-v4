@@ -110,8 +110,37 @@ const messageSlice = createSlice({
       }
       state.latestMessagesByRoom[message.room_id] = message;
     },
-    insertReaction: (state, action: PayloadAction<MessageReaction>) => {
-      const reaction = action.payload;
+    optimisticInsertReaction: (
+      state,
+      action: PayloadAction<{
+        roomId: number;
+        reaction: string;
+        messageId: number;
+        userId: number;
+      }>,
+    ) => {
+      const { roomId, reaction, messageId, userId } = action.payload;
+      const targetMessage = state.messagesByRoom[roomId]?.find(
+        (message) => message.id === messageId,
+      );
+      if (!targetMessage) return;
+      targetMessage.reactions.push({
+        id: -(Date.now() + Math.floor(Math.random() * 1000)), //temp id
+        reaction,
+        user_id: userId,
+        message_id: messageId,
+        created_at: new Date().toISOString(),
+      });
+    },
+    reconcileInsertReaction: (
+      state,
+      action: PayloadAction<{
+        reaction: MessageReaction;
+        userId: number;
+        messageId: number;
+      }>,
+    ) => {
+      const { reaction, userId, messageId } = action.payload;
       const location = findMessageLocationByReaction(
         state.messagesByRoom,
         reaction,
@@ -126,10 +155,22 @@ const messageSlice = createSlice({
       );
 
       if (!alreadyExists) {
+        // remove optimistic reactions first by filtering only positive ids
+        message.reactions = message.reactions.filter(
+          (reaction) =>
+            !(
+              reaction.id < 0 &&
+              reaction.user_id === userId &&
+              reaction.message_id === messageId
+            ),
+        );
         message.reactions.push(reaction);
       }
     },
-    updateReaction: (state, action: PayloadAction<MessageReaction>) => {
+    reconcileUpdateReaction: (
+      state,
+      action: PayloadAction<MessageReaction>,
+    ) => {
       const reaction = action.payload;
       const location = findMessageLocationByReaction(
         state.messagesByRoom,
@@ -144,8 +185,10 @@ const messageSlice = createSlice({
         item.id === reaction.id ? reaction : item,
       );
     },
-
-    deleteReaction: (state, action: PayloadAction<MessageReaction>) => {
+    reconcileDeleteReaction: (
+      state,
+      action: PayloadAction<MessageReaction>,
+    ) => {
       const reaction = action.payload;
       const location = findMessageLocationByReaction(
         state.messagesByRoom,
@@ -158,6 +201,28 @@ const messageSlice = createSlice({
         state.messagesByRoom[location.roomId][location.messageIndex];
       message.reactions = message.reactions.filter(
         (item) => item.id !== reaction.id,
+      );
+    },
+    rollbackReactionInsert: (
+      state,
+      action: PayloadAction<{
+        roomId: number;
+        userId: number;
+        messageId: number;
+      }>,
+    ) => {
+      const { roomId, userId, messageId } = action.payload;
+      const targetMessage = state.messagesByRoom[roomId]?.find(
+        (message) => message.id === messageId,
+      );
+      if (!targetMessage) return;
+      targetMessage.reactions = targetMessage.reactions.filter(
+        (reaction) =>
+          !(
+            reaction.id < 0 &&
+            reaction.user_id === userId &&
+            reaction.message_id === messageId
+          ),
       );
     },
     setMyLastReadMessageId: (
@@ -187,9 +252,11 @@ export const {
   setRoomMessages,
   insertMessage,
   updateMessage,
-  insertReaction,
-  updateReaction,
-  deleteReaction,
+  optimisticInsertReaction,
+  reconcileInsertReaction,
+  reconcileUpdateReaction,
+  reconcileDeleteReaction,
+  rollbackReactionInsert,
   setMyLastReadMessageId,
   setFriendLastReadMessageId,
   setRoomIdle,
