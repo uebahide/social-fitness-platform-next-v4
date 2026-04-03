@@ -166,7 +166,7 @@ export const MessageClient = ({
   );
 
   return (
-    <div className="grid min-w-0 grid-cols-[4fr_9fr] z-10">
+    <div className="grid min-w-0 grid-cols-[4fr_9fr] z-0">
       <MessageSidebar rooms={rooms} />
       <MessagePanel />
     </div>

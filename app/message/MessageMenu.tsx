@@ -37,6 +37,7 @@ export const MessageMenu = ({ message }: { message: Message }) => {
           <MoreVerticalIcon className="size-6 rotate-90 hover:bg-gray-200 rounded-full p-1 cursor-pointer" />
         </div>
       }
+      className="z-50"
     >
       <div className="flex flex-col gap-1 w-[150px]">
         <p className="text-sm text-gray-500 pl-2 mt-2 mb-1">
