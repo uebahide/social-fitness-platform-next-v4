@@ -11,6 +11,7 @@ import {
   ensureRoomLoadStatuses,
   setSelectedRoom,
   reconcileUpdateMessage,
+  reconcileDeleteMessage,
   setMyLastReadMessageId,
   setFriendLastReadMessageId,
   setLatestMessagesByRoom,
@@ -24,6 +25,7 @@ import { useRealtimeReadStatus } from "@/hooks/useRealtimeReadStatus";
 import { useUser } from "@/contexts/UserProvider";
 import { MessageReaction } from "@/types/api/messageReactions";
 import { useRealtimeMessageReactions } from "@/hooks/useRealtimeMessageReactions";
+import { DeleteMessageActionProvider } from "@/contexts/DeleteMessageActionProvider";
 
 export const MessageClient = ({
   rooms,
@@ -129,7 +131,12 @@ export const MessageClient = ({
     dispatch(reconcileUpdateMessage(message));
   };
 
-  useRealtimeMessages(realtimeRoomIds, onInsert, onUpdate);
+  // realtime update message
+  const onDelete = async (message: Message) => {
+    dispatch(reconcileDeleteMessage(message));
+  };
+
+  useRealtimeMessages(realtimeRoomIds, onInsert, onUpdate, onDelete);
 
   // realtime update read status
   const onReadUpdate = (roomUser: roomUser) => {
@@ -168,7 +175,9 @@ export const MessageClient = ({
   return (
     <div className="grid min-w-0 grid-cols-[4fr_9fr] z-0">
       <MessageSidebar rooms={rooms} />
-      <MessagePanel />
+      <DeleteMessageActionProvider>
+        <MessagePanel />
+      </DeleteMessageActionProvider>
     </div>
   );
 };

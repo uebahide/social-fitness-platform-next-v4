@@ -123,9 +123,15 @@ export async function editTextMessage(
   };
 }
 
+export type DeleteMessageState = {
+  error: string;
+  message: string;
+  ok: boolean;
+};
+
 //delete message
 export async function deleteMessage(
-  _prevState: SendMessageState,
+  _prevState: DeleteMessageState,
   formData: FormData,
 ) {
   const supabase = await createClient();
@@ -140,17 +146,14 @@ export async function deleteMessage(
 
   if (error) {
     return {
-      errors: error.message,
-      message: "error while deleting message",
-      data: {},
+      error: "error while deleting message",
+      message: "",
       ok: false,
     };
   }
-
   return {
-    errors: {},
+    error: "",
     message: "Message was deleted successfully",
-    data: {},
     ok: true,
   };
 }

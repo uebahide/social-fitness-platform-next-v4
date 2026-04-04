@@ -152,6 +152,45 @@ const messageSlice = createSlice({
         state.latestMessagesByRoom[message.room_id] = current[index];
       }
     },
+    optimisticDeleteMessage: (state, action: PayloadAction<Message>) => {
+      const message = action.payload;
+      const current = state.messagesByRoom[message.room_id] ?? [];
+      const index = current.findIndex((item) => item.id === message.id);
+      if (index !== -1) {
+        // update message with same reactions as the original message
+        current[index].deleted = true;
+        state.messagesByRoom[message.room_id] = current;
+      }
+      if (message.id === state.latestMessagesByRoom[message.room_id]?.id) {
+        state.latestMessagesByRoom[message.room_id] = current[index];
+      }
+    },
+    reconcileDeleteMessage: (state, action: PayloadAction<Message>) => {
+      const message = action.payload;
+      const current = state.messagesByRoom[message.room_id] ?? [];
+      const index = current.findIndex((item) => item.id === message.id);
+      if (index !== -1) {
+        // update message with same reactions as the original message
+        current[index].deleted = true;
+        state.messagesByRoom[message.room_id] = current;
+      }
+      if (message.id === state.latestMessagesByRoom[message.room_id]?.id) {
+        state.latestMessagesByRoom[message.room_id] = current[index];
+      }
+    },
+    rollbackDeleteMessage: (state, action: PayloadAction<Message>) => {
+      const message = action.payload;
+      const current = state.messagesByRoom[message.room_id] ?? [];
+      const index = current.findIndex((item) => item.id === message.id);
+      if (index !== -1) {
+        // update message with same reactions as the original message
+        current[index].deleted = false;
+        state.messagesByRoom[message.room_id] = current;
+      }
+      if (message.id === state.latestMessagesByRoom[message.room_id]?.id) {
+        state.latestMessagesByRoom[message.room_id] = current[index];
+      }
+    },
     optimisticInsertReaction: (
       state,
       action: PayloadAction<{
@@ -368,6 +407,9 @@ export const {
   rollbackUpdateReaction,
   rollbackDeleteReaction,
   rollbackUpdateMessage,
+  rollbackDeleteMessage,
+  optimisticDeleteMessage,
+  reconcileDeleteMessage,
   setMyLastReadMessageId,
   setFriendLastReadMessageId,
   setRoomIdle,
