@@ -77,6 +77,9 @@ const ReactionBubble = ({
   className?: string;
 }) => {
   const isDeleted = message.deleted;
+  const sortedReactions = [...message.reactions].sort((a, b) =>
+    a.created_at.localeCompare(b.created_at),
+  );
   if (!isDeleted && message.reactions?.length > 0) {
     return (
       <div
@@ -87,14 +90,12 @@ const ReactionBubble = ({
         )}
       >
         {message.reactions?.length > 0 &&
-          message.reactions?.map((reaction) => (
+          sortedReactions.map((reaction) => (
             <div
               key={reaction.id}
               className="flex items-center justify-center "
             >
-              <span className="text-xs text-gray-500 ">
-                {reaction.reaction}
-              </span>
+              <span className="text-xs text-gray-500 ">{reaction.emoji}</span>
             </div>
           ))}
       </div>

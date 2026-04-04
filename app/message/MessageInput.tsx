@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { sendMessage } from "./action";
+import { sendMessage } from "./messageAction";
 import { EmojiClickData } from "emoji-picker-react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
