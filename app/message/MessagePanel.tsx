@@ -22,11 +22,14 @@ import {
   setRoomIdle,
   rollbackUpdateMessage,
   reconcileUpdateMessage,
+  rollbackDeleteMessage,
+  reconcileDeleteMessage,
 } from "@/lib/redux/features/message/messageSlice";
 import { MessageListSkeleton } from "@/components/skeletons/MessageListSkeleton";
 import { Button } from "@/components/ui/button";
 import { EditMessageState, editTextMessage } from "./messageAction";
 import { toast } from "sonner";
+import { useDeleteMessageAction } from "@/contexts/DeleteMessageActionProvider";
 
 const initialState: EditMessageState = {
   error: "",
@@ -45,12 +48,13 @@ export const MessagePanel = () => {
     selectRoomLoadStatus(state, selectedRoomId as number),
   );
   const [retryKey, setRetryKey] = useState<number>(0);
-
   const [isUpdating, setIsUpdating] = useState(false);
   const [editTextMessageState, editTextMessageformAction] = useActionState(
     editTextMessage,
     initialState,
   );
+  const { setIsMessageDeleting, deleteMessageState, message, setMessage } =
+    useDeleteMessageAction();
 
   const handleRetry = () => {
     dispatch(setRoomIdle(selectedRoomId as number));
@@ -121,6 +125,39 @@ export const MessagePanel = () => {
       });
     }
   }, [editTextMessageState.ok, dispatch, editTextMessageState.data]);
+
+  // rollback delete message if deleting message is failed
+  useEffect(() => {
+    if (
+      deleteMessageState.error !== "" &&
+      deleteMessageState.ok === false &&
+      message !== null
+    ) {
+      toast.error("Failed to delete message");
+      dispatch(rollbackDeleteMessage(message as Message));
+      startTransition(() => {
+        setIsMessageDeleting(false);
+        setMessage(null);
+      });
+    }
+  }, [message, dispatch, deleteMessageState, setIsMessageDeleting, setMessage]);
+
+  // reconcile delete message if deleting message is successful
+  useEffect(() => {
+    if (deleteMessageState.ok && message !== null) {
+      dispatch(reconcileDeleteMessage(message as Message));
+      startTransition(() => {
+        setIsMessageDeleting(false);
+        setMessage(null);
+      });
+    }
+  }, [
+    deleteMessageState.ok,
+    message,
+    dispatch,
+    setIsMessageDeleting,
+    setMessage,
+  ]);
 
   return (
     <div
