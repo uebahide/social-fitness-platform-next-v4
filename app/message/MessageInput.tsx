@@ -1,26 +1,56 @@
 import { TextareaSimple } from "@/components/form/TextAreaSimple";
-import { Room } from "@/types/api/message";
+import { Message, Room } from "@/types/api/message";
 import { FaceIcon } from "@radix-ui/react-icons";
 import { ImageIcon, SendIcon, XIcon } from "lucide-react";
 import {
   SetStateAction,
   startTransition,
   useActionState,
+  useEffect,
   useRef,
   useState,
 } from "react";
-import { sendMessage } from "./messageAction";
+import {
+  sendMessageWithImages,
+  SendMessageWithImagesState,
+  sendMessageWithoutImages,
+  SendMessageWithoutImagesState,
+} from "./messageAction";
 import { EmojiClickData } from "emoji-picker-react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/contexts/UserProvider";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { selectSelectedRoom } from "@/lib/redux/features/message/messageSelector";
 import { EmojiPickerButton } from "@/components/buttons/EmojiPickerButton";
+import {
+  optimisticInsertMessage,
+  reconcileInsertMessage,
+  rollbackInsertMessage,
+} from "@/lib/redux/features/message/messageSlice";
+import { User } from "@/types/api/user";
+import { toast } from "sonner";
 
 type SelectedImage = {
   id: string;
   file: File;
+};
+
+const initialSendMessageWithoutImagesState: SendMessageWithoutImagesState = {
+  error: "",
+  message: "",
+  data: null,
+  ok: false,
+  optimisticMessageId: 0,
+  roomId: -1,
+};
+
+const initialSendMessageWithImagesState: SendMessageWithImagesState = {
+  error: "",
+  message: "",
+  data: null,
+  ok: false,
+  optimisticMessageId: 0,
 };
 
 export const MessageInput = () => {
@@ -30,15 +60,17 @@ export const MessageInput = () => {
   const { user } = useUser();
   const supabase = createClient();
   const formRef = useRef<HTMLFormElement | null>(null);
-  const [, formAction] = useActionState(sendMessage, {
-    errors: {},
-    message: "",
-    data: {},
-    ok: false,
-  });
-  const formData = new FormData();
-  formData.append("message", message);
-  formData.append("roomId", String(selectedRoom.id));
+
+  const [sendMessageWithoutImagesState, formActionWithoutImages] =
+    useActionState(
+      sendMessageWithoutImages,
+      initialSendMessageWithoutImagesState,
+    );
+  const [sendMessageWithImagesState, formActionWithImages] = useActionState(
+    sendMessageWithImages,
+    initialSendMessageWithImagesState,
+  );
+  const dispatch = useDispatch();
 
   //handle images upload to supabase
   const handleImagesUploadToSupabase = async (
@@ -79,6 +111,7 @@ export const MessageInput = () => {
     e.preventDefault();
     if (!message.trim() && images.length === 0) return;
 
+    //upload images to supabase if there are attached images
     const uploadResult = await handleImagesUploadToSupabase(images);
     if (!uploadResult.ok) {
       console.error(uploadResult.errors);
@@ -86,6 +119,27 @@ export const MessageInput = () => {
     }
 
     const formData = new FormData();
+    // if it's a text message, start optimistic insert to send message
+    if (images.length === 0 && message.trim() !== "") {
+      // start transition to send message
+      const optimisticMessage: Message = {
+        id: -(Date.now() + Math.floor(Math.random() * 1000)), //temp id
+        body: message,
+        user_id: user?.id ?? 0,
+        room_id: selectedRoom.id,
+        created_at: new Date().toISOString(),
+        updated_at: null,
+        user: user as User,
+        reactions: [],
+        deleted: false,
+        image_path: "",
+        type: "text",
+        pending: true,
+        failed: false,
+      };
+      dispatch(optimisticInsertMessage(optimisticMessage));
+      formData.append("optimisticMessageId", String(optimisticMessage.id));
+    }
     formData.append("message", message);
     formData.append("roomId", String(selectedRoom.id));
 
@@ -94,12 +148,84 @@ export const MessageInput = () => {
     });
 
     startTransition(() => {
-      formAction(formData);
+      if (images.length === 0 && message.trim() !== "") {
+        formActionWithoutImages(formData);
+      } else if (images.length > 0) {
+        formActionWithImages(formData);
+      }
     });
 
     setMessage("");
     setImages([]);
   };
+
+  //rollback optimistic message without images if error occurs
+  useEffect(() => {
+    if (
+      sendMessageWithoutImagesState.error &&
+      !sendMessageWithoutImagesState.ok
+    ) {
+      toast.error(sendMessageWithoutImagesState.error);
+      dispatch(
+        rollbackInsertMessage({
+          roomId: sendMessageWithoutImagesState.roomId,
+          optimisticMessageId:
+            sendMessageWithoutImagesState.optimisticMessageId,
+        }),
+      );
+    }
+  }, [
+    sendMessageWithoutImagesState.error,
+    sendMessageWithoutImagesState.ok,
+    sendMessageWithoutImagesState.roomId,
+    sendMessageWithoutImagesState.optimisticMessageId,
+    dispatch,
+  ]);
+
+  //reconcile optimistic message without images with confirmed message
+  useEffect(() => {
+    if (
+      sendMessageWithoutImagesState.ok &&
+      sendMessageWithoutImagesState.data
+    ) {
+      dispatch(
+        reconcileInsertMessage({
+          message: sendMessageWithoutImagesState.data,
+          optimisticMessageId:
+            sendMessageWithoutImagesState.optimisticMessageId,
+        }),
+      );
+    }
+  }, [
+    sendMessageWithoutImagesState.ok,
+    sendMessageWithoutImagesState.data,
+    dispatch,
+    sendMessageWithoutImagesState.optimisticMessageId,
+  ]);
+
+  //rollback optimistic message with images if error occurs
+  useEffect(() => {
+    if (sendMessageWithImagesState.error && !sendMessageWithImagesState.ok) {
+      toast.error(sendMessageWithImagesState.error);
+    }
+  }, [sendMessageWithImagesState.error, sendMessageWithImagesState.ok]);
+
+  //reconcile optimistic message with images with confirmed message
+  useEffect(() => {
+    if (sendMessageWithImagesState.ok && sendMessageWithImagesState.data) {
+      dispatch(
+        reconcileInsertMessage({
+          message: sendMessageWithImagesState.data,
+          optimisticMessageId: sendMessageWithImagesState.optimisticMessageId,
+        }),
+      );
+    }
+  }, [
+    sendMessageWithImagesState.ok,
+    sendMessageWithImagesState.data,
+    dispatch,
+    sendMessageWithImagesState.optimisticMessageId,
+  ]);
 
   //handle key down
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

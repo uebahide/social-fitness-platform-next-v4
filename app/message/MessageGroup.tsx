@@ -31,8 +31,16 @@ export const MessageGroup = ({ message }: { message: Message }) => {
           {!isDeleted && <MessageSideMenu message={message} />}
           <MessageBubble message={message} isMyMessage />
         </div>
-        {!isDeleted && isSeen && (
+        {!isDeleted && isSeen && !message.pending && !message.failed && (
           <p className="text-[8px] text-gray-500 self-end pr-2">seen</p>
+        )}
+        {message.failed && (
+          <p className="text-[8px] text-red-500 self-end pr-2">
+            Failed to send
+          </p>
+        )}
+        {message.pending && (
+          <p className="text-[8px] text-gray-500 self-end pr-2">Sending...</p>
         )}
       </section>
     );
