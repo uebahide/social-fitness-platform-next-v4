@@ -7,7 +7,7 @@ import { Message, Room } from "@/types/api/message";
 import { useRealtimeMessages } from "@/hooks/useRealtimeMessages";
 import { useDispatch } from "react-redux";
 import {
-  insertMessage,
+  realtimeInsertMessage,
   ensureRoomLoadStatuses,
   setSelectedRoom,
   reconcileUpdateMessage,
@@ -121,7 +121,7 @@ export const MessageClient = ({
     const user = await getUserById(newMessage.user_id);
     newMessage.user = user;
     newMessage.reactions = [];
-    dispatch(insertMessage(newMessage));
+    dispatch(realtimeInsertMessage(newMessage));
   };
 
   // realtime update message

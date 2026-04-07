@@ -25,6 +25,8 @@ export type Message = {
   deleted: boolean;
   image_path: string;
   type: string;
-  updated_at: string;
+  updated_at: string | null;
   created_at: string;
+  pending?: boolean;
+  failed?: boolean;
 };

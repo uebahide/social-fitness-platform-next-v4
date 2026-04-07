@@ -4,15 +4,76 @@ import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
 import { createClient } from "@/lib/supabase/server";
 import { Message } from "@/types/api/message";
 
-type SendMessageState = {
-  errors: string | Record<string, never>;
+export type SendMessageWithoutImagesState = {
+  error: string;
   message: string;
-  data: Record<string, never>;
+  data: Message | null;
   ok: boolean;
+  optimisticMessageId: number;
+  roomId: number;
 };
 
-export async function sendMessage(
-  _prevState: SendMessageState,
+export async function sendMessageWithoutImages(
+  _prevState: SendMessageWithoutImagesState,
+  formData: FormData,
+) {
+  const body = formData.get("message") as string;
+  const roomId = formData.get("roomId") as string;
+
+  const supabase = await createClient();
+  const userId = await getCurrentUserId();
+
+  const optimisticMessageId = Number(formData.get("optimisticMessageId"));
+
+  let textMessageData: Message | null = null;
+
+  //create message with text to supabase
+  const { data, error } = await supabase
+    .from("messages")
+    .insert({
+      body,
+      room_id: roomId,
+      user_id: userId,
+      type: "text",
+    })
+    .select(
+      "*, user:profiles(id, display_name, email, image_path, created_at), reactions:message_reactions(*)",
+    )
+    .single();
+
+  if (error) {
+    return {
+      error: "error while sending message",
+      message: "",
+      data: null,
+      ok: false,
+      optimisticMessageId,
+      roomId: Number(roomId),
+    };
+  }
+
+  textMessageData = data as Message;
+
+  return {
+    error: "",
+    message: "Message was sent successfully",
+    data: textMessageData as Message,
+    ok: true,
+    optimisticMessageId,
+    roomId: Number(roomId),
+  };
+}
+
+export type SendMessageWithImagesState = {
+  error: string;
+  message: string;
+  data: Message | null;
+  ok: boolean;
+  optimisticMessageId: number;
+};
+
+export async function sendMessageWithImages(
+  _prevState: SendMessageWithImagesState,
   formData: FormData,
 ) {
   const body = formData.get("message") as string;
@@ -22,48 +83,56 @@ export async function sendMessage(
   const supabase = await createClient();
   const userId = await getCurrentUserId();
 
+  const optimisticMessageId = Number(formData.get("optimisticMessageId"));
+
+  let textMessageData: Message | null = null;
+
+  const rows = [];
+
   if (body.trim() !== "") {
-    const { error } = await supabase.from("messages").insert({
+    rows.push({
       body,
       room_id: roomId,
       user_id: userId,
       type: "text",
     });
-
-    if (error) {
-      return {
-        errors: error.message,
-        message: "error while sending message",
-        data: {},
-        ok: false,
-      };
-    }
   }
 
   for (const filePath of filePaths) {
-    const { error: imageError } = await supabase.from("messages").insert({
+    rows.push({
       body: "",
       room_id: roomId,
       user_id: userId,
       type: "image",
       image_path: `messages/${filePath}`,
     });
-
-    if (imageError) {
-      return {
-        errors: imageError.message,
-        message: "error while sending image",
-        data: {},
-        ok: false,
-      };
-    }
   }
 
+  const { data, error } = await supabase
+    .from("messages")
+    .insert(rows)
+    .select(
+      "*, user:profiles(id, display_name, email, image_path, created_at), reactions:message_reactions(*)",
+    );
+
+  if (error) {
+    return {
+      error: "error while sending message",
+      message: "",
+      data: null,
+      ok: false,
+      optimisticMessageId,
+    };
+  }
+
+  textMessageData = data[0] as Message;
+
   return {
-    errors: {},
+    error: "",
     message: "Message was sent successfully",
-    data: {},
+    data: textMessageData as Message,
     ok: true,
+    optimisticMessageId,
   };
 }
 

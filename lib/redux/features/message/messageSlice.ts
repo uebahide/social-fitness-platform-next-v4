@@ -86,9 +86,63 @@ const messageSlice = createSlice({
     ) {
       state.messagesByRoom[action.payload.roomId] = action.payload.messages;
     },
-    insertMessage: (state, action: PayloadAction<Message>) => {
+    optimisticInsertMessage: (state, action: PayloadAction<Message>) => {
+      const message = action.payload;
+      state.messagesByRoom[message.room_id] = [
+        ...(state.messagesByRoom[message.room_id] ?? []),
+        message,
+      ];
+      state.latestMessagesByRoom[message.room_id] = message;
+    },
+    rollbackInsertMessage: (
+      state,
+      action: PayloadAction<{ roomId: number; optimisticMessageId: number }>,
+    ) => {
+      const { roomId, optimisticMessageId } = action.payload;
+      //update optimistic message to failed
+      const message = state.messagesByRoom[roomId]?.find(
+        (item) => item.id === optimisticMessageId,
+      );
+      if (!message) return;
+      message.failed = true;
+      message.pending = false;
+      state.messagesByRoom[roomId] = state.messagesByRoom[roomId].map((item) =>
+        item.id === optimisticMessageId ? message : item,
+      );
+
+      //roll back latest message
+      const length = state.messagesByRoom[roomId].length;
+      state.latestMessagesByRoom[roomId] =
+        length > 0 ? state.messagesByRoom[roomId][length - 1] : null;
+    },
+    reconcileInsertMessage: (
+      state,
+      action: PayloadAction<{ message: Message; optimisticMessageId: number }>,
+    ) => {
+      const { message, optimisticMessageId } = action.payload;
+      //remove optimistic message
+      state.messagesByRoom[message.room_id] = state.messagesByRoom[
+        message.room_id
+      ].filter((item) => item.id !== optimisticMessageId);
+      //add confirmed message instead
+      const current = state.messagesByRoom[message.room_id] ?? [];
+      const exists = current.some((item) => item.id === message.id);
+      if (!exists) {
+        state.messagesByRoom[message.room_id] = [
+          ...state.messagesByRoom[message.room_id],
+          message,
+        ];
+        state.latestMessagesByRoom[message.room_id] = message;
+      }
+    },
+    realtimeInsertMessage: (state, action: PayloadAction<Message>) => {
       const message = action.payload;
       const current = state.messagesByRoom[message.room_id] ?? [];
+
+      //remove optimistic message
+      // state.messagesByRoom[message.room_id] = state.messagesByRoom[
+      //   message.room_id
+      // ].filter((item) => !(item.id < 0 && item.user_id === message.user_id));
 
       const exists = current.some((item) => item.id === message.id);
       if (!exists) {
@@ -394,7 +448,7 @@ export const {
   setRoomLoaded,
   setRoomError,
   setRoomMessages,
-  insertMessage,
+  realtimeInsertMessage,
   optimisticUpdateMessage,
   reconcileUpdateMessage,
   optimisticInsertReaction,
@@ -413,6 +467,9 @@ export const {
   setMyLastReadMessageId,
   setFriendLastReadMessageId,
   setRoomIdle,
+  optimisticInsertMessage,
+  rollbackInsertMessage,
+  reconcileInsertMessage,
 } = messageSlice.actions;
 
 export default messageSlice.reducer;
