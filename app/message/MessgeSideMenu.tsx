@@ -19,6 +19,7 @@ export const MessageSideMenu = ({ message }: { message: Message }) => {
           ? "opacity-100 pointer-events-auto"
           : "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto",
       )}
+      data-testid="message-side-menu"
     >
       {isMyMessage && (
         <li className="flex items-center justify-center hover:bg-gray-200 rounded-full p-1 w-8 h-8">

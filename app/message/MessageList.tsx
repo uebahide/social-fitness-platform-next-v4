@@ -15,6 +15,8 @@ import {
 import { Room } from "@/types/api/message";
 import { MessageGroup } from "./MessageGroup";
 import { EmptyState } from "@/components/states/EmptyState";
+import { Avatar } from "@/components/Avatar";
+
 export const MessageList = () => {
   const dispatch = useDispatch();
   const messages = useSelector(selectSelectedRoomMessages);
@@ -26,6 +28,7 @@ export const MessageList = () => {
   const selectedRoom = useSelector(selectSelectedRoom) as Room;
 
   const user = useUser();
+  const friend = selectedRoom.users.find((_user) => _user.id !== user.user?.id);
 
   const handledMessageIdRef = useRef<number | null>(null);
 
@@ -37,10 +40,7 @@ export const MessageList = () => {
         .from("room_user")
         .select("last_read_message_id")
         .eq("room_id", selectedRoom.id)
-        .eq(
-          "user_id",
-          selectedRoom.users.find((_user) => _user.id !== user.user?.id)?.id,
-        )
+        .eq("user_id", friend?.id)
         .single();
       if (error) {
         console.error(error);
@@ -54,7 +54,7 @@ export const MessageList = () => {
       );
     };
     void fetchFriendLastReadMessageId();
-  }, [selectedRoomId, user?.user?.id, dispatch, selectedRoom]);
+  }, [selectedRoomId, user?.user?.id, dispatch, selectedRoom, friend?.id]);
 
   // sync my last read status when the room is selected or receive a new message
   useEffect(() => {
@@ -110,21 +110,28 @@ export const MessageList = () => {
     (_user) => _user.id !== user.user?.id,
   )?.display_name;
   return (
-    <div
+    <section
       ref={containerRef}
       className="flex h-[calc(100vh-258px)] min-w-0 flex-col gap-4 overflow-x-hidden overflow-y-auto p-4"
     >
+      <header className="flex items-center justify-center flex-col gap-4 mt-4 mb-8">
+        <Avatar size="large" user={friend} />
+        <h2 className="text-xl font-bold">{friendDisplayName}</h2>
+      </header>
+
       {messages && messages.length > 0 ? (
         messages.map((message) => (
           <MessageGroup key={message.id} message={message} />
         ))
       ) : (
-        <EmptyState
-          data-testid="message-empty-conversation-state"
-          title="No messages yet"
-          description={`Start a conversation with ${friendDisplayName} to see your messages here 💬`}
-        />
+        <div className="flex flex-col items-center justify-center gap-4 h-1/2">
+          <EmptyState
+            data-testid="message-empty-conversation-state"
+            title="No messages yet"
+            description={`Start a conversation with ${friendDisplayName} to see your messages here 💬`}
+          />
+        </div>
       )}
-    </div>
+    </section>
   );
 };

@@ -86,7 +86,56 @@ const messageSlice = createSlice({
     ) {
       state.messagesByRoom[action.payload.roomId] = action.payload.messages;
     },
-    insertMessage: (state, action: PayloadAction<Message>) => {
+    optimisticInsertTextMessage: (state, action: PayloadAction<Message>) => {
+      const message = action.payload;
+      state.messagesByRoom[message.room_id] = [
+        ...(state.messagesByRoom[message.room_id] ?? []),
+        message,
+      ];
+      state.latestMessagesByRoom[message.room_id] = message;
+    },
+    rollbackInsertTextMessage: (
+      state,
+      action: PayloadAction<{ roomId: number; optimisticMessageId: number }>,
+    ) => {
+      const { roomId, optimisticMessageId } = action.payload;
+      //update optimistic message to failed
+      const message = state.messagesByRoom[roomId]?.find(
+        (item) => item.id === optimisticMessageId,
+      );
+      if (!message) return;
+      message.failed = true;
+      message.pending = false;
+      state.messagesByRoom[roomId] = state.messagesByRoom[roomId].map((item) =>
+        item.id === optimisticMessageId ? message : item,
+      );
+
+      //roll back latest message
+      const length = state.messagesByRoom[roomId].length;
+      state.latestMessagesByRoom[roomId] =
+        length > 0 ? state.messagesByRoom[roomId][length - 1] : null;
+    },
+    reconcileInsertTextMessage: (
+      state,
+      action: PayloadAction<{ message: Message; optimisticMessageId: number }>,
+    ) => {
+      const { message, optimisticMessageId } = action.payload;
+      //remove optimistic message
+      state.messagesByRoom[message.room_id] = state.messagesByRoom[
+        message.room_id
+      ].filter((item) => item.id !== optimisticMessageId);
+      //add confirmed message instead
+      const current = state.messagesByRoom[message.room_id] ?? [];
+      const exists = current.some((item) => item.id === message.id);
+      if (!exists) {
+        state.messagesByRoom[message.room_id] = [
+          ...state.messagesByRoom[message.room_id],
+          message,
+        ];
+        state.latestMessagesByRoom[message.room_id] = message;
+      }
+    },
+    realtimeInsertTextMessage: (state, action: PayloadAction<Message>) => {
       const message = action.payload;
       const current = state.messagesByRoom[message.room_id] ?? [];
 
@@ -99,7 +148,93 @@ const messageSlice = createSlice({
       }
       state.latestMessagesByRoom[message.room_id] = message;
     },
-    updateMessage: (state, action: PayloadAction<Message>) => {
+    optimisticInsertImagesMessage: (state, action: PayloadAction<Message>) => {
+      const message = action.payload;
+      const current = state.messagesByRoom[message.room_id] ?? [];
+      const exists = current.some((item) => item.id === message.id);
+      if (!exists) {
+        state.messagesByRoom[message.room_id] = [...current, message];
+      }
+    },
+    rollbackInsertImagesMessage: (
+      state,
+      action: PayloadAction<{ roomId: number; optimisticMessageId: number }>,
+    ) => {
+      const { roomId, optimisticMessageId } = action.payload;
+      const current = state.messagesByRoom[roomId] ?? [];
+      const message = current.find((item) => item.id === optimisticMessageId);
+      if (!message) return;
+      message.failed = true;
+      message.pending = false;
+      state.messagesByRoom[roomId] = state.messagesByRoom[roomId].map((item) =>
+        item.id === optimisticMessageId ? message : item,
+      );
+      state.latestMessagesByRoom[roomId] =
+        state.messagesByRoom[roomId].length > 0
+          ? state.messagesByRoom[roomId][
+              state.messagesByRoom[roomId].length - 1
+            ]
+          : null;
+    },
+    reconcileInsertImagesMessage: (
+      state,
+      action: PayloadAction<{
+        messages: Message[];
+        optimisticMessageId: number;
+      }>,
+    ) => {
+      const { messages, optimisticMessageId } = action.payload;
+      //remove optimistic message
+      state.messagesByRoom[messages[0].room_id] = state.messagesByRoom[
+        messages[0].room_id
+      ].filter((item) => item.id !== optimisticMessageId);
+      //add confirmed image messages instead
+      for (const message of messages) {
+        const current = state.messagesByRoom[message.room_id] ?? [];
+        const exists = current.some((item) => item.id === message.id);
+        if (!exists) {
+          state.messagesByRoom[message.room_id] = [...current, message];
+        }
+      }
+      state.latestMessagesByRoom[messages[0].room_id] =
+        messages[messages.length - 1];
+    },
+    // realtimeInsertImagesMessage: (state, action: PayloadAction<Message[]>) => {
+    //   const messages = action.payload;
+    //   for (const message of messages) {
+    //     const current = state.messagesByRoom[message.room_id] ?? [];
+    //     const exists = current.some((item) => item.id === message.id);
+    //     if (!exists) {
+    //       state.messagesByRoom[message.room_id] = [...current, message];
+    //     }
+    //   }
+    //   state.latestMessagesByRoom[messages[0].room_id] =
+    //     messages[messages.length - 1];
+    // },
+    optimisticUpdateMessage: (
+      state,
+      action: PayloadAction<{ selectedMessage: Message; newBody: string }>,
+    ) => {
+      const { selectedMessage, newBody } = action.payload;
+      const current = state.messagesByRoom[selectedMessage.room_id] ?? [];
+      const index = current.findIndex((item) => item.id === selectedMessage.id);
+      if (index !== -1) {
+        // update message with same reactions as the original message
+        current[index] = {
+          ...selectedMessage,
+          reactions: current[index].reactions,
+          body: newBody,
+        };
+        state.messagesByRoom[selectedMessage.room_id] = current;
+      }
+      if (
+        selectedMessage.id ===
+        state.latestMessagesByRoom[selectedMessage.room_id]?.id
+      ) {
+        state.latestMessagesByRoom[selectedMessage.room_id] = current[index];
+      }
+    },
+    reconcileUpdateMessage: (state, action: PayloadAction<Message>) => {
       const message = action.payload;
       const current = state.messagesByRoom[message.room_id] ?? [];
       const index = current.findIndex((item) => item.id === message.id);
@@ -108,9 +243,129 @@ const messageSlice = createSlice({
         current[index] = { ...message, reactions: current[index].reactions };
         state.messagesByRoom[message.room_id] = current;
       }
-      state.latestMessagesByRoom[message.room_id] = message;
+      if (message.id === state.latestMessagesByRoom[message.room_id]?.id) {
+        state.latestMessagesByRoom[message.room_id] = current[index];
+      }
     },
-    insertReaction: (state, action: PayloadAction<MessageReaction>) => {
+    rollbackUpdateMessage: (state, action: PayloadAction<Message>) => {
+      const message = action.payload;
+      const current = state.messagesByRoom[message.room_id] ?? [];
+      const index = current.findIndex((item) => item.id === message.id);
+      if (index !== -1) {
+        // update message with same reactions as the original message
+        current[index] = {
+          ...current[index],
+          body: message.body,
+          updated_at: message.updated_at,
+        };
+        state.messagesByRoom[message.room_id] = current;
+      }
+      if (message.id === state.latestMessagesByRoom[message.room_id]?.id) {
+        state.latestMessagesByRoom[message.room_id] = current[index];
+      }
+    },
+    optimisticDeleteMessage: (state, action: PayloadAction<Message>) => {
+      const message = action.payload;
+      const current = state.messagesByRoom[message.room_id] ?? [];
+      const index = current.findIndex((item) => item.id === message.id);
+      if (index !== -1) {
+        // update message with same reactions as the original message
+        current[index].deleted = true;
+        state.messagesByRoom[message.room_id] = current;
+      }
+      if (message.id === state.latestMessagesByRoom[message.room_id]?.id) {
+        state.latestMessagesByRoom[message.room_id] = current[index];
+      }
+    },
+    reconcileDeleteMessage: (state, action: PayloadAction<Message>) => {
+      const message = action.payload;
+      const current = state.messagesByRoom[message.room_id] ?? [];
+      const index = current.findIndex((item) => item.id === message.id);
+      if (index !== -1) {
+        // update message with same reactions as the original message
+        current[index].deleted = true;
+        state.messagesByRoom[message.room_id] = current;
+      }
+      if (message.id === state.latestMessagesByRoom[message.room_id]?.id) {
+        state.latestMessagesByRoom[message.room_id] = current[index];
+      }
+    },
+    rollbackDeleteMessage: (state, action: PayloadAction<Message>) => {
+      const message = action.payload;
+      const current = state.messagesByRoom[message.room_id] ?? [];
+      const index = current.findIndex((item) => item.id === message.id);
+      if (index !== -1) {
+        // update message with same reactions as the original message
+        current[index].deleted = false;
+        state.messagesByRoom[message.room_id] = current;
+      }
+      if (message.id === state.latestMessagesByRoom[message.room_id]?.id) {
+        state.latestMessagesByRoom[message.room_id] = current[index];
+      }
+    },
+    optimisticInsertReaction: (
+      state,
+      action: PayloadAction<{
+        roomId: number;
+        emoji: string;
+        messageId: number;
+        userId: number;
+      }>,
+    ) => {
+      const { roomId, emoji, messageId, userId } = action.payload;
+      const targetMessage = state.messagesByRoom[roomId]?.find(
+        (message) => message.id === messageId,
+      );
+      if (!targetMessage) return;
+      targetMessage.reactions.push({
+        id: -(Date.now() + Math.floor(Math.random() * 1000)), //temp id
+        emoji,
+        user_id: userId,
+        message_id: messageId,
+        created_at: new Date().toISOString(),
+      });
+    },
+    optimisticUpdateReaction: (
+      state,
+      action: PayloadAction<{
+        confirmedReaction: MessageReaction;
+        newEmoji: string;
+      }>,
+    ) => {
+      const { confirmedReaction, newEmoji } = action.payload;
+      const location = findMessageLocationByReaction(
+        state.messagesByRoom,
+        confirmedReaction,
+      );
+      if (!location) return;
+      const message =
+        state.messagesByRoom[location.roomId][location.messageIndex];
+      message.reactions = message.reactions.map((item) =>
+        item.id === confirmedReaction.id ? { ...item, emoji: newEmoji } : item,
+      );
+    },
+    optimisticDeleteReaction: (
+      state,
+      action: PayloadAction<{
+        confirmedReaction: MessageReaction;
+      }>,
+    ) => {
+      const { confirmedReaction } = action.payload;
+      const location = findMessageLocationByReaction(
+        state.messagesByRoom,
+        confirmedReaction,
+      );
+      if (!location) return;
+      const message =
+        state.messagesByRoom[location.roomId][location.messageIndex];
+      message.reactions = message.reactions.filter(
+        (item) => item.id !== confirmedReaction.id,
+      );
+    },
+    reconcileInsertReaction: (
+      state,
+      action: PayloadAction<MessageReaction>,
+    ) => {
       const reaction = action.payload;
       const location = findMessageLocationByReaction(
         state.messagesByRoom,
@@ -126,10 +381,22 @@ const messageSlice = createSlice({
       );
 
       if (!alreadyExists) {
+        // remove optimistic reactions first by filtering only positive ids
+        message.reactions = message.reactions.filter(
+          (item) =>
+            !(
+              item.id < 0 &&
+              item.user_id === reaction.user_id &&
+              item.message_id === reaction.message_id
+            ),
+        );
         message.reactions.push(reaction);
       }
     },
-    updateReaction: (state, action: PayloadAction<MessageReaction>) => {
+    reconcileUpdateReaction: (
+      state,
+      action: PayloadAction<MessageReaction>,
+    ) => {
       const reaction = action.payload;
       const location = findMessageLocationByReaction(
         state.messagesByRoom,
@@ -144,8 +411,10 @@ const messageSlice = createSlice({
         item.id === reaction.id ? reaction : item,
       );
     },
-
-    deleteReaction: (state, action: PayloadAction<MessageReaction>) => {
+    reconcileDeleteReaction: (
+      state,
+      action: PayloadAction<MessageReaction>,
+    ) => {
       const reaction = action.payload;
       const location = findMessageLocationByReaction(
         state.messagesByRoom,
@@ -159,6 +428,58 @@ const messageSlice = createSlice({
       message.reactions = message.reactions.filter(
         (item) => item.id !== reaction.id,
       );
+    },
+    rollbackReactionInsert: (
+      state,
+      action: PayloadAction<{
+        roomId: number;
+        userId: number;
+        messageId: number;
+      }>,
+    ) => {
+      const { roomId, userId, messageId } = action.payload;
+      const targetMessage = state.messagesByRoom[roomId]?.find(
+        (message) => message.id === messageId,
+      );
+      if (!targetMessage) return;
+      targetMessage.reactions = targetMessage.reactions.filter(
+        (reaction) =>
+          !(
+            reaction.id < 0 &&
+            reaction.user_id === userId &&
+            reaction.message_id === messageId
+          ),
+      );
+    },
+    rollbackUpdateReaction: (
+      state,
+      action: PayloadAction<{
+        confirmedReaction: MessageReaction;
+        oldEmoji: string;
+      }>,
+    ) => {
+      const { confirmedReaction, oldEmoji } = action.payload;
+      const location = findMessageLocationByReaction(
+        state.messagesByRoom,
+        confirmedReaction,
+      );
+      if (!location) return;
+      const message =
+        state.messagesByRoom[location.roomId][location.messageIndex];
+      message.reactions = message.reactions.map((item) =>
+        item.id === confirmedReaction.id ? { ...item, emoji: oldEmoji } : item,
+      );
+    },
+    rollbackDeleteReaction: (state, action: PayloadAction<MessageReaction>) => {
+      const reaction = action.payload;
+      const location = findMessageLocationByReaction(
+        state.messagesByRoom,
+        reaction,
+      );
+      if (!location) return;
+      const message =
+        state.messagesByRoom[location.roomId][location.messageIndex];
+      message.reactions.push(reaction);
     },
     setMyLastReadMessageId: (
       state,
@@ -185,14 +506,32 @@ export const {
   setRoomLoaded,
   setRoomError,
   setRoomMessages,
-  insertMessage,
-  updateMessage,
-  insertReaction,
-  updateReaction,
-  deleteReaction,
+  optimisticUpdateMessage,
+  reconcileUpdateMessage,
+  optimisticInsertReaction,
+  optimisticUpdateReaction,
+  optimisticDeleteReaction,
+  reconcileInsertReaction,
+  reconcileUpdateReaction,
+  reconcileDeleteReaction,
+  rollbackReactionInsert,
+  rollbackUpdateReaction,
+  rollbackDeleteReaction,
+  rollbackUpdateMessage,
+  rollbackDeleteMessage,
+  optimisticDeleteMessage,
+  reconcileDeleteMessage,
   setMyLastReadMessageId,
   setFriendLastReadMessageId,
   setRoomIdle,
+  realtimeInsertTextMessage,
+  optimisticInsertTextMessage,
+  rollbackInsertTextMessage,
+  reconcileInsertTextMessage,
+  optimisticInsertImagesMessage,
+  rollbackInsertImagesMessage,
+  reconcileInsertImagesMessage,
+  // realtimeInsertImagesMessage,
 } = messageSlice.actions;
 
 export default messageSlice.reducer;

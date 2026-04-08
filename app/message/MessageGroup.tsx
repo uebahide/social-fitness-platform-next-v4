@@ -20,19 +20,39 @@ export const MessageGroup = ({ message }: { message: Message }) => {
     friendLastReadMessageId !== 0 &&
     friendLastReadMessageId &&
     friendLastReadMessageId >= message.id;
+  const isNotFailed = !message.failed;
+  const isNotPending = !message.pending;
 
   if (isMyMessage) {
     return (
-      <section className="flex flex-col space-y-2">
+      <section className="flex flex-col space-y-2" data-testid="message-group">
         {!isDeleted && isEdited && (
           <p className="text-xs text-gray-500 self-end pr-2">Edited</p>
         )}
         <div className="flex justify-end min-w-0 group gap-4">
-          {!isDeleted && <MessageSideMenu message={message} />}
+          {!isDeleted && isNotFailed && isNotPending && (
+            <MessageSideMenu message={message} />
+          )}
           <MessageBubble message={message} isMyMessage />
         </div>
-        {!isDeleted && isSeen && (
+        {!isDeleted && isSeen && !message.pending && !message.failed && (
           <p className="text-[8px] text-gray-500 self-end pr-2">seen</p>
+        )}
+        {message.failed && (
+          <p
+            className="text-[8px] text-red-500 self-end pr-2"
+            data-testid="message-failed-text"
+          >
+            Failed to send
+          </p>
+        )}
+        {message.pending && (
+          <p
+            className="text-[8px] text-gray-500 self-end pr-2"
+            data-testid="message-pending-text"
+          >
+            Sending...
+          </p>
         )}
       </section>
     );
@@ -43,7 +63,9 @@ export const MessageGroup = ({ message }: { message: Message }) => {
         <Avatar size="xsmall" user={message.user} />
         <MessageBubble message={message} isMyMessage={false} />
       </div>
-      {!isDeleted && <MessageSideMenu message={message} />}
+      {!isDeleted && isNotFailed && isNotPending && (
+        <MessageSideMenu message={message} />
+      )}
     </section>
   );
 };

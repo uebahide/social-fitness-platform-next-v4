@@ -21,9 +21,11 @@ export function useRealtimeMessages(
   roomIds: string | string[] | null,
   onInsert: (newMessage: Message) => void,
   onUpdate: (updatedMessage: Message) => void,
+  onDelete: (deletedMessage: Message) => void,
 ) {
   const handleInsert = useEffectEvent(onInsert);
   const handleUpdate = useEffectEvent(onUpdate);
+  const handleDelete = useEffectEvent(onDelete);
 
   useEffect(() => {
     const normalizedRoomIds = Array.isArray(roomIds)
@@ -66,7 +68,7 @@ export function useRealtimeMessages(
             "broadcast",
             { event: "DELETE" },
             (payload: BroadcastInsertPayload) => {
-              handleUpdate(payload.payload.record as Message);
+              handleDelete(payload.payload.record as Message);
             },
           )
           .subscribe((status: RealtimeSubscribeStatus) => {

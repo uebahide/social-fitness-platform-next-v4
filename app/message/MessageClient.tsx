@@ -7,16 +7,17 @@ import { Message, Room } from "@/types/api/message";
 import { useRealtimeMessages } from "@/hooks/useRealtimeMessages";
 import { useDispatch } from "react-redux";
 import {
-  insertMessage,
+  realtimeInsertTextMessage,
   ensureRoomLoadStatuses,
   setSelectedRoom,
-  updateMessage,
+  reconcileUpdateMessage,
+  reconcileDeleteMessage,
   setMyLastReadMessageId,
   setFriendLastReadMessageId,
   setLatestMessagesByRoom,
-  insertReaction,
-  updateReaction,
-  deleteReaction,
+  reconcileUpdateReaction,
+  reconcileDeleteReaction,
+  reconcileInsertReaction,
 } from "@/lib/redux/features/message/messageSlice";
 import { getUserById } from "@/lib/client/getUserById";
 import { roomUser } from "@/types/api/roomUser";
@@ -24,6 +25,7 @@ import { useRealtimeReadStatus } from "@/hooks/useRealtimeReadStatus";
 import { useUser } from "@/contexts/UserProvider";
 import { MessageReaction } from "@/types/api/messageReactions";
 import { useRealtimeMessageReactions } from "@/hooks/useRealtimeMessageReactions";
+import { DeleteMessageActionProvider } from "@/contexts/DeleteMessageActionProvider";
 
 export const MessageClient = ({
   rooms,
@@ -119,17 +121,22 @@ export const MessageClient = ({
     const user = await getUserById(newMessage.user_id);
     newMessage.user = user;
     newMessage.reactions = [];
-    dispatch(insertMessage(newMessage));
+    dispatch(realtimeInsertTextMessage(newMessage));
   };
 
   // realtime update message
   const onUpdate = async (message: Message) => {
     const user = await getUserById(message.user_id);
     message.user = user;
-    dispatch(updateMessage(message));
+    dispatch(reconcileUpdateMessage(message));
   };
 
-  useRealtimeMessages(realtimeRoomIds, onInsert, onUpdate);
+  // realtime update message
+  const onDelete = async (message: Message) => {
+    dispatch(reconcileDeleteMessage(message));
+  };
+
+  useRealtimeMessages(realtimeRoomIds, onInsert, onUpdate, onDelete);
 
   // realtime update read status
   const onReadUpdate = (roomUser: roomUser) => {
@@ -147,15 +154,15 @@ export const MessageClient = ({
 
   // realtime update reaction
   const onReactionInsert = (reaction: MessageReaction) => {
-    dispatch(insertReaction(reaction));
+    dispatch(reconcileInsertReaction(reaction));
   };
 
   const onReactionUpdate = (reaction: MessageReaction) => {
-    dispatch(updateReaction(reaction));
+    dispatch(reconcileUpdateReaction(reaction));
   };
 
   const onReactionDelete = (reaction: MessageReaction) => {
-    dispatch(deleteReaction(reaction));
+    dispatch(reconcileDeleteReaction(reaction));
   };
 
   useRealtimeMessageReactions(
@@ -166,9 +173,11 @@ export const MessageClient = ({
   );
 
   return (
-    <div className="grid min-w-0 grid-cols-[4fr_9fr] z-10">
+    <div className="grid min-w-0 grid-cols-[4fr_9fr] z-0">
       <MessageSidebar rooms={rooms} />
-      <MessagePanel />
+      <DeleteMessageActionProvider>
+        <MessagePanel />
+      </DeleteMessageActionProvider>
     </div>
   );
 };
