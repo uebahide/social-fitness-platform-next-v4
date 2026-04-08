@@ -4,7 +4,7 @@ import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
 import { createClient } from "@/lib/supabase/server";
 import { Message } from "@/types/api/message";
 
-export type SendMessageWithoutImagesState = {
+export type SendTextState = {
   error: string;
   message: string;
   data: Message | null;
@@ -13,10 +13,7 @@ export type SendMessageWithoutImagesState = {
   roomId: number;
 };
 
-export async function sendMessageWithoutImages(
-  _prevState: SendMessageWithoutImagesState,
-  formData: FormData,
-) {
+export async function sendText(_prevState: SendTextState, formData: FormData) {
   const body = formData.get("message") as string;
   const roomId = formData.get("roomId") as string;
 
@@ -64,39 +61,29 @@ export async function sendMessageWithoutImages(
   };
 }
 
-export type SendMessageWithImagesState = {
+export type SendImagesState = {
   error: string;
   message: string;
-  data: Message | null;
+  data: Message[] | null;
   ok: boolean;
   optimisticMessageId: number;
+  roomId: number;
 };
 
-export async function sendMessageWithImages(
-  _prevState: SendMessageWithImagesState,
+export async function sendImages(
+  _prevState: SendImagesState,
   formData: FormData,
 ) {
-  const body = formData.get("message") as string;
   const roomId = formData.get("roomId") as string;
   const filePaths = formData.getAll("filePaths") as string[];
 
   const supabase = await createClient();
   const userId = await getCurrentUserId();
 
-  const optimisticMessageId = Number(formData.get("optimisticMessageId"));
-
-  let textMessageData: Message | null = null;
-
+  const optimisticMessageId = Number(
+    formData.get("optimisticMessageIdForImages"),
+  );
   const rows = [];
-
-  if (body.trim() !== "") {
-    rows.push({
-      body,
-      room_id: roomId,
-      user_id: userId,
-      type: "text",
-    });
-  }
 
   for (const filePath of filePaths) {
     rows.push({
@@ -122,17 +109,17 @@ export async function sendMessageWithImages(
       data: null,
       ok: false,
       optimisticMessageId,
+      roomId: Number(roomId),
     };
   }
-
-  textMessageData = data[0] as Message;
 
   return {
     error: "",
     message: "Message was sent successfully",
-    data: textMessageData as Message,
+    data: data as Message[],
     ok: true,
     optimisticMessageId,
+    roomId: Number(roomId),
   };
 }
 
