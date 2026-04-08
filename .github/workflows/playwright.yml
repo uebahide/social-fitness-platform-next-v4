@@ -14,6 +14,7 @@ jobs:
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
       APP_URL: ${{ vars.APP_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      E2E_DELAY_SEND_MS: ${{ vars.E2E_DELAY_SEND_MS }}
 
     steps:
       - uses: actions/checkout@v4
