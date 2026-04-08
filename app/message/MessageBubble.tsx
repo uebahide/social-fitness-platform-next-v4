@@ -1,3 +1,4 @@
+import { Spinner } from "@/components/ui/spinner";
 import { useUser } from "@/contexts/UserProvider";
 import { cn } from "@/lib/utils";
 import { Message } from "@/types/api/message";
@@ -12,12 +13,22 @@ export const MessageBubble = ({
 }) => {
   const isDeleted = message.deleted;
   const isImage = message.type === "image";
+  const isPendingImages =
+    message.type === "images_placeholder" && message.pending;
+  const isFailedImages =
+    message.type === "images_placeholder" && message.failed;
 
   if (isDeleted) {
     return <DeletedMessageBubble message={message} />;
   }
   if (isImage) {
     return <ImageMessageBubble message={message} />;
+  }
+  if (isPendingImages) {
+    return <PendingImagesMessageBubble />;
+  }
+  if (isFailedImages) {
+    return <FailedImagesMessageBubble />;
   }
 
   return (
@@ -102,4 +113,20 @@ const ReactionBubble = ({
     );
   }
   return null;
+};
+
+const PendingImagesMessageBubble = () => {
+  return (
+    <div className="flex max-w-[min(20rem,100%)] min-w-0 flex-col gap-4 rounded-2xl bg-gray-500 px-4 py-2 font-mono text-sm  w-[200px] h-[250px] opacity-20 items-center justify-center">
+      <Spinner />
+    </div>
+  );
+};
+
+const FailedImagesMessageBubble = () => {
+  return (
+    <div className="flex max-w-[min(20rem,100%)] min-w-0 flex-col gap-4 rounded-2xl bg-gray-500 px-4 py-2 font-mono text-sm  w-[200px] h-[250px] opacity-20 items-center justify-center">
+      <p className="">Images</p>
+    </div>
+  );
 };

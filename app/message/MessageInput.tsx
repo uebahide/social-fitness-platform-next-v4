@@ -11,10 +11,10 @@ import {
   useState,
 } from "react";
 import {
-  sendMessageWithImages,
-  SendMessageWithImagesState,
-  sendMessageWithoutImages,
-  SendMessageWithoutImagesState,
+  sendText,
+  SendTextState,
+  sendImages,
+  SendImagesState,
 } from "./messageAction";
 import { EmojiClickData } from "emoji-picker-react";
 import Image from "next/image";
@@ -24,9 +24,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectSelectedRoom } from "@/lib/redux/features/message/messageSelector";
 import { EmojiPickerButton } from "@/components/buttons/EmojiPickerButton";
 import {
-  optimisticInsertMessage,
-  reconcileInsertMessage,
-  rollbackInsertMessage,
+  optimisticInsertImagesMessage,
+  optimisticInsertTextMessage,
+  reconcileInsertImagesMessage,
+  reconcileInsertTextMessage,
+  rollbackInsertImagesMessage,
+  rollbackInsertTextMessage,
 } from "@/lib/redux/features/message/messageSlice";
 import { User } from "@/types/api/user";
 import { toast } from "sonner";
@@ -36,7 +39,7 @@ type SelectedImage = {
   file: File;
 };
 
-const initialSendMessageWithoutImagesState: SendMessageWithoutImagesState = {
+const initialSendTextState: SendTextState = {
   error: "",
   message: "",
   data: null,
@@ -45,12 +48,13 @@ const initialSendMessageWithoutImagesState: SendMessageWithoutImagesState = {
   roomId: -1,
 };
 
-const initialSendMessageWithImagesState: SendMessageWithImagesState = {
+const initialSendImagesState: SendImagesState = {
   error: "",
   message: "",
   data: null,
   ok: false,
   optimisticMessageId: 0,
+  roomId: -1,
 };
 
 export const MessageInput = () => {
@@ -60,19 +64,30 @@ export const MessageInput = () => {
   const { user } = useUser();
   const supabase = createClient();
   const formRef = useRef<HTMLFormElement | null>(null);
-
-  const [sendMessageWithoutImagesState, formActionWithoutImages] =
-    useActionState(
-      sendMessageWithoutImages,
-      initialSendMessageWithoutImagesState,
-    );
-  const [sendMessageWithImagesState, formActionWithImages] = useActionState(
-    sendMessageWithImages,
-    initialSendMessageWithImagesState,
-  );
   const dispatch = useDispatch();
+  const [sendTextState, formActionSendText] = useActionState(
+    sendText,
+    initialSendTextState,
+  );
+  const [sendImagesState, formActionSendImages] = useActionState(
+    sendImages,
+    initialSendImagesState,
+  );
 
-  //handle images upload to supabase
+  //handle key down
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.nativeEvent.isComposing) return;
+
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+
+      if (!message.trim() && images.length === 0) return;
+
+      formRef.current?.requestSubmit();
+    }
+  };
+
+  //handle images upload to supabase bucket
   const handleImagesUploadToSupabase = async (
     selectedImages: SelectedImage[],
   ) => {
@@ -106,139 +121,167 @@ export const MessageInput = () => {
     };
   };
 
-  //handle submit
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!message.trim() && images.length === 0) return;
-
+  //handle images message
+  const handleImagesMessage = async (formData: FormData) => {
+    const optimisticMessageForImages: Message = {
+      id: -(Date.now() + Math.floor(Math.random() * 1000)), // temp id
+      body: message,
+      user_id: user?.id ?? 0,
+      room_id: selectedRoom.id,
+      created_at: new Date().toISOString(),
+      updated_at: null,
+      user: user as User,
+      reactions: [],
+      deleted: false,
+      image_path: "",
+      type: "images_placeholder",
+      pending: true,
+      failed: false,
+    };
+    const temp_images = [...images];
+    setImages([]);
+    // insert optimistic message for images
+    dispatch(optimisticInsertImagesMessage(optimisticMessageForImages));
+    formData.append(
+      "optimisticMessageIdForImages",
+      String(optimisticMessageForImages.id),
+    );
     //upload images to supabase if there are attached images
-    const uploadResult = await handleImagesUploadToSupabase(images);
+    const uploadResult = await handleImagesUploadToSupabase(temp_images);
     if (!uploadResult.ok) {
       console.error(uploadResult.errors);
+      dispatch(
+        rollbackInsertImagesMessage({
+          roomId: selectedRoom.id,
+          optimisticMessageId: optimisticMessageForImages.id,
+        }),
+      );
       return;
     }
-
-    const formData = new FormData();
-    // if it's a text message, start optimistic insert to send message
-    if (images.length === 0 && message.trim() !== "") {
-      // start transition to send message
-      const optimisticMessage: Message = {
-        id: -(Date.now() + Math.floor(Math.random() * 1000)), //temp id
-        body: message,
-        user_id: user?.id ?? 0,
-        room_id: selectedRoom.id,
-        created_at: new Date().toISOString(),
-        updated_at: null,
-        user: user as User,
-        reactions: [],
-        deleted: false,
-        image_path: "",
-        type: "text",
-        pending: true,
-        failed: false,
-      };
-      dispatch(optimisticInsertMessage(optimisticMessage));
-      formData.append("optimisticMessageId", String(optimisticMessage.id));
-    }
-    formData.append("message", message);
-    formData.append("roomId", String(selectedRoom.id));
-
+    // add file paths to form data
     uploadResult.filePaths.forEach((filePath) => {
       formData.append("filePaths", filePath);
     });
 
     startTransition(() => {
-      if (images.length === 0 && message.trim() !== "") {
-        formActionWithoutImages(formData);
-      } else if (images.length > 0) {
-        formActionWithImages(formData);
-      }
+      formActionSendImages(formData);
     });
+  };
 
+  //handle text message
+  const handleTextMessage = async (formData: FormData) => {
+    const optimisticMessage: Message = {
+      id: -(Date.now() + Math.floor(Math.random() * 1000)), // temp id
+      body: message,
+      user_id: user?.id ?? 0,
+      room_id: selectedRoom.id,
+      created_at: new Date().toISOString(),
+      updated_at: null,
+      user: user as User,
+      reactions: [],
+      deleted: false,
+      image_path: "",
+      type: "text",
+      pending: true,
+      failed: false,
+    };
     setMessage("");
-    setImages([]);
+    dispatch(optimisticInsertTextMessage(optimisticMessage));
+    formData.append("optimisticMessageId", String(optimisticMessage.id));
+    startTransition(() => {
+      formActionSendText(formData);
+    });
   };
 
-  //rollback optimistic message without images if error occurs
-  useEffect(() => {
-    if (
-      sendMessageWithoutImagesState.error &&
-      !sendMessageWithoutImagesState.ok
-    ) {
-      toast.error(sendMessageWithoutImagesState.error);
-      dispatch(
-        rollbackInsertMessage({
-          roomId: sendMessageWithoutImagesState.roomId,
-          optimisticMessageId:
-            sendMessageWithoutImagesState.optimisticMessageId,
-        }),
-      );
+  //handle submit
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!message.trim() && images.length === 0) return;
+
+    const formData = new FormData();
+    formData.append("message", message);
+    formData.append("roomId", String(selectedRoom.id));
+    // text message handling
+    if (message.trim() !== "") {
+      handleTextMessage(formData);
     }
-  }, [
-    sendMessageWithoutImagesState.error,
-    sendMessageWithoutImagesState.ok,
-    sendMessageWithoutImagesState.roomId,
-    sendMessageWithoutImagesState.optimisticMessageId,
-    dispatch,
-  ]);
-
-  //reconcile optimistic message without images with confirmed message
-  useEffect(() => {
-    if (
-      sendMessageWithoutImagesState.ok &&
-      sendMessageWithoutImagesState.data
-    ) {
-      dispatch(
-        reconcileInsertMessage({
-          message: sendMessageWithoutImagesState.data,
-          optimisticMessageId:
-            sendMessageWithoutImagesState.optimisticMessageId,
-        }),
-      );
-    }
-  }, [
-    sendMessageWithoutImagesState.ok,
-    sendMessageWithoutImagesState.data,
-    dispatch,
-    sendMessageWithoutImagesState.optimisticMessageId,
-  ]);
-
-  //rollback optimistic message with images if error occurs
-  useEffect(() => {
-    if (sendMessageWithImagesState.error && !sendMessageWithImagesState.ok) {
-      toast.error(sendMessageWithImagesState.error);
-    }
-  }, [sendMessageWithImagesState.error, sendMessageWithImagesState.ok]);
-
-  //reconcile optimistic message with images with confirmed message
-  useEffect(() => {
-    if (sendMessageWithImagesState.ok && sendMessageWithImagesState.data) {
-      dispatch(
-        reconcileInsertMessage({
-          message: sendMessageWithImagesState.data,
-          optimisticMessageId: sendMessageWithImagesState.optimisticMessageId,
-        }),
-      );
-    }
-  }, [
-    sendMessageWithImagesState.ok,
-    sendMessageWithImagesState.data,
-    dispatch,
-    sendMessageWithImagesState.optimisticMessageId,
-  ]);
-
-  //handle key down
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.nativeEvent.isComposing) return;
-
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-
-      if (!message.trim() && images.length === 0) return;
-
-      formRef.current?.requestSubmit();
+    // images handling
+    if (images.length > 0) {
+      handleImagesMessage(formData);
     }
   };
+
+  //rollback optimistic text message if error occurs
+  useEffect(() => {
+    if (sendTextState.error && !sendTextState.ok) {
+      toast.error(sendTextState.error);
+      dispatch(
+        rollbackInsertTextMessage({
+          roomId: sendTextState.roomId,
+          optimisticMessageId: sendTextState.optimisticMessageId,
+        }),
+      );
+    }
+  }, [
+    sendTextState.error,
+    sendTextState.ok,
+    sendTextState.roomId,
+    sendTextState.optimisticMessageId,
+    dispatch,
+  ]);
+
+  //reconcile optimistic text message with confirmed message
+  useEffect(() => {
+    if (sendTextState.ok && sendTextState.data) {
+      dispatch(
+        reconcileInsertTextMessage({
+          message: sendTextState.data,
+          optimisticMessageId: sendTextState.optimisticMessageId,
+        }),
+      );
+    }
+  }, [
+    sendTextState.ok,
+    sendTextState.data,
+    dispatch,
+    sendTextState.optimisticMessageId,
+  ]);
+
+  //rollback optimistic images message if error occurs
+  useEffect(() => {
+    if (sendImagesState.error && !sendImagesState.ok) {
+      toast.error(sendImagesState.error);
+      dispatch(
+        rollbackInsertImagesMessage({
+          roomId: sendImagesState.roomId,
+          optimisticMessageId: sendImagesState.optimisticMessageId,
+        }),
+      );
+    }
+  }, [
+    sendImagesState.error,
+    sendImagesState.ok,
+    sendImagesState.roomId,
+    sendImagesState.optimisticMessageId,
+    dispatch,
+  ]);
+
+  //reconcile optimistic images message with confirmed message
+  useEffect(() => {
+    if (sendImagesState.ok && sendImagesState.data) {
+      dispatch(
+        reconcileInsertImagesMessage({
+          messages: sendImagesState.data,
+          optimisticMessageId: sendImagesState.optimisticMessageId,
+        }),
+      );
+    }
+  }, [
+    sendImagesState.ok,
+    sendImagesState.data,
+    dispatch,
+    sendImagesState.optimisticMessageId,
+  ]);
 
   return (
     <div className="gap-4 rounded-lg p-5">
