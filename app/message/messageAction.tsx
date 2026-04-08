@@ -16,13 +16,31 @@ export type SendTextState = {
 export async function sendText(_prevState: SendTextState, formData: FormData) {
   const body = formData.get("message") as string;
   const roomId = formData.get("roomId") as string;
-
-  const supabase = await createClient();
-  const userId = await getCurrentUserId();
-
   const optimisticMessageId = Number(formData.get("optimisticMessageId"));
+  const forceSendFailure = formData.get("forceSendFailure");
+  const userId = await getCurrentUserId();
+  const supabase = await createClient();
 
   let textMessageData: Message | null = null;
+  const testError = process.env.APP_ENV === "test" && forceSendFailure === "1";
+
+  // delay for e2e test
+  if (process.env.APP_ENV === "test" && process.env.E2E_DELAY_SEND_MS) {
+    await new Promise((resolve) =>
+      setTimeout(resolve, Number(process.env.E2E_DELAY_SEND_MS)),
+    );
+  }
+  //test error for e2e test
+  if (testError) {
+    return {
+      error: "error while sending message",
+      message: "",
+      data: null,
+      ok: false,
+      optimisticMessageId,
+      roomId: Number(roomId),
+    };
+  }
 
   //create message with text to supabase
   const { data, error } = await supabase
@@ -76,14 +94,33 @@ export async function sendImages(
 ) {
   const roomId = formData.get("roomId") as string;
   const filePaths = formData.getAll("filePaths") as string[];
-
-  const supabase = await createClient();
-  const userId = await getCurrentUserId();
-
   const optimisticMessageId = Number(
     formData.get("optimisticMessageIdForImages"),
   );
+  const forceSendFailure = formData.get("forceSendFailure");
+  const testError = process.env.APP_ENV === "test" && forceSendFailure === "1";
+  const supabase = await createClient();
+  const userId = await getCurrentUserId();
+
   const rows = [];
+
+  // delay for e2e test
+  if (process.env.APP_ENV === "test" && process.env.E2E_DELAY_SEND_MS) {
+    await new Promise((resolve) =>
+      setTimeout(resolve, Number(process.env.E2E_DELAY_SEND_MS)),
+    );
+  }
+  //test error for e2e test
+  if (testError) {
+    return {
+      error: "error while sending message",
+      message: "",
+      data: null,
+      ok: false,
+      optimisticMessageId,
+      roomId: Number(roomId),
+    };
+  }
 
   for (const filePath of filePaths) {
     rows.push({

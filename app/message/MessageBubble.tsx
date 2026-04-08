@@ -31,12 +31,23 @@ export const MessageBubble = ({
     return <FailedImagesMessageBubble />;
   }
 
+  return <TextMessageBubble message={message} isMyMessage={isMyMessage} />;
+};
+
+const TextMessageBubble = ({
+  message,
+  isMyMessage,
+}: {
+  message: Message;
+  isMyMessage: boolean;
+}) => {
   return (
     <div
       className={cn(
         "relative max-w-[min(20rem,100%)] min-w-0 rounded-2xl px-4 py-2 font-mono text-sm",
         isMyMessage ? "bg-purple-500 text-white" : "bg-brand-secondary-100",
       )}
+      data-testid="message-text-bubble"
     >
       <div key={message.id} className="break-words whitespace-pre-wrap">
         {message.body}
@@ -50,7 +61,10 @@ const ImageMessageBubble = ({ message }: { message: Message }) => {
   const isMyMessage = message.user_id === useUser().user?.id;
   const withReactions = message.reactions.length > 0;
   return (
-    <div className={cn("relative", withReactions && "py-3 pt-0")}>
+    <div
+      className={cn("relative", withReactions && "py-3 pt-0")}
+      data-testid="message-image-bubble"
+    >
       <Image
         src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${message.image_path}`}
         alt="image"
@@ -117,7 +131,10 @@ const ReactionBubble = ({
 
 const PendingImagesMessageBubble = () => {
   return (
-    <div className="flex max-w-[min(20rem,100%)] min-w-0 flex-col gap-4 rounded-2xl bg-gray-500 px-4 py-2 font-mono text-sm  w-[200px] h-[250px] opacity-20 items-center justify-center">
+    <div
+      className="flex max-w-[min(20rem,100%)] min-w-0 flex-col gap-4 rounded-2xl bg-gray-500 px-4 py-2 font-mono text-sm  w-[200px] h-[250px] opacity-20 items-center justify-center"
+      data-testid="message-pending-image-bubble"
+    >
       <Spinner />
     </div>
   );
@@ -125,7 +142,10 @@ const PendingImagesMessageBubble = () => {
 
 const FailedImagesMessageBubble = () => {
   return (
-    <div className="flex max-w-[min(20rem,100%)] min-w-0 flex-col gap-4 rounded-2xl bg-gray-500 px-4 py-2 font-mono text-sm  w-[200px] h-[250px] opacity-20 items-center justify-center">
+    <div
+      className="flex max-w-[min(20rem,100%)] min-w-0 flex-col gap-4 rounded-2xl bg-gray-500 px-4 py-2 font-mono text-sm  w-[200px] h-[250px] opacity-20 items-center justify-center"
+      data-testid="message-failed-image-bubble"
+    >
       <p className="">Images</p>
     </div>
   );

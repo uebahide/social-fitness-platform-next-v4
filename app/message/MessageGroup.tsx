@@ -25,7 +25,7 @@ export const MessageGroup = ({ message }: { message: Message }) => {
 
   if (isMyMessage) {
     return (
-      <section className="flex flex-col space-y-2">
+      <section className="flex flex-col space-y-2" data-testid="message-group">
         {!isDeleted && isEdited && (
           <p className="text-xs text-gray-500 self-end pr-2">Edited</p>
         )}
@@ -39,12 +39,20 @@ export const MessageGroup = ({ message }: { message: Message }) => {
           <p className="text-[8px] text-gray-500 self-end pr-2">seen</p>
         )}
         {message.failed && (
-          <p className="text-[8px] text-red-500 self-end pr-2">
+          <p
+            className="text-[8px] text-red-500 self-end pr-2"
+            data-testid="message-failed-text"
+          >
             Failed to send
           </p>
         )}
         {message.pending && (
-          <p className="text-[8px] text-gray-500 self-end pr-2">Sending...</p>
+          <p
+            className="text-[8px] text-gray-500 self-end pr-2"
+            data-testid="message-pending-text"
+          >
+            Sending...
+          </p>
         )}
       </section>
     );

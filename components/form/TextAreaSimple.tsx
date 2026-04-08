@@ -9,6 +9,7 @@ export function TextareaSimple({
   onChange,
   value,
   onKeyDown,
+  ...props
 }: {
   placeholder?: string;
   className?: string;
@@ -29,6 +30,7 @@ export function TextareaSimple({
       className={className}
       onChange={(e) => onChange?.(e.target.value)}
       onKeyDown={onKeyDown}
+      {...props}
     />
   );
 }

@@ -33,6 +33,7 @@ import {
 } from "@/lib/redux/features/message/messageSlice";
 import { User } from "@/types/api/user";
 import { toast } from "sonner";
+import { useSearchParams } from "next/navigation";
 
 type SelectedImage = {
   id: string;
@@ -58,6 +59,8 @@ const initialSendImagesState: SendImagesState = {
 };
 
 export const MessageInput = () => {
+  const searchParams = useSearchParams();
+  const forceSendFailure = searchParams.get("forceSendFailure");
   const selectedRoom = useSelector(selectSelectedRoom) as Room;
   const [message, setMessage] = useState("");
   const [images, setImages] = useState<SelectedImage[]>([]);
@@ -201,6 +204,7 @@ export const MessageInput = () => {
     const formData = new FormData();
     formData.append("message", message);
     formData.append("roomId", String(selectedRoom.id));
+    formData.append("forceSendFailure", forceSendFailure ?? "");
     // text message handling
     if (message.trim() !== "") {
       handleTextMessage(formData);
@@ -372,6 +376,7 @@ export const MessageTextarea = ({
 }) => {
   return (
     <TextareaSimple
+      data-testid="message-textarea"
       id="message"
       name="message"
       placeholder="Message..."
@@ -392,6 +397,7 @@ export const MessageSubmitButton = ({
     <button
       className="cursor-pointer hover:scale-110 transition-all"
       type="submit"
+      data-testid="message-submit-button"
     >
       {children}
     </button>
@@ -407,6 +413,7 @@ const FileUploadButton = ({
     <label className="cursor-pointer hover:scale-110 transition-all">
       <ImageIcon className="h-5 w-5" />
       <input
+        data-testid="images-input"
         type="file"
         id="image"
         name="image"
