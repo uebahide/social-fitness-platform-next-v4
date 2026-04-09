@@ -1,30 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Button } from "@/components/buttons/Button";
 import { WeatherCardSkeleton } from "@/components/skeletons/WeatherCardSkeleton";
-
-type DailyForecast = {
-  time: string[];
-  weather_code: number[];
-  temperature_2m_max: number[];
-  temperature_2m_min: number[];
-};
-
-type WeatherResponse = {
-  current_weather: {
-    weathercode: number;
-    temperature: number;
-  };
-  daily: DailyForecast;
-};
-
-type LocationResponse = {
-  address: {
-    country?: string;
-    city?: string;
-    town?: string;
-  };
-};
+import { useQuery } from "@tanstack/react-query";
+import { useGetCoordinates } from "@/hooks/useGetCoordinates";
+import {
+  getWeatherCardData,
+} from "@/lib/client/getWeatherCardData";
 
 const weatherIcons = {
   0: { icon: "☀️", label: "Sunny" }, // Clear sky
@@ -46,67 +28,46 @@ const weatherIcons = {
   95: { icon: "⛈️", label: "Thunderstorm" }, // Thunderstorm
 };
 
-export const WeatherCard = ({}) => {
-  const [weather, setWeather] = useState<
-    WeatherResponse["current_weather"] | null
-  >(null);
-  const [location, setLocation] = useState<LocationResponse["address"] | null>(
-    null,
-  );
-  const [dailyForecast, setDailyForecast] = useState<
-    | {
-        date: string;
-        weatherCode: number;
-        max: number;
-        min: number;
-      }[]
-    | null
-  >([]);
-  const [loading, setLoading] = useState(true); // loading state for the weather data
+export const WeatherCard = () => {
+  const { lat, lon, loading: isLoadingCoordinates, error: locationError } =
+    useGetCoordinates();
+  const hasCoordinates = lat !== null && lon !== null;
+  const { data, isPending, isError, refetch } = useQuery({
+    queryKey: ["weather-card-data", lat, lon],
+    queryFn: ({ signal }) =>
+      getWeatherCardData(lat as number, lon as number, signal),
+    enabled: hasCoordinates,
+  });
 
-  useEffect(() => {
-    const getWeather = async () => {
-      setLoading(true);
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
+  const weather = data?.weather;
+  const location = data?.location;
+  const dailyForecast = data?.dailyForecast;
 
-        const [weatherRes, locationRes, dailyForecastRes] = await Promise.all([
-          fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`,
-          ),
-          fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=jsonv2`,
-          ),
-          fetch(
-            `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=7`,
-          ),
-        ]);
-
-        const weatherData: WeatherResponse = await weatherRes.json();
-        const locationData: LocationResponse = await locationRes.json();
-        const dailyForecastData: WeatherResponse =
-          await dailyForecastRes.json();
-        const mapped = dailyForecastData.daily.time.map(
-          (date: string, index: number) => ({
-            date: date.split("-")[2],
-            weatherCode: dailyForecastData.daily.weather_code[index],
-            max: dailyForecastData.daily.temperature_2m_max[index],
-            min: dailyForecastData.daily.temperature_2m_min[index],
-          }),
-        );
-
-        setDailyForecast(mapped);
-        setWeather(weatherData.current_weather);
-        setLocation(locationData.address);
-        setLoading(false);
-      });
-    };
-    getWeather();
-  }, []);
-
-  if (loading) {
+  if (isLoadingCoordinates || (hasCoordinates && isPending)) {
     return <WeatherCardSkeleton />;
+  }
+
+  if (locationError) {
+    return (
+      <WeatherCardStatus
+        title="Location unavailable"
+        description={locationError}
+      />
+    );
+  }
+
+  if (isError) {
+    return (
+      <WeatherCardStatus
+        title="Weather unavailable"
+        description="Could not load weather data right now."
+        action={
+          <Button color="secondary" onClick={() => void refetch()}>
+            Try again
+          </Button>
+        }
+      />
+    );
   }
 
   return (
@@ -167,3 +128,25 @@ export const WeatherCard = ({}) => {
     </section>
   );
 };
+
+function WeatherCardStatus({
+  title,
+  description,
+  action,
+}: {
+  title: string;
+  description: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <section className="col-span-1 row-span-1">
+      <div className="bg-card flex min-h-[340px] flex-col items-center justify-center gap-4 rounded-xl border border-gray-200 px-7 py-6 text-center">
+        <div className="space-y-2">
+          <p className="text-lg font-semibold text-gray-900">{title}</p>
+          <p className="text-sm text-gray-500">{description}</p>
+        </div>
+        {action}
+      </div>
+    </section>
+  );
+}
