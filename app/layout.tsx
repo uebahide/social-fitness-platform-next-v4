@@ -24,8 +24,22 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const getMetadataBase = () => {
+  const appUrl = process.env.APP_URL?.trim();
+
+  if (!appUrl) {
+    return new URL("http://127.0.0.1:3000");
+  }
+
+  try {
+    return new URL(appUrl);
+  } catch {
+    return new URL("http://127.0.0.1:3000");
+  }
+};
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.APP_URL ?? "http://127.0.0.1:3000"),
+  metadataBase: getMetadataBase(),
   applicationName: "Social Fitness Platform",
   title: {
     default: "Social Fitness Platform",
