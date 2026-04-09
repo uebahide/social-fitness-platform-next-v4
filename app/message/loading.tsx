@@ -11,7 +11,7 @@ export default function loading() {
       description="Catch up with your conversations, check unread updates, and stay in sync with your training partners."
     >
       <div
-        className="grid min-w-0 grid-cols-[4fr_9fr]"
+        className="grid min-w-0 grid-cols-1 lg:grid-cols-[4fr_9fr]"
         data-testid="message-page-skeleton"
       >
         <aside
@@ -35,7 +35,7 @@ export default function loading() {
           </ul>
         </aside>
         <div
-          className="bg-card flex min-w-0 w-full flex-col rounded-r-sm border border-gray-200"
+          className="bg-card hidden lg:flex min-w-0 w-full flex-col rounded-r-sm border border-gray-200"
           data-testid="message-panel-skeleton"
         >
           <EmptyMessagePanel />

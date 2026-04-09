@@ -14,7 +14,7 @@ export default async function SearchPage({
       title="Search People"
       description="Look up other members by name, send requests, and discover new training partners."
     >
-      <div className="grid grid-cols-[3fr_7fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[3fr_7fr] gap-4">
         <UserList forceError={forceError} />
         <PageGuidePanel
           eyebrow="Search Tips"
