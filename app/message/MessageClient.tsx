@@ -5,7 +5,7 @@ import { MessagePanel } from "./MessagePanel";
 import { MessageSidebar } from "./MessageSidebar";
 import { Message, Room } from "@/types/api/message";
 import { useRealtimeMessages } from "@/hooks/useRealtimeMessages";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   realtimeInsertTextMessage,
   ensureRoomLoadStatuses,
@@ -26,6 +26,7 @@ import { useUser } from "@/contexts/UserProvider";
 import { MessageReaction } from "@/types/api/messageReactions";
 import { useRealtimeMessageReactions } from "@/hooks/useRealtimeMessageReactions";
 import { DeleteMessageActionProvider } from "@/contexts/DeleteMessageActionProvider";
+import { selectSelectedRoom } from "@/lib/redux/features/message/messageSelector";
 
 export const MessageClient = ({
   rooms,
@@ -46,6 +47,7 @@ export const MessageClient = ({
   }[];
   latestMessagesByRoom: Record<number, Message | null>;
 }) => {
+  const selectedRoom = useSelector(selectSelectedRoom);
   const dispatch = useDispatch();
   const user = useUser();
   const roomIds = useMemo(() => rooms.map((room) => room.id), [rooms]);
@@ -173,11 +175,24 @@ export const MessageClient = ({
   );
 
   return (
-    <div className="grid min-w-0 grid-cols-[4fr_9fr] z-0">
-      <MessageSidebar rooms={rooms} />
-      <DeleteMessageActionProvider>
-        <MessagePanel />
-      </DeleteMessageActionProvider>
-    </div>
+    <>
+      {/* 640px and above */}
+      <div className="hidden sm:grid min-w-0 grid-cols-[4fr_9fr] z-0">
+        <MessageSidebar rooms={rooms} />
+        <DeleteMessageActionProvider>
+          <MessagePanel />
+        </DeleteMessageActionProvider>
+      </div>
+      {/* 640px and below */}
+      <div className="grid grid-cols-1 sm:hidden min-w-0 z-0">
+        {selectedRoom ? (
+          <DeleteMessageActionProvider>
+            <MessagePanel />
+          </DeleteMessageActionProvider>
+        ) : (
+          <MessageSidebar rooms={rooms} />
+        )}
+      </div>
+    </>
   );
 };

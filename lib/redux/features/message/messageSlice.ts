@@ -76,9 +76,9 @@ const messageSlice = createSlice({
     setRoomError(state, action: PayloadAction<number>) {
       state.loadStatusByRoom[action.payload] = "error";
     },
-    setSelectedRoom: (state, action: PayloadAction<Room>) => {
+    setSelectedRoom: (state, action: PayloadAction<Room | null>) => {
       state.selectedRoom = action.payload;
-      state.selectedRoomId = action.payload.id;
+      state.selectedRoomId = action.payload ? action.payload.id : null;
     },
     setRoomMessages(
       state,
