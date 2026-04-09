@@ -13,6 +13,7 @@ import { CategoriesProvider } from "@/contexts/CategoriesProvider";
 import { Category } from "@/types/api/category";
 import StoreProvider from "./StoreProvider";
 import { Toaster } from "sonner";
+import { QueryProvider } from "./QueryProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -95,22 +96,24 @@ export default async function RootLayout({
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="antialiased">
         <StoreProvider>
-          <SidebarProvider>
-            <TooltipProvider>
-              <UserProvider initialUser={profile as User | null}>
-                <CategoriesProvider
-                  initialCategories={(categoriesData ?? []) as Category[]}
-                >
-                  <AppSidebar />
-                  <Main>
-                    <SidebarTrigger />
-                    <Toaster />
-                    {children}
-                  </Main>
-                </CategoriesProvider>
-              </UserProvider>
-            </TooltipProvider>
-          </SidebarProvider>
+          <QueryProvider>
+            <SidebarProvider>
+              <TooltipProvider>
+                <UserProvider initialUser={profile as User | null}>
+                  <CategoriesProvider
+                    initialCategories={(categoriesData ?? []) as Category[]}
+                  >
+                    <AppSidebar />
+                    <Main>
+                      <SidebarTrigger />
+                      <Toaster />
+                      {children}
+                    </Main>
+                  </CategoriesProvider>
+                </UserProvider>
+              </TooltipProvider>
+            </SidebarProvider>
+          </QueryProvider>
         </StoreProvider>
       </body>
     </html>
