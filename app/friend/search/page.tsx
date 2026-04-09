@@ -1,6 +1,15 @@
 import { UserList } from "./UserList";
 import { PageGuidePanel } from "@/components/PageGuidePanel";
 import { PageContainer } from "@/components/PageContainer";
+import type { Metadata } from "next";
+export const metadata: Metadata = {
+  title: "Search People",
+  description:
+    "Look up other members by name, send requests, and discover new training partners.",
+  robots: {
+    index: false,
+  },
+};
 
 export default async function SearchPage({
   searchParams,

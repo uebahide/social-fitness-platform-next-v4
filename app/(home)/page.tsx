@@ -6,6 +6,16 @@ import { PageContainer } from "@/components/PageContainer";
 import { Suspense } from "react";
 import { FriendActivitySkeleton } from "@/components/skeletons/FriendActivitySkeleton";
 import { ChampionshipHubCard } from "./ChampionshipHubCard";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Your training world, in one place",
+  description:
+    "Keep an eye on your profile, check what your network has been up to, and stay ready for the week ahead.",
+  robots: {
+    index: false,
+  },
+};
 
 export default async function Home() {
   return (

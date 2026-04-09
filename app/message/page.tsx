@@ -9,6 +9,15 @@ import { getLatestMessagesByRoom } from "@/lib/server/getLatestMessagesByRoom";
 import { getOrCreatePrivateRoom } from "@/lib/server/getOrCreatePrivateRoom";
 import { PageContainer } from "@/components/PageContainer";
 import { DeleteMessageActionProvider } from "@/contexts/DeleteMessageActionProvider";
+import type { Metadata } from "next";
+export const metadata: Metadata = {
+  title: "Messages",
+  description:
+    "Catch up with your conversations, check unread updates, and stay in sync with your training partners.",
+  robots: {
+    index: false,
+  },
+};
 
 export default async function MessagePage({
   searchParams,

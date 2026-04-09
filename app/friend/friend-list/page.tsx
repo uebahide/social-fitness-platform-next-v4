@@ -5,6 +5,16 @@ import { getReceivedRequests } from "@/lib/server/getReceivedRequests";
 import { PageGuidePanel } from "@/components/PageGuidePanel";
 import { PageContainer } from "@/components/PageContainer";
 
+import type { Metadata } from "next";
+export const metadata: Metadata = {
+  title: "Friend List",
+  description:
+    "Browse your current connections, review incoming requests, and jump into a conversation or profile view.",
+  robots: {
+    index: false,
+  },
+};
+
 export default async function FriendListPage({
   searchParams,
 }: {
