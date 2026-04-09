@@ -39,6 +39,8 @@ export const EmojiPickerButton = ({
       {show && (
         <div className={cn(pickerClassName)}>
           <EmojiPicker
+            width={300}
+            height={400}
             onEmojiClick={(emojiObject: EmojiClickData) => {
               onEmojiClick(emojiObject);
               if (closeOnEmojiClick) {

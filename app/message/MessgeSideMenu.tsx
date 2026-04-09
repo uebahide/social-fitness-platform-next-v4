@@ -1,13 +1,20 @@
-import { useState } from "react";
 import { Message } from "@/types/api/message";
 import { cn } from "@/lib/utils";
 import { MessageMenu } from "./MessageMenu";
 import { ReactionMenu } from "./ReactionMenu";
 import { ReplyIcon } from "lucide-react";
 import { useUser } from "@/contexts/UserProvider";
+import { Dispatch, SetStateAction } from "react";
 
-export const MessageSideMenu = ({ message }: { message: Message }) => {
-  const [isSubMenuOpen, setIsSubMenuOpen] = useState(false);
+export const MessageSideMenu = ({
+  message,
+  isSubMenuVisible,
+  setIsReactionPickerOpen,
+}: {
+  message: Message;
+  isSubMenuVisible: boolean;
+  setIsReactionPickerOpen: Dispatch<SetStateAction<boolean>>;
+}) => {
   const { user } = useUser();
   const isMyMessage = message.user_id === user?.id;
 
@@ -15,20 +22,19 @@ export const MessageSideMenu = ({ message }: { message: Message }) => {
     <ul
       className={cn(
         "flex items-center gap-2 transition-opacity",
-        isSubMenuOpen
+        isSubMenuVisible
           ? "opacity-100 pointer-events-auto"
           : "opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto",
       )}
-      data-testid="message-side-menu"
     >
       {isMyMessage && (
         <li className="flex items-center justify-center hover:bg-gray-200 rounded-full p-1 w-8 h-8">
           <MessageMenu message={message} />
         </li>
       )}
-      <li className="relative flex items-center justify-center hover:bg-gray-200 rounded-full p-1 w-8 h-8">
+      <li className="flex items-center justify-center hover:bg-gray-200 rounded-full p-1 w-8 h-8">
         <ReactionMenu
-          setIsSubMenuOpen={setIsSubMenuOpen}
+          setIsReactionPickerOpen={setIsReactionPickerOpen}
           message={message}
           isMyMessage={isMyMessage}
         />

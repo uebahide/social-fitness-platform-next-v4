@@ -3,13 +3,16 @@ import { useUser } from "@/contexts/UserProvider";
 import { cn } from "@/lib/utils";
 import { Message } from "@/types/api/message";
 import Image from "next/image";
+import { Dispatch, SetStateAction } from "react";
 
 export const MessageBubble = ({
   message,
   isMyMessage,
+  setIsSubMenuPinned,
 }: {
   message: Message;
   isMyMessage: boolean;
+  setIsSubMenuPinned: Dispatch<SetStateAction<boolean>>;
 }) => {
   const isDeleted = message.deleted;
   const isImage = message.type === "image";
@@ -31,15 +34,23 @@ export const MessageBubble = ({
     return <FailedImagesMessageBubble />;
   }
 
-  return <TextMessageBubble message={message} isMyMessage={isMyMessage} />;
+  return (
+    <TextMessageBubble
+      message={message}
+      isMyMessage={isMyMessage}
+      setIsSubMenuPinned={setIsSubMenuPinned}
+    />
+  );
 };
 
 const TextMessageBubble = ({
   message,
   isMyMessage,
+  setIsSubMenuPinned,
 }: {
   message: Message;
   isMyMessage: boolean;
+  setIsSubMenuPinned: Dispatch<SetStateAction<boolean>>;
 }) => {
   return (
     <div
@@ -48,6 +59,7 @@ const TextMessageBubble = ({
         isMyMessage ? "bg-purple-500 text-white" : "bg-brand-secondary-100",
       )}
       data-testid="message-text-bubble"
+      onClick={() => setIsSubMenuPinned((prev: boolean) => !prev)}
     >
       <div key={message.id} className="break-words whitespace-pre-wrap">
         {message.body}

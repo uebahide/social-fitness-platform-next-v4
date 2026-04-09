@@ -6,12 +6,16 @@ import { MessageBubble } from "./MessageBubble";
 import { selectFriendLastReadMessageIdByRoom } from "@/lib/redux/features/message/messageSelector";
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
+import { useState } from "react";
 
 export const MessageGroup = ({ message }: { message: Message }) => {
   const { user } = useUser();
+  const [isSubMenuPinned, setIsSubMenuPinned] = useState(false);
+  const [isReactionPickerOpen, setIsReactionPickerOpen] = useState(false);
   const friendLastReadMessageId = useSelector((state: RootState) =>
     selectFriendLastReadMessageIdByRoom(state, message.room_id),
   );
+  const isSubMenuVisible = isSubMenuPinned || isReactionPickerOpen;
 
   const isMyMessage = message.user_id === user?.id;
   const isDeleted = message.deleted;
@@ -25,15 +29,26 @@ export const MessageGroup = ({ message }: { message: Message }) => {
 
   if (isMyMessage) {
     return (
-      <section className="flex flex-col space-y-2" data-testid="message-group">
+      <section
+        className="relative flex flex-col space-y-2"
+        data-testid="message-group"
+      >
         {!isDeleted && isEdited && (
           <p className="text-xs text-gray-500 self-end pr-2">Edited</p>
         )}
         <div className="flex justify-end min-w-0 group gap-4">
           {!isDeleted && isNotFailed && isNotPending && (
-            <MessageSideMenu message={message} />
+            <MessageSideMenu
+              message={message}
+              isSubMenuVisible={isSubMenuVisible}
+              setIsReactionPickerOpen={setIsReactionPickerOpen}
+            />
           )}
-          <MessageBubble message={message} isMyMessage />
+          <MessageBubble
+            message={message}
+            isMyMessage={isMyMessage}
+            setIsSubMenuPinned={setIsSubMenuPinned}
+          />
         </div>
         {!isDeleted && isSeen && !message.pending && !message.failed && (
           <p className="text-[8px] text-gray-500 self-end pr-2">seen</p>
@@ -58,13 +73,21 @@ export const MessageGroup = ({ message }: { message: Message }) => {
     );
   }
   return (
-    <section className="flex items-center justify-start gap-2 min-w-0 group">
+    <section className="relative flex items-center justify-start gap-2 min-w-0 group">
       <div className="flex items-end gap-2">
         <Avatar size="xsmall" user={message.user} />
-        <MessageBubble message={message} isMyMessage={false} />
+        <MessageBubble
+          message={message}
+          isMyMessage={false}
+          setIsSubMenuPinned={setIsSubMenuPinned}
+        />
       </div>
       {!isDeleted && isNotFailed && isNotPending && (
-        <MessageSideMenu message={message} />
+        <MessageSideMenu
+          message={message}
+          isSubMenuVisible={isSubMenuVisible}
+          setIsReactionPickerOpen={setIsReactionPickerOpen}
+        />
       )}
     </section>
   );
