@@ -1,13 +1,14 @@
 import { Avatar } from "@/components/Avatar";
 import { useUser } from "@/contexts/UserProvider";
-import { Room } from "@/types/api/message";
 import { useDispatch, useSelector } from "react-redux";
 import { selectSelectedRoom } from "@/lib/redux/features/message/messageSelector";
 import { Button } from "@/components/ui/button";
 import { setSelectedRoom } from "@/lib/redux/features/message/messageSlice";
 import { ArrowLeftIcon } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export const ChatHeader = () => {
+  const isMobile = useIsMobile();
   const dispatch = useDispatch();
   const selectedRoom = useSelector(selectSelectedRoom);
   const { user: currentUser } = useUser();
@@ -17,14 +18,15 @@ export const ChatHeader = () => {
   return (
     <div className="flex flex-col gap-4 border-b border-gray-200 p-4">
       <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => dispatch(setSelectedRoom(null))}
-          className="block sm:hidden"
-        >
-          <ArrowLeftIcon />
-        </Button>
+        {isMobile && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => dispatch(setSelectedRoom(null))}
+          >
+            <ArrowLeftIcon />
+          </Button>
+        )}
         {friend && (
           <>
             <Avatar size="medium" user={friend} />
