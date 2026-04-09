@@ -1,23 +1,10 @@
+import Image from "next/image";
 import { TextareaSimple } from "@/components/form/TextAreaSimple";
 import { Message, Room } from "@/types/api/message";
 import { FaceIcon } from "@radix-ui/react-icons";
 import { ImageIcon, SendIcon, XIcon } from "lucide-react";
-import {
-  SetStateAction,
-  startTransition,
-  useActionState,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import {
-  sendText,
-  SendTextState,
-  sendImages,
-  SendImagesState,
-} from "./messageAction";
+import { SetStateAction, startTransition, useRef, useState } from "react";
 import { EmojiClickData } from "emoji-picker-react";
-import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useUser } from "@/contexts/UserProvider";
 import { useDispatch, useSelector } from "react-redux";
@@ -26,13 +13,9 @@ import { EmojiPickerButton } from "@/components/buttons/EmojiPickerButton";
 import {
   optimisticInsertImagesMessage,
   optimisticInsertTextMessage,
-  reconcileInsertImagesMessage,
-  reconcileInsertTextMessage,
   rollbackInsertImagesMessage,
-  rollbackInsertTextMessage,
 } from "@/lib/redux/features/message/messageSlice";
 import { User } from "@/types/api/user";
-import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
 
 type SelectedImage = {
@@ -40,25 +23,13 @@ type SelectedImage = {
   file: File;
 };
 
-const initialSendTextState: SendTextState = {
-  error: "",
-  message: "",
-  data: null,
-  ok: false,
-  optimisticMessageId: 0,
-  roomId: -1,
-};
-
-const initialSendImagesState: SendImagesState = {
-  error: "",
-  message: "",
-  data: null,
-  ok: false,
-  optimisticMessageId: 0,
-  roomId: -1,
-};
-
-export const MessageInput = () => {
+export const MessageInput = ({
+  formActionSendText,
+  formActionSendImages,
+}: {
+  formActionSendText: (formData: FormData) => void;
+  formActionSendImages: (formData: FormData) => void;
+}) => {
   const searchParams = useSearchParams();
   const forceSendFailure = searchParams.get("forceSendFailure");
   const selectedRoom = useSelector(selectSelectedRoom) as Room;
@@ -68,14 +39,6 @@ export const MessageInput = () => {
   const supabase = createClient();
   const formRef = useRef<HTMLFormElement | null>(null);
   const dispatch = useDispatch();
-  const [sendTextState, formActionSendText] = useActionState(
-    sendText,
-    initialSendTextState,
-  );
-  const [sendImagesState, formActionSendImages] = useActionState(
-    sendImages,
-    initialSendImagesState,
-  );
 
   //handle key down
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -214,78 +177,6 @@ export const MessageInput = () => {
       handleImagesMessage(formData);
     }
   };
-
-  //rollback optimistic text message if error occurs
-  useEffect(() => {
-    if (sendTextState.error && !sendTextState.ok) {
-      toast.error(sendTextState.error);
-      dispatch(
-        rollbackInsertTextMessage({
-          roomId: sendTextState.roomId,
-          optimisticMessageId: sendTextState.optimisticMessageId,
-        }),
-      );
-    }
-  }, [
-    sendTextState.error,
-    sendTextState.ok,
-    sendTextState.roomId,
-    sendTextState.optimisticMessageId,
-    dispatch,
-  ]);
-
-  //reconcile optimistic text message with confirmed message
-  useEffect(() => {
-    if (sendTextState.ok && sendTextState.data) {
-      dispatch(
-        reconcileInsertTextMessage({
-          message: sendTextState.data,
-          optimisticMessageId: sendTextState.optimisticMessageId,
-        }),
-      );
-    }
-  }, [
-    sendTextState.ok,
-    sendTextState.data,
-    dispatch,
-    sendTextState.optimisticMessageId,
-  ]);
-
-  //rollback optimistic images message if error occurs
-  useEffect(() => {
-    if (sendImagesState.error && !sendImagesState.ok) {
-      toast.error(sendImagesState.error);
-      dispatch(
-        rollbackInsertImagesMessage({
-          roomId: sendImagesState.roomId,
-          optimisticMessageId: sendImagesState.optimisticMessageId,
-        }),
-      );
-    }
-  }, [
-    sendImagesState.error,
-    sendImagesState.ok,
-    sendImagesState.roomId,
-    sendImagesState.optimisticMessageId,
-    dispatch,
-  ]);
-
-  //reconcile optimistic images message with confirmed message
-  useEffect(() => {
-    if (sendImagesState.ok && sendImagesState.data) {
-      dispatch(
-        reconcileInsertImagesMessage({
-          messages: sendImagesState.data,
-          optimisticMessageId: sendImagesState.optimisticMessageId,
-        }),
-      );
-    }
-  }, [
-    sendImagesState.ok,
-    sendImagesState.data,
-    dispatch,
-    sendImagesState.optimisticMessageId,
-  ]);
 
   return (
     <div className="gap-4 rounded-lg p-5">

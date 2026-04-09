@@ -5,7 +5,7 @@ import ActivityCard from "@/components/ActivityCard";
 import { UserProfileCard } from "@/app/(home)/UserProfileCard";
 import { notFound } from "next/navigation";
 import { EmptyState } from "@/components/states/EmptyState";
-import { PageHeader } from "@/components/PageHeader";
+import { PageContainer } from "@/components/PageContainer";
 
 export default async function OtherUserProfilePage({
   params,
@@ -48,13 +48,12 @@ export default async function OtherUserProfilePage({
   }
 
   return (
-    <section className="flex flex-col gap-6">
-      <PageHeader
-        eyebrow="Member Profile"
-        title={user.display_name}
-        description="View this member's public profile, background, and recently shared activities."
-      />
-      <div className="grid grid-cols-[2fr_4fr] gap-4">
+    <PageContainer
+      eyebrow="Member Profile"
+      title={user.display_name}
+      description="View this member's public profile, background, and recently shared activities."
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr_4fr] gap-4 z-10">
         <div className="flex flex-col gap-4">
           <UserProfileCard user={user} />
           <Card>
@@ -89,6 +88,6 @@ export default async function OtherUserProfilePage({
           )}
         </ul>
       </div>
-    </section>
+    </PageContainer>
   );
 }

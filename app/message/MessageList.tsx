@@ -21,10 +21,7 @@ export const MessageList = () => {
   const dispatch = useDispatch();
   const messages = useSelector(selectSelectedRoomMessages);
   const selectedRoomId = useSelector(selectSelectedRoomId) as number;
-  const { containerRef } = useAutoScrollDown([
-    messages?.length,
-    selectedRoomId,
-  ]);
+  const { containerRef } = useAutoScrollDown(messages?.length, selectedRoomId);
   const selectedRoom = useSelector(selectSelectedRoom) as Room;
 
   const user = useUser();

@@ -1,7 +1,7 @@
 "use client";
 
 import { MessageList } from "./MessageList";
-import { Message, Room } from "@/types/api/message";
+import { Room } from "@/types/api/message";
 import { ChatHeader } from "./ChatHeader";
 import { MessageInput } from "./MessageInput";
 import { useMessageEditor } from "@/contexts/MessageEditorProvider";
@@ -12,7 +12,7 @@ import {
   selectSelectedRoom,
   selectSelectedRoomId,
 } from "@/lib/redux/features/message/messageSelector";
-import { startTransition, useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { RootState } from "@/lib/redux/store";
 import {
@@ -20,41 +20,31 @@ import {
   setRoomLoading,
   setRoomError,
   setRoomIdle,
-  rollbackUpdateMessage,
-  reconcileUpdateMessage,
-  rollbackDeleteMessage,
-  reconcileDeleteMessage,
 } from "@/lib/redux/features/message/messageSlice";
 import { MessageListSkeleton } from "@/components/skeletons/MessageListSkeleton";
 import { Button } from "@/components/ui/button";
-import { EditMessageState, editTextMessage } from "./messageAction";
-import { toast } from "sonner";
-import { useDeleteMessageAction } from "@/contexts/DeleteMessageActionProvider";
 
-const initialState: EditMessageState = {
-  error: "",
-  message: "",
-  data: null,
-  ok: false,
-  snapshotSelectedMessage: {} as Message,
-};
-
-export const MessagePanel = () => {
+export const MessagePanel = ({
+  formActionSendText,
+  formActionSendImages,
+  isUpdating,
+  setIsUpdating,
+  editTextMessageformAction,
+}: {
+  formActionSendText: (formData: FormData) => void;
+  formActionSendImages: (formData: FormData) => void;
+  isUpdating: boolean;
+  setIsUpdating: (value: boolean) => void;
+  editTextMessageformAction: (formData: FormData) => void;
+}) => {
+  const dispatch = useDispatch();
+  const [retryKey, setRetryKey] = useState<number>(0);
   const { selectedMessage } = useMessageEditor();
   const selectedRoom = useSelector(selectSelectedRoom) as Room | null;
-  const dispatch = useDispatch();
   const selectedRoomId = useSelector(selectSelectedRoomId);
   const roomLoadStatus = useSelector((state: RootState) =>
     selectRoomLoadStatus(state, selectedRoomId as number),
   );
-  const [retryKey, setRetryKey] = useState<number>(0);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [editTextMessageState, editTextMessageformAction] = useActionState(
-    editTextMessage,
-    initialState,
-  );
-  const { setIsMessageDeleting, deleteMessageState, message, setMessage } =
-    useDeleteMessageAction();
 
   const handleRetry = () => {
     dispatch(setRoomIdle(selectedRoomId as number));
@@ -95,70 +85,6 @@ export const MessagePanel = () => {
     }
   }, [selectedRoomId, dispatch, retryKey, roomLoadStatus]);
 
-  // if the message update fails, rollback the message
-  useEffect(() => {
-    if (
-      editTextMessageState.error !== "" &&
-      editTextMessageState.ok === false
-    ) {
-      toast.error("Updating message failed");
-      dispatch(
-        rollbackUpdateMessage(editTextMessageState.snapshotSelectedMessage),
-      );
-      startTransition(() => {
-        setIsUpdating(false);
-      });
-    }
-  }, [
-    editTextMessageState.error,
-    editTextMessageState.ok,
-    dispatch,
-    editTextMessageState.snapshotSelectedMessage,
-  ]);
-
-  // if the messageupdate succeeds, set the message to the new message
-  useEffect(() => {
-    if (editTextMessageState.ok === true && editTextMessageState.data) {
-      dispatch(reconcileUpdateMessage(editTextMessageState.data));
-      startTransition(() => {
-        setIsUpdating(false);
-      });
-    }
-  }, [editTextMessageState.ok, dispatch, editTextMessageState.data]);
-
-  // rollback delete message if deleting message is failed
-  useEffect(() => {
-    if (
-      deleteMessageState.error !== "" &&
-      deleteMessageState.ok === false &&
-      message !== null
-    ) {
-      toast.error("Failed to delete message");
-      dispatch(rollbackDeleteMessage(message as Message));
-      startTransition(() => {
-        setIsMessageDeleting(false);
-        setMessage(null);
-      });
-    }
-  }, [message, dispatch, deleteMessageState, setIsMessageDeleting, setMessage]);
-
-  // reconcile delete message if deleting message is successful
-  useEffect(() => {
-    if (deleteMessageState.ok && message !== null) {
-      dispatch(reconcileDeleteMessage(message as Message));
-      startTransition(() => {
-        setIsMessageDeleting(false);
-        setMessage(null);
-      });
-    }
-  }, [
-    deleteMessageState.ok,
-    message,
-    dispatch,
-    setIsMessageDeleting,
-    setMessage,
-  ]);
-
   return (
     <div
       className="bg-card flex min-w-0 w-full flex-col rounded-r-sm border border-gray-200"
@@ -188,7 +114,10 @@ export const MessagePanel = () => {
               editTextMessageformAction={editTextMessageformAction}
             />
           ) : (
-            <MessageInput />
+            <MessageInput
+              formActionSendText={formActionSendText}
+              formActionSendImages={formActionSendImages}
+            />
           )}
         </>
       )}

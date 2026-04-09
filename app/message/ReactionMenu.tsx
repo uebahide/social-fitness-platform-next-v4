@@ -1,7 +1,14 @@
 import { EmojiPickerButton } from "@/components/buttons/EmojiPickerButton";
 import { FaceIcon } from "@radix-ui/react-icons";
 import { EmojiClickData } from "emoji-picker-react";
-import { startTransition, useActionState, useEffect, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  startTransition,
+  useActionState,
+  useEffect,
+  useState,
+} from "react";
 import {
   addReaction,
   deleteReaction,
@@ -53,11 +60,11 @@ const initialStateDelete: ReactionDeleteActionState = {
 };
 
 export const ReactionMenu = ({
-  setIsSubMenuOpen,
+  setIsReactionPickerOpen,
   message,
   isMyMessage,
 }: {
-  setIsSubMenuOpen: (show: boolean) => void;
+  setIsReactionPickerOpen: Dispatch<SetStateAction<boolean>>;
   message: Message;
   isMyMessage: boolean;
 }) => {
@@ -233,11 +240,11 @@ export const ReactionMenu = ({
       closeOnEmojiClick={true}
       reactionsDefaultOpen={true}
       pickerClassName={cn(
-        "absolute bottom-12",
-        isMyMessage ? "right-0" : "left-0",
+        "absolute",
+        isMyMessage ? "-right-3 bottom-15" : "-left-3 bottom-10",
         isUpdating ? "opacity-50" : "",
       )}
-      onShowChange={(show: boolean) => setIsSubMenuOpen(show)}
+      onShowChange={(show: boolean) => setIsReactionPickerOpen(show)}
     >
       <FaceIcon className="size-4" />
     </EmojiPickerButton>

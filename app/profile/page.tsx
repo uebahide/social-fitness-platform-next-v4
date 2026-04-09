@@ -5,19 +5,18 @@ import { SubmitButton } from "@/components/buttons/SubmitButton";
 import { getCurrentUser } from "@/lib/server/getCurrentUser";
 import { PersonalInfoCard } from "./PersonalInfoCard";
 import { UserProfileCard } from "../(home)/UserProfileCard";
-import { PageHeader } from "@/components/PageHeader";
+import { PageContainer } from "@/components/PageContainer";
 
 export default async function Profile() {
   const user = await getCurrentUser();
 
   return (
-    <section className="flex flex-col gap-6">
-      <PageHeader
-        eyebrow="Account"
-        title="My Profile"
-        description="Manage your public profile, personal information, and account settings from one place."
-      />
-      <div className="grid grid-cols-[1fr_2fr] gap-4 grid-rows-[3fr_2fr]">
+    <PageContainer
+      eyebrow="Account"
+      title="My Profile"
+      description="Manage your public profile, personal information, and account settings from one place."
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-4 lg:grid-rows-[3fr_2fr] z-10">
         <UserProfileCard className="col-span-1" />
         <PersonalInfoCard user={user} />
 
@@ -43,6 +42,6 @@ export default async function Profile() {
           </form>
         </Card>
       </div>
-    </section>
+    </PageContainer>
   );
 }

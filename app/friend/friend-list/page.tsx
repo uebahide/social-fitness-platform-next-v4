@@ -25,7 +25,7 @@ export default async function FriendListPage({
       title="Friend List"
       description="Browse your current connections, review incoming requests, and jump into a conversation or profile view."
     >
-      <div className="grid grid-cols-[3fr_7fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[3fr_7fr] gap-4">
         <FriendList friends={friends} requests={receivedRequests} />
         <PageGuidePanel
           testId="friend-list-guide-panel"

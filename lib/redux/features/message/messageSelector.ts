@@ -1,5 +1,4 @@
 import { RootState } from "@/lib/redux/store";
-import { Message } from "@/types/api/message";
 
 export const selectMessagesByRoom = (state: RootState, roomId: number) => {
   return state.message.messagesByRoom[roomId] ?? [];

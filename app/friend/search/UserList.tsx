@@ -77,7 +77,7 @@ export const UserList = ({ forceError }: { forceError?: string }) => {
     return () => {
       controller.abort();
     };
-  }, [debouncedSearch, currentUser?.id, retryKey]);
+  }, [debouncedSearch, currentUser?.id, retryKey, forceError]);
 
   return (
     <aside className="bg-card flex h-[calc(100vh-92px)] flex-col gap-4 rounded-sm border border-gray-200 p-3">

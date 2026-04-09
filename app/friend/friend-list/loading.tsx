@@ -10,7 +10,7 @@ export default function loading() {
       title="Friend List"
       description="Browse your current connections, review incoming requests, and jump into a conversation or profile view."
     >
-      <div className="grid grid-cols-[3fr_7fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[3fr_7fr] gap-4">
         <aside className="bg-card flex h-[calc(100vh-92px)] flex-col gap-4 rounded-sm border border-gray-200 p-3">
           <Input type="text" placeholder="Search" className="w-full" />
 

@@ -28,7 +28,7 @@ export const PageGuidePanel = ({
 }: PageGuidePanelProps) => {
   return (
     <Card
-      className="relative flex h-[calc(100vh-92px)] flex-col justify-between overflow-hidden rounded-[28px] border-white/70 bg-gradient-to-br from-white via-white to-brand-secondary-50/70 p-6 shadow-sm"
+      className="flex relative h-[calc(100vh-92px)] flex-col justify-between overflow-hidden rounded-[28px] border-white/70 bg-gradient-to-br from-white via-white to-brand-secondary-50/70 p-6 shadow-sm"
       data-testid={testId}
     >
       <div className="absolute -right-10 top-0 h-36 w-36 rounded-full bg-brand-secondary-100/70 blur-3xl" />

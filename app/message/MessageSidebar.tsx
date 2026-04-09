@@ -15,7 +15,7 @@ import { RootState } from "@/lib/redux/store";
 import { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-const LATEST_MESSAGE_PREVIEW_LIMIT = 50;
+const LATEST_MESSAGE_PREVIEW_LIMIT = 20;
 
 export const MessageSidebar = ({ rooms }: { rooms: Room[] }) => {
   const { user: currentUser } = useUser();

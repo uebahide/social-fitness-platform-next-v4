@@ -8,6 +8,7 @@ import { getFriendLastReadMessageIdsByRoom } from "@/lib/server/getFriendLastRea
 import { getLatestMessagesByRoom } from "@/lib/server/getLatestMessagesByRoom";
 import { getOrCreatePrivateRoom } from "@/lib/server/getOrCreatePrivateRoom";
 import { PageContainer } from "@/components/PageContainer";
+import { DeleteMessageActionProvider } from "@/contexts/DeleteMessageActionProvider";
 
 export default async function MessagePage({
   searchParams,
@@ -56,13 +57,15 @@ export default async function MessagePage({
       description="Catch up with your conversations, check unread updates, and stay in sync with your training partners."
     >
       <MessageEditorProvider>
-        <MessageClient
-          myLastReadMessageIdsByRoom={myLastReadMessageIdsByRoom}
-          friendLastReadMessageIdsByRoom={friendLastReadMessageIdsByRoom}
-          latestMessagesByRoom={latestMessagesByRoom}
-          rooms={rooms as Room[]}
-          friendId={friendId}
-        />
+        <DeleteMessageActionProvider>
+          <MessageClient
+            myLastReadMessageIdsByRoom={myLastReadMessageIdsByRoom}
+            friendLastReadMessageIdsByRoom={friendLastReadMessageIdsByRoom}
+            latestMessagesByRoom={latestMessagesByRoom}
+            rooms={rooms as Room[]}
+            friendId={friendId}
+          />
+        </DeleteMessageActionProvider>
       </MessageEditorProvider>
     </PageContainer>
   );
