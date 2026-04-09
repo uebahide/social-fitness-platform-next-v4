@@ -44,6 +44,24 @@ This repository is published as a **portfolio project for a React Junior Develop
 
 ---
 
+## 🌐 Public Demo
+
+The app is also available as a public deployment for portfolio review:
+
+- https://social-fitness-platform-next-v4.vercel.app/
+
+### Reviewer Access Notes
+
+- Authentication is required. Unauthenticated access is redirected to `/login`.
+- Use the public demo account for review:
+  - Email: `hidekazu.ueba@example.com`
+  - Password: `password`
+- If sign-up is enabled in the current environment, reviewers can create an account from `/register`.
+- After signing in, reviewers can inspect the main authenticated flows: activity tracking, analytics, friend search/requests, messaging, profile editing, and the weather card on the home screen.
+- This repository does not store deployment-specific secrets. If you share the hosted app for review, only use demo-safe credentials and demo-safe data.
+
+---
+
 ## 📁 Directory Structure (Excerpt)
 
 ```text
@@ -320,16 +338,6 @@ This app assumes the following Supabase resources are set up:
 - Integrated authentication + CRUD + Realtime using Supabase
 - UI component modularization and reusability
 - Continuous feature expansion as an actively maintained solo project
-
----
-
-## 🔜 Roadmap
-
-- [ ] Resolve ESLint warnings/errors
-- [ ] Improve responsive design (mobile UI optimization)
-- [ ] Enhance README (screenshots, architecture diagram)
-- [ ] Introduce tests (unit / E2E)
-- [ ] Improve messaging (notifications, read status, group chat, etc.)
 
 ---
 
