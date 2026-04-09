@@ -7,6 +7,32 @@ import { notFound } from "next/navigation";
 import { EmptyState } from "@/components/states/EmptyState";
 import { PageContainer } from "@/components/PageContainer";
 
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ userId: string }>;
+}): Promise<Metadata> {
+  const { userId } = await params;
+  const supabase = await createClient();
+
+  const { data: user } = await supabase
+    .from("profiles")
+    .select("display_name")
+    .eq("id", userId)
+    .maybeSingle();
+
+  return {
+    title: user?.display_name ?? "Member Profile",
+    description:
+      "View this member's public profile, background, and recently shared activities.",
+    robots: {
+      index: false,
+    },
+  };
+}
+
 export default async function OtherUserProfilePage({
   params,
   searchParams,
