@@ -5,7 +5,6 @@ import ActivityCard from "@/components/ActivityCard";
 import { UserProfileCard } from "@/app/(home)/UserProfileCard";
 import { notFound } from "next/navigation";
 import { EmptyState } from "@/components/states/EmptyState";
-import { PageHeader } from "@/components/PageHeader";
 import { PageContainer } from "@/components/PageContainer";
 
 export default async function OtherUserProfilePage({
