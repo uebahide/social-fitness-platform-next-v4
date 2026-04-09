@@ -44,9 +44,10 @@ export const EventCard = () => {
       </CardHeader>
       <hr />
       <CardContent className="text-sm">
-        <p>
-          Client requested dashboard redesign with focus on mobile
-          responsiveness.
+        <p className="overflow-y-auto max-h-[60px]">
+          We are going to meet at the Budapest Riverside at 8:00 AM on Saturday,
+          March 30. We will be running for 1 hour and then we will have a coffee
+          break. Let&apos;s meet up and have a great time!
         </p>
         <ul className="mt-4 flex flex-col gap-2 ">
           <li>Location: Budapest Riverside</li>
