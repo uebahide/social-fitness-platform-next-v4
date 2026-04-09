@@ -44,6 +44,42 @@ This repository is published as a **portfolio project for a React Junior Develop
 
 ---
 
+## 🌐 Public Demo
+
+The app is also available as a public deployment for portfolio review:
+
+- https://social-fitness-platform-next-v4.vercel.app/
+
+### Reviewer Access Notes
+
+- Authentication is required. Unauthenticated access is redirected to `/login`.
+- Use the public demo account for review:
+  - Email: `hidekazu.ueba@example.com`
+  - Password: `password`
+- If sign-up is enabled in the current environment, reviewers can create an account from `/register`.
+- After signing in, reviewers can inspect the main authenticated flows: activity tracking, analytics, friend search/requests, messaging, profile editing, and the weather card on the home screen.
+- This repository does not store deployment-specific secrets. If you share the hosted app for review, only use demo-safe credentials and demo-safe data.
+
+### Vercel Deployment Notes
+
+To reproduce the public demo deployment on Vercel, configure these environment variables in the Vercel project:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=your_hosted_supabase_project_url
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_hosted_supabase_publishable_key
+APP_URL=https://social-fitness-platform-next-v4.vercel.app
+```
+
+Notes:
+
+- `NEXT_PUBLIC_SUPABASE_URL` should point to the hosted Supabase project used by the public demo.
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` should be the publishable/anon key for that hosted Supabase project.
+- `APP_URL` must match the public Vercel deployment URL so email auth redirects resolve correctly in production.
+- Do not expose service role keys in client-facing Vercel environment variables.
+- Only use demo-safe data and demo-safe credentials in the public deployment.
+
+---
+
 ## 📁 Directory Structure (Excerpt)
 
 ```text
@@ -320,16 +356,6 @@ This app assumes the following Supabase resources are set up:
 - Integrated authentication + CRUD + Realtime using Supabase
 - UI component modularization and reusability
 - Continuous feature expansion as an actively maintained solo project
-
----
-
-## 🔜 Roadmap
-
-- [ ] Resolve ESLint warnings/errors
-- [ ] Improve responsive design (mobile UI optimization)
-- [ ] Enhance README (screenshots, architecture diagram)
-- [ ] Introduce tests (unit / E2E)
-- [ ] Improve messaging (notifications, read status, group chat, etc.)
 
 ---
 
