@@ -15,6 +15,8 @@ import { Pencil, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { DeleteActivityDialogForm } from "./DeleteActivityDialogForm";
 import { UpdateActivityDialogForm } from "./UpdateActivityDialogForm";
+import Link from "next/link";
+import { useUser } from "@/contexts/UserProvider";
 
 export default function ActivityCard({
   activity,
@@ -25,6 +27,8 @@ export default function ActivityCard({
 }) {
   const created_user = activity.user;
   const details = activity.details;
+  const { user } = useUser();
+  const isMyActivity = created_user.id === user?.id;
 
   return (
     <article className="@container bg-card relative rounded-lg border border-gray-300 p-4 shadow-sm transition-shadow hover:shadow-md @md:p-5 @xl:p-7">
@@ -37,9 +41,12 @@ export default function ActivityCard({
 
       {/* activity card main content */}
       <main className="mb-8 grid grid-cols-[40px_minmax(0,1fr)] gap-x-3 gap-y-4 pr-10 @md:gap-x-4 @xl:mb-10 @xl:grid-cols-[50px_minmax(0,1fr)] @xl:gap-x-6">
-        <span className="flex shrink-0 justify-center pt-1">
+        <Link
+          href={isMyActivity ? "/profile" : `/profile/${created_user.id}`}
+          className="flex shrink-0 justify-center pt-1"
+        >
           <Avatar user={created_user} size="xsmall" />
-        </span>
+        </Link>
         <header className="min-w-0">
           <p className="truncate text-sm font-medium">
             {created_user.display_name}

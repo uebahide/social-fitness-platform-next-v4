@@ -7,6 +7,7 @@ import { selectFriendLastReadMessageIdByRoom } from "@/lib/redux/features/messag
 import { useSelector } from "react-redux";
 import { RootState } from "@/lib/redux/store";
 import { useState } from "react";
+import Link from "next/link";
 
 export const MessageGroup = ({ message }: { message: Message }) => {
   const { user } = useUser();
@@ -75,7 +76,9 @@ export const MessageGroup = ({ message }: { message: Message }) => {
   return (
     <section className="relative flex items-center justify-start gap-2 min-w-0 group">
       <div className="flex items-end gap-2">
-        <Avatar size="xsmall" user={message.user} />
+        <Link href={`/profile/${message.user.id}`}>
+          <Avatar size="xsmall" user={message.user} />
+        </Link>
         <MessageBubble
           message={message}
           isMyMessage={false}

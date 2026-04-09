@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { setSelectedRoom } from "@/lib/redux/features/message/messageSlice";
 import { ArrowLeftIcon } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import Link from "next/link";
 
 export const ChatHeader = () => {
   const isMobile = useIsMobile();
@@ -28,10 +29,13 @@ export const ChatHeader = () => {
           </Button>
         )}
         {friend && (
-          <>
+          <Link
+            href={`/profile/${friend.id}`}
+            className="flex items-center gap-2"
+          >
             <Avatar size="medium" user={friend} />
             <h1 className="font-bold">{friend?.display_name}</h1>
-          </>
+          </Link>
         )}
       </div>
     </div>
