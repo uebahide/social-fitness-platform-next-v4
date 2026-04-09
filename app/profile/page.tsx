@@ -6,6 +6,15 @@ import { getCurrentUser } from "@/lib/server/getCurrentUser";
 import { PersonalInfoCard } from "./PersonalInfoCard";
 import { UserProfileCard } from "../(home)/UserProfileCard";
 import { PageContainer } from "@/components/PageContainer";
+import type { Metadata } from "next";
+export const metadata: Metadata = {
+  title: "My Profile",
+  description:
+    "Manage your public profile, personal information, and account settings from one place.",
+  robots: {
+    index: false,
+  },
+};
 
 export default async function Profile() {
   const user = await getCurrentUser();

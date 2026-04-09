@@ -9,6 +9,16 @@ import { MyActivitiesSkeleton } from "@/components/skeletons/MyActivitiesSkeleto
 import { PageContainer } from "@/components/PageContainer";
 import { CategoryType } from "@/types/api/category";
 
+import type { Metadata } from "next";
+export const metadata: Metadata = {
+  title: "My Activity",
+  description:
+    "Review your recent sessions, track your patterns, and keep your personal training history organized.",
+  robots: {
+    index: false,
+  },
+};
+
 type PageProps = {
   searchParams: Promise<{
     page?: string;

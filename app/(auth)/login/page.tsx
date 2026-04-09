@@ -1,4 +1,15 @@
 import { LoginForm } from "@/components/LoginForm";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Login",
+  description:
+    "Sign in to Social Fitness and continue tracking activity and messaging your training partners.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function Login() {
   return (
