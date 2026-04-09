@@ -8,7 +8,7 @@ export const FriendActivity = async () => {
   const friendsActivities = await getFriendsActivities();
 
   return (
-    <Card className="col-span-1 row-span-2 flex h-[812px] flex-col overflow-hidden p-0">
+    <Card className="col-span-1 row-span-2 flex min-[1400px]:h-[735px] h-[1460px] flex-col overflow-hidden p-0">
       <header className="border-b border-gray-200 bg-gradient-to-br from-brand-secondary-100 via-white to-brand-secondary-50 px-6 py-5 flex flex-col gap-y-2">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-2">

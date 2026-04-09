@@ -35,7 +35,7 @@ const avatars = [
 
 export const EventCard = () => {
   return (
-    <Card className="max-w-md h-full flex flex-col justify-between">
+    <Card className=" h-full flex flex-col justify-between">
       <CardHeader>
         <CardTitle className="text-xl font-bold">
           Sunrise Run Meetup!!
