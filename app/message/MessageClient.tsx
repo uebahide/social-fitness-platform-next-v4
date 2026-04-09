@@ -37,10 +37,7 @@ import { useRealtimeReadStatus } from "@/hooks/useRealtimeReadStatus";
 import { useUser } from "@/contexts/UserProvider";
 import { MessageReaction } from "@/types/api/messageReactions";
 import { useRealtimeMessageReactions } from "@/hooks/useRealtimeMessageReactions";
-import {
-  DeleteMessageActionProvider,
-  useDeleteMessageAction,
-} from "@/contexts/DeleteMessageActionProvider";
+import { useDeleteMessageAction } from "@/contexts/DeleteMessageActionProvider";
 import { selectSelectedRoom } from "@/lib/redux/features/message/messageSelector";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {

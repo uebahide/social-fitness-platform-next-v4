@@ -1,8 +1,12 @@
-import { DependencyList, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
-export const useAutoScrollDown = (deps: DependencyList) => {
+export const useAutoScrollDown = (
+  messageCount: number | undefined,
+  roomId: number | null,
+) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const isFirstRender = useRef(true);
+
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -16,7 +20,7 @@ export const useAutoScrollDown = (deps: DependencyList) => {
     requestAnimationFrame(() => {
       el.scrollTop = el.scrollHeight;
     });
-  }, deps);
+  }, [messageCount, roomId]);
 
   return { containerRef };
 };
