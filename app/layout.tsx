@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/images/SFA-LOGO.png",
+        url: "/images/open-graph-image.png",
         width: 1024,
         height: 1024,
         alt: "Social Fitness Platform logo",
@@ -78,7 +78,7 @@ export const metadata: Metadata = {
       "Track activities, connect with friends, and stay in sync with your training partners.",
     images: [
       {
-        url: "/images/SFA-LOGO.png",
+        url: "/images/open-graph-image.png",
         alt: "Social Fitness Platform logo",
       },
     ],
