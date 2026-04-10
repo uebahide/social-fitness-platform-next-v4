@@ -149,12 +149,13 @@ sequenceDiagram
 | `/activity` | `93 / 87 / 96 / 63` | `99 / 87 / 96 / 63` |
 | `/friend/friend-list` | `93 / 89 / 100 / 60` | `100 / 90 / 100 / 63` |
 | `/friend/search` | `96 / 98 / 100 / 60` | `99 / 98 / 100 / 63` |
-| `/message` | `not measured` | `99 / 97 / 100 / 63` |
+| `/message` | `88 / 97 / 100 / 60` | `99 / 97 / 100 / 63` |
 
 Representative web vitals snapshots from the same audit pass:
 
 - `/` mobile: **FCP** `1.4s`, **LCP** `2.4s`, **TTI** `4.4s`, **TBT** `530ms`, **CLS** `0`
 - `/activity` mobile: **FCP** `1.1s`, **LCP** `1.7s`, **TTI** `3.8s`, **TBT** `234ms`, **CLS** `0`
+- `/message` mobile: **FCP** `1.2s`, **LCP** `2.1s`, **TTI** `3.8s`, **TBT** `380ms`, **CLS** `0`
 - `/friend/friend-list` desktop: **FCP** `0.4s`, **LCP** `0.5s`, **TTI** `0.5s`, **TBT** `0ms`, **CLS** `0`
 - `/message` desktop: **FCP** `0.3s`, **LCP** `0.5s`, **TTI** `0.5s`, **TBT** `0ms`, **CLS** `0`
 
