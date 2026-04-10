@@ -26,14 +26,22 @@ const geistMono = Geist_Mono({
 });
 
 const getMetadataBase = () => {
-  const appUrl = process.env.APP_URL?.trim();
+  const rawUrl =
+    process.env.APP_URL?.trim() ||
+    process.env.VERCEL_PROJECT_PRODUCTION_URL?.trim() ||
+    process.env.VERCEL_URL?.trim();
 
-  if (!appUrl) {
+  if (!rawUrl) {
     return new URL("http://127.0.0.1:3000");
   }
 
+  const normalizedUrl =
+    rawUrl.startsWith("http://") || rawUrl.startsWith("https://")
+      ? rawUrl
+      : `https://${rawUrl}`;
+
   try {
-    return new URL(appUrl);
+    return new URL(normalizedUrl);
   } catch {
     return new URL("http://127.0.0.1:3000");
   }
