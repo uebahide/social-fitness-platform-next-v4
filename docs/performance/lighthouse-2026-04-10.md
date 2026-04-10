@@ -11,7 +11,7 @@ This file keeps the full reviewer-facing Lighthouse notes that were previously i
   - `/activity`
   - `/friend/friend-list`
   - `/friend/search`
-  - `/message` (desktop only in this pass)
+  - `/message`
 
 ## Home page (`/`)
 
@@ -176,7 +176,16 @@ This file keeps the full reviewer-facing Lighthouse notes that were previously i
 
 ## Message page (`/message`)
 
-Only desktop metrics were recorded in this audit pass.
+### Mobile
+
+- **Performance / Accessibility / Best Practices / SEO**: `88 / 97 / 100 / 60`
+- **First Contentful Paint**: `1.2s`
+- **Largest Contentful Paint**: `2.1s`
+- **Speed Index**: `3.6s`
+- **Time to Interactive**: `3.8s`
+- **Total Blocking Time**: `380ms`
+- **Server Response Time**: `70ms`
+- **Cumulative Layout Shift**: `0`
 
 ### Desktop
 
@@ -192,8 +201,8 @@ Only desktop metrics were recorded in this audit pass.
 ### Interpretation
 
 - Desktop route is very fast and stable.
-- Remaining cost is mostly payload efficiency rather than runtime responsiveness.
-- Reviewer-facing issues are conversation-list semantics, image delivery, caching, and crawlability.
+- Mobile bottlenecks are primarily JavaScript execution and main-thread work after first paint.
+- Remaining reviewer-facing issues are conversation-list semantics, image delivery, caching, and crawlability.
 
 ### Improvement opportunities
 
@@ -201,6 +210,7 @@ Only desktop metrics were recorded in this audit pass.
 - Fix heading hierarchy in conversation list.
 - Reduce oversized media (avatar PNG and logo asset).
 - Improve avatar format/compression and responsive sizing.
+- Reduce mobile main-thread work and route-level script cost (`~178 KiB` estimated savings in this mobile run).
 - Trim unused JavaScript (`~160 KiB` desktop estimate).
 - Review SEO defaults (`noindex` observed).
 - Increase cache lifetime and review bfcache blockers (`no-store`, WebSocket usage).
