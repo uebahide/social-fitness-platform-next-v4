@@ -1,7 +1,7 @@
 # Social Fitness Platform
 
-A fitness tracking app with social features built with React / Next.js.
-This repository is published as a **portfolio project for a React Junior Developer position**, while also being continuously improved as an active personal development project.
+A fitness-tracking app with social features, built with React and Next.js.
+This repository is presented as a **portfolio project for a junior React developer role**, and is also maintained as an ongoing personal project.
 
 ---
 
@@ -40,7 +40,7 @@ This repository is published as a **portfolio project for a React Junior Develop
 - **Backend/BaaS**: Supabase (Auth / Database / Storage / Realtime)
 - **Charts**: Recharts
 - **Validation**: Zod
-- **Lint**: ESLint
+- **Linting**: ESLint
 
 ---
 
@@ -84,11 +84,52 @@ Notes:
 
 ### Architecture at a glance
 
+**Diagram format:** High-level architecture is documented with **Mermaid diagrams in this README** so they render on GitHub without maintaining separate image files under `docs/` or linking to external diagram tools. For import-level dependency graphs, consider [dependency-cruiser](https://github.com/sverweij/dependency-cruiser) locally if you need machine-generated maps.
+
+#### Containers (C4-style, simplified)
+
+```mermaid
+flowchart TB
+  Browser["Browser<br/>React 19, Redux on messaging, React Query for weather/search"]
+  Next["Next.js App Router<br/>Server Components, Server Actions, route handlers"]
+  Supabase["Supabase<br/>Auth, PostgreSQL, Realtime, Storage"]
+
+  Browser -->|"HTML, navigations, form posts"| Next
+  Browser <-->|"JS client: Realtime, Storage uploads, authenticated queries"| Supabase
+  Next <-->|"Server Supabase client (cookies)"| Supabase
+```
+
+#### Main flows: authentication and messaging
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant U as "User browser"
+  participant Next as "Next.js"
+  participant SB as "Supabase"
+
+  Note over U,SB: Authentication — sign-in, sign-up, email confirmation
+  U->>Next: Server Action signInWithPassword or signUp
+  Next->>SB: Supabase Auth and profiles insert on sign-up
+  SB-->>Next: Session cookies
+  Next-->>U: Redirect home or verify-email message
+  U->>Next: GET /auth/confirm (email OTP)
+  Next->>SB: verifyOtp
+  SB-->>Next: Session established
+  Next-->>U: Redirect into app
+
+  Note over U,SB: Messaging — SSR or hydration then Realtime sync
+  U->>SB: Subscribe to per-room Realtime channels
+  U->>Next: Server Action inserts text message
+  Next->>SB: Write row to messages
+  SB-->>U: Realtime broadcast to subscribers
+```
+
 - **App Router separation**
   - Server-rendered routes handle auth-aware data loading and page composition.
   - Client components are used where browser APIs, form state, or live subscriptions are required.
 - **Why Supabase is the backend**
-  - Supabase keeps auth, relational data, storage, and realtime messaging in one stack, which keeps the project scope realistic for a solo portfolio app while still covering full-stack concerns.
+  - Supabase combines auth, relational data, storage, and realtime messaging in one stack, which keeps the scope realistic for a solo portfolio app while still covering full-stack concerns.
 - **Why React Query is used**
   - React Query is used selectively for client-only fetches that benefit from built-in loading/error state, request cancellation, retry handling, and short-lived caching.
   - In this project that mainly applies to browser-driven data such as weather/geolocation and user search, where server rendering is not the best fit.
@@ -132,7 +173,7 @@ Interpretation:
 
 Main improvement opportunities identified by the audits:
 
-- Reduce home-page client JavaScript and main-thread work on mobile.
+- Reduce home-page client-side JavaScript and main-thread work on mobile.
 - Optimize oversized images, especially the Supabase-hosted avatar image and the oversized logo asset used on the home page.
 - Investigate the production console error (`Minified React error #418`) reported during the desktop audit.
 - Reduce DOM size and avoid forced reflow hotspots on the home screen.
@@ -296,6 +337,8 @@ Main improvement opportunities identified by the audit:
 
 ### Message page Lighthouse notes
 
+Only a desktop run is recorded here; treat mobile numbers separately if you re-audit this route.
+
 Desktop Lighthouse audit for the public demo message page on **April 10, 2026**:
 
 - **Performance / Accessibility / Best Practices / SEO**: `99 / 97 / 100 / 63`
@@ -337,7 +380,7 @@ app/
   profile/       # Profile editing
   api/           # Some API routes
 components/      # UI / forms / cards
-contexts/        # User/Categories providers
+contexts/        # User and categories providers
 hooks/           # Realtime hooks, etc.
 lib/             # Supabase client, server helpers
 types/           # API / domain types
@@ -385,6 +428,7 @@ npm run lint   # Run ESLint
 npm run seed:users      # Create demo auth users and profile rows
 npm run seed:friends    # Create demo friendships between seeded users
 npm run seed:activities # Create demo activities for seeded users
+npm run seed:all        # Run seed:users, seed:friends, and seed:activities
 ```
 
 ---
@@ -531,6 +575,7 @@ For anyone cloning this project and wanting a fully working local dataset, the r
 npm install
 supabase start
 supabase db reset
+supabase seed buckets --local
 supabase status
 # update .env.local with the local URL and publishable key
 npm run seed:users
@@ -565,9 +610,12 @@ SEED_USER_PASSWORD=password
 Then:
 
 1. Apply the schema from `supabase/migrations` to that project
-2. Insert base categories from `supabase/seed.sql`
+2. Insert base categories from `supabase/seed.sql` (for example via the Supabase SQL editor or `psql`)
 3. Run `npm run seed:users`
-4. Run `npm run seed:activities`
+4. Run `npm run seed:friends` (needed for friend list and messaging demos)
+5. Run `npm run seed:activities`
+
+Configure storage buckets in the hosted project to match what the app expects (avatars, messages, and any buckets defined in `supabase/config.toml`), or uploads and messaging attachments may fail.
 
 The seed scripts only require a publishable key because they create demo users through normal auth flows and then insert data while signed in as those users.
 
@@ -606,5 +654,4 @@ This app assumes the following Supabase resources are set up:
 
 ## 📄 License
 
-No license is currently set because this project is intended for personal development and portfolio purposes.
-A license can be added as needed.
+No license file is included yet; this project is intended for personal development and portfolio use. Add a `LICENSE` file when you want to grant reuse terms (for example MIT).
