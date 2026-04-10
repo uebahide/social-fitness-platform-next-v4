@@ -62,14 +62,26 @@ export const metadata: Metadata = {
       "Track activities, connect with friends, and stay in sync with your training partners.",
     siteName: "Social Fitness Platform",
     type: "website",
-    images: ["/images/SFA-LOGO.png"],
+    images: [
+      {
+        url: "/images/SFA-LOGO.png",
+        width: 1024,
+        height: 1024,
+        alt: "Social Fitness Platform logo",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Social Fitness Platform",
     description:
       "Track activities, connect with friends, and stay in sync with your training partners.",
-    images: ["/images/SFA-LOGO.png"],
+    images: [
+      {
+        url: "/images/SFA-LOGO.png",
+        alt: "Social Fitness Platform logo",
+      },
+    ],
   },
   icons: {
     icon: "/favicon.ico",
