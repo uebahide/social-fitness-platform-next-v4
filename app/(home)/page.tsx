@@ -13,7 +13,8 @@ export const metadata: Metadata = {
   description:
     "Keep an eye on your profile, check what your network has been up to, and stay ready for the week ahead.",
   robots: {
-    index: false,
+    index: true,
+    follow: true,
   },
 };
 

@@ -1,6 +1,24 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const SOCIAL_CRAWLER_USER_AGENTS = [
+  "Twitterbot",
+  "facebookexternalhit",
+  "Facebot",
+  "Slackbot",
+  "Discordbot",
+  "LineBot",
+  "LinkedInBot",
+  "WhatsApp",
+];
+
+function isSocialCrawlerRequest(request: NextRequest) {
+  const userAgent = request.headers.get("user-agent") ?? "";
+  return SOCIAL_CRAWLER_USER_AGENTS.some((crawlerAgent) =>
+    userAgent.includes(crawlerAgent),
+  );
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -40,9 +58,11 @@ export async function updateSession(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
 
   const user = data?.claims;
+  const isSocialCrawler = isSocialCrawlerRequest(request);
 
   if (
     !user &&
+    !isSocialCrawler &&
     !request.nextUrl.pathname.startsWith("/login") &&
     !request.nextUrl.pathname.startsWith("/register") &&
     !request.nextUrl.pathname.startsWith("/auth/confirm")

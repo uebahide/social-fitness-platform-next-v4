@@ -6,8 +6,8 @@ export const metadata: Metadata = {
   description:
     "Sign in to Social Fitness and continue tracking activity and messaging your training partners.",
   robots: {
-    index: false,
-    follow: false,
+    index: true,
+    follow: true,
   },
 };
 
