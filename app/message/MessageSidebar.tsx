@@ -14,12 +14,14 @@ import { Room } from "@/types/api/message";
 import { RootState } from "@/lib/redux/store";
 import { useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { PurpleBadge } from "@/components/badges/PurpleBadge";
 
 const LATEST_MESSAGE_PREVIEW_LIMIT = 20;
 
 export const MessageSidebar = ({ rooms }: { rooms: Room[] }) => {
   const { user: currentUser } = useUser();
   const [search, setSearch] = useState("");
+  const latestMessagesByRoom = useSelector(selectLatestMessagesByRoom);
   const filteredRooms = useMemo(() => {
     const keyword = search.toLowerCase().trim();
 
@@ -32,6 +34,23 @@ export const MessageSidebar = ({ rooms }: { rooms: Room[] }) => {
       return friend.display_name.toLowerCase().includes(keyword);
     });
   }, [rooms, search, currentUser]);
+
+  const filteredSortedRooms = useMemo(() => {
+    return [...filteredRooms].sort((a, b) => {
+      const aLastMessage = latestMessagesByRoom[a.id];
+      const bLastMessage = latestMessagesByRoom[b.id];
+
+      if (aLastMessage && !bLastMessage) return -1;
+      if (!aLastMessage && bLastMessage) return 1;
+      if (!aLastMessage && !bLastMessage) return 0;
+
+      return (
+        new Date(bLastMessage!.created_at).getTime() -
+        new Date(aLastMessage!.created_at).getTime()
+      );
+    });
+  }, [filteredRooms, latestMessagesByRoom]);
+
   return (
     <aside
       className="bg-card flex flex-col gap-4 rounded-l-sm border border-r-0 border-gray-200 p-3"
@@ -47,7 +66,7 @@ export const MessageSidebar = ({ rooms }: { rooms: Room[] }) => {
         onChange={(e) => setSearch(e.target.value)}
       />
       <ul className="flex h-[calc(100vh-200px)] flex-col gap-3 overflow-y-auto">
-        {filteredRooms.map((room) => (
+        {filteredSortedRooms.map((room) => (
           <RoomListItem key={room.id} room={room} />
         ))}
       </ul>
@@ -109,9 +128,7 @@ const RoomListItem = ({ room }: { room: Room }) => {
       <section className="flex flex-col gap-1 w-full">
         <h3 className="text-xs font-medium">{friend?.display_name}</h3>
         <p className="text-xs text-gray-500">{latestMessagePreview}</p>
-        {isUnread && (
-          <span className="rounded-full bg-purple-500 w-2 h-2 inline-block self-end" />
-        )}
+        {isUnread && <PurpleBadge className="self-end" />}
       </section>
     </li>
   );

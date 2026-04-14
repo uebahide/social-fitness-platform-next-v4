@@ -30,6 +30,7 @@ import {
   reconcileInsertImagesMessage,
   rollbackUpdateMessage,
   rollbackDeleteMessage,
+  setRoomIdle,
 } from "@/lib/redux/features/message/messageSlice";
 import { getUserById } from "@/lib/client/getUserById";
 import { roomUser } from "@/types/api/roomUser";
@@ -128,9 +129,9 @@ export const MessageClient = ({
       );
     }
 
-    if (rooms.length === 1) {
-      return rooms[0];
-    }
+    // if (rooms.length === 1) {
+    //   return rooms[0];
+    // }
 
     return null;
   }, [friendId, rooms]);
@@ -178,6 +179,7 @@ export const MessageClient = ({
 
   useEffect(() => {
     if (preferredRoom) {
+      dispatch(setRoomIdle(preferredRoom.id));
       dispatch(setSelectedRoom(preferredRoom));
     }
   }, [dispatch, preferredRoom, rooms]);
