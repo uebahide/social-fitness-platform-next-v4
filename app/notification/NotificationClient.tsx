@@ -1,12 +1,16 @@
 "use client";
+
+import { setNotificationReadAtClient } from "@/lib/client/setNotificationReadAtClient";
 import { selectNotifications } from "@/lib/redux/features/notification/notificationSelector";
+import { setNotificationReadAt } from "@/lib/redux/features/notification/notificationSlice";
 import { formatDate, formatTime } from "@/lib/utils";
 import { MessageCircleIcon, UserPlusIcon } from "lucide-react";
 import Link from "next/link";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 export const NotificationClient = () => {
   const notifications = useSelector(selectNotifications);
+  const dispatch = useDispatch();
 
   if (notifications.length === 0) {
     return (
@@ -25,8 +29,19 @@ export const NotificationClient = () => {
             className="bg-card rounded-md p-4 border shadow-sm relative"
           >
             <Link
-              href={`/message?friendId=${notification.actor_user_id}`}
+              href={
+                notification.type === "message" ||
+                notification.type === "friend_request_accepted"
+                  ? `/message?friendId=${notification.actor_user_id}`
+                  : `/friend/friend-list?request=1`
+              }
               className="flex justify-between items-center"
+              onClick={() => {
+                if (notification.type === "friend_request_accepted") {
+                  dispatch(setNotificationReadAt(notification.id));
+                  setNotificationReadAtClient(notification.id);
+                }
+              }}
             >
               <div className="flex flex-col gap-2">
                 <header>
@@ -53,6 +68,8 @@ export const NotificationClient = () => {
                       `${notification.actor_display_name} sent an image`}
                     {notification.type === "friend_request" &&
                       `${notification.actor_display_name} sent a friend request`}
+                    {notification.type === "friend_request_accepted" &&
+                      `${notification.actor_display_name} accepted your friend request`}
                   </p>
                 </div>
               </div>

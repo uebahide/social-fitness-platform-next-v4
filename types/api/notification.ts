@@ -14,4 +14,7 @@ export type Notification = {
   message_type: string | null;
 };
 
-export type NotificationType = "message" | "friend_request";
+export type NotificationType =
+  | "message"
+  | "friend_request"
+  | "friend_request_accepted";

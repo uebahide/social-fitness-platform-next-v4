@@ -16,6 +16,6 @@ export const selectIsNotificationPageOpen = (state: RootState) => {
 
 export const selectUnreadMessageCount = (state: RootState) => {
   return state.notification.notifications.filter(
-    (notification) => notification.type === "message",
+    (notification) => notification.type === "message" && !notification.read_at,
   ).length;
 };
