@@ -1,3 +1,10 @@
+/**
+ * Layout component for the app
+ * This component is used to wrap the app in a layout component
+ * It is used to provide the user with a layout component and other data for the app
+ * such as categories, notifications, and user profile
+ **/
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -14,6 +21,10 @@ import { Category } from "@/types/api/category";
 import StoreProvider from "./StoreProvider";
 import { Toaster } from "sonner";
 import { QueryProvider } from "./QueryProvider";
+import { NotificationListener } from "./NotificationListener";
+import { getNotifications } from "@/lib/server/getNotifications";
+import { Notification } from "@/types/api/notification";
+import { getCategories } from "@/lib/server/getCategories";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -96,7 +107,9 @@ export default async function RootLayout({
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
   const user = userData?.user;
+
   let profile: User | null = null;
+  let notifications: Notification[] = [];
 
   if (user) {
     const { data, error } = await supabase
@@ -106,12 +119,15 @@ export default async function RootLayout({
     if (error) {
       throw new Error(error.message);
     }
+    // get profile for the user in server component
     profile = data?.[0];
+    // get notifications for the user in server component
+    notifications = await getNotifications(profile?.id as number);
   }
 
-  const { data: categoriesData } = await supabase
-    .from("categories")
-    .select("*");
+  // get categories for the user in server component
+  const categoriesData = await getCategories();
+
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="antialiased">
@@ -120,16 +136,18 @@ export default async function RootLayout({
             <SidebarProvider>
               <TooltipProvider>
                 <UserProvider initialUser={profile as User | null}>
-                  <CategoriesProvider
-                    initialCategories={(categoriesData ?? []) as Category[]}
-                  >
-                    <AppSidebar />
-                    <Main>
-                      <SidebarTrigger />
-                      <Toaster />
-                      {children}
-                    </Main>
-                  </CategoriesProvider>
+                  <NotificationListener notifications={notifications}>
+                    <CategoriesProvider
+                      initialCategories={(categoriesData ?? []) as Category[]}
+                    >
+                      <AppSidebar />
+                      <Main>
+                        <SidebarTrigger />
+                        <Toaster position="top-right" />
+                        {children}
+                      </Main>
+                    </CategoriesProvider>
+                  </NotificationListener>
                 </UserProvider>
               </TooltipProvider>
             </SidebarProvider>

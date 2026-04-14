@@ -30,6 +30,10 @@ import { useState } from "react";
 
 import { Avatar } from "./Avatar";
 import { LogoutButton } from "./LogoutButton";
+import {
+  PulseBellNotificationBadge,
+  SimpleNotificationBadge,
+} from "./badges/UnreadNotificationBadge";
 
 export function NavUser() {
   const { user } = useUser();
@@ -46,7 +50,10 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               tooltip={"User Menu"}
             >
-              <Avatar size="small" />
+              <div className="relative">
+                <PulseBellNotificationBadge className="absolute -left-1 -top-1" />
+                <Avatar size="small" />
+              </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">
                   {user?.display_name}
@@ -98,7 +105,10 @@ export function NavUser() {
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Bell />
-                Notifications
+                <div className="flex items-center gap-2 w-full justify-between">
+                  <Link href="/notification">Notifications</Link>
+                  <SimpleNotificationBadge />
+                </div>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
