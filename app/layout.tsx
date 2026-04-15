@@ -122,7 +122,9 @@ export default async function RootLayout({
     // get profile for the user in server component
     profile = data?.[0];
     // get notifications for the user in server component
-    notifications = await getNotifications(profile?.id as number);
+    if (profile?.id) {
+      notifications = await getNotifications(profile.id);
+    }
   }
 
   // get categories for the user in server component
