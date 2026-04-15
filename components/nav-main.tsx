@@ -16,6 +16,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import { UnreadMessageBadge } from "./badges/UnreadMessageBadge";
 
 export function NavMain({
   items,
@@ -77,9 +78,12 @@ export function NavMain({
           ) : (
             <SidebarMenuItem key={item.name}>
               <SidebarMenuButton asChild tooltip={item.name}>
-                <a href={item.url}>
+                <a href={item.url} className="flex items-center gap-2">
                   {item.icon}
                   <span>{item.name}</span>
+                  {item.name === "Messages" && (
+                    <UnreadMessageBadge className="absolute right-0 bottom-3" />
+                  )}
                 </a>
               </SidebarMenuButton>
             </SidebarMenuItem>

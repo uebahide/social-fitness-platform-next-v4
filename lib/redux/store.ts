@@ -1,10 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
 import messageReducer from "./features/message/messageSlice";
+import notificationReducer from "./features/notification/notificationSlice";
 
 export const makeStore = () => {
   return configureStore({
     reducer: {
       message: messageReducer,
+      notification: notificationReducer,
     },
   });
 };

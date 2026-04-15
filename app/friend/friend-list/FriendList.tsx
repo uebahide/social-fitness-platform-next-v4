@@ -2,7 +2,7 @@
 import { RequestItem } from "@/components/RequestItem";
 import { Input } from "@/components/ui/input";
 import { FriendRequest, User } from "@/types/api/user";
-import { useMemo, useState } from "react";
+import { startTransition, useEffect, useMemo, useState } from "react";
 import { FriendItem } from "./FriendItem";
 import { FriendListAndRequestToggle } from "./FrientListAndRequestToggle";
 import { EmptyState } from "@/components/states/EmptyState";
@@ -10,17 +10,21 @@ import { EmptyState } from "@/components/states/EmptyState";
 export const FriendList = ({
   friends,
   requests,
+  request,
 }: {
   friends: User[];
   requests: FriendRequest[];
+  request?: string;
 }) => {
   const [search, setSearch] = useState("");
   const [currentTab, setCurrentTab] = useState<"friend" | "request">("friend");
+
   const filteredFriends = useMemo(() => {
     return friends?.filter((friend) =>
       friend?.display_name?.toLowerCase().includes(search.toLowerCase()),
     );
   }, [friends, search]);
+
   const filteredRequests = useMemo(() => {
     return requests?.filter((request) =>
       request.sender?.display_name
@@ -28,6 +32,14 @@ export const FriendList = ({
         .includes(search.toLowerCase()),
     );
   }, [requests, search]);
+
+  useEffect(() => {
+    if (request) {
+      startTransition(() => {
+        setCurrentTab("request");
+      });
+    }
+  }, [request]);
 
   return (
     <aside className="bg-card flex h-[calc(100vh-92px)] flex-col gap-4 rounded-sm border border-gray-200 p-3">

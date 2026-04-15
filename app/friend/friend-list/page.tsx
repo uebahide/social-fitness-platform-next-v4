@@ -18,9 +18,9 @@ export const metadata: Metadata = {
 export default async function FriendListPage({
   searchParams,
 }: {
-  searchParams: Promise<{ forceError?: string }>;
+  searchParams: Promise<{ forceError?: string; request?: string }>;
 }) {
-  const { forceError } = await searchParams;
+  const { forceError, request } = await searchParams;
   const userId = await getCurrentUserId();
   const friends = await getFriends();
   const receivedRequests = await getReceivedRequests({ userId });
@@ -36,7 +36,11 @@ export default async function FriendListPage({
       description="Browse your current connections, review incoming requests, and jump into a conversation or profile view."
     >
       <div className="grid grid-cols-1 lg:grid-cols-[3fr_7fr] gap-4">
-        <FriendList friends={friends} requests={receivedRequests} />
+        <FriendList
+          friends={friends}
+          requests={receivedRequests}
+          request={request}
+        />
         <PageGuidePanel
           testId="friend-list-guide-panel"
           eyebrow="Network Guide"

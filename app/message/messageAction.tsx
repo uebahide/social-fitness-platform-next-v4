@@ -57,6 +57,7 @@ export async function sendText(_prevState: SendTextState, formData: FormData) {
     .single();
 
   if (error) {
+    console.error(error);
     return {
       error: "error while sending message",
       message: "",
