@@ -29,6 +29,8 @@ jobs:
         run: npm run seed:friends:ci
       - name: Seed activities
         run: npm run seed:activities:ci
+      - name: Seed scenarios
+        run: npm run seed:scenarios:ci
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Run Playwright tests
