@@ -227,14 +227,15 @@ Open `http://127.0.0.1:3000` in your browser.
 ## 🛠 Available Commands
 
 ```bash
-npm run dev    # Start development server
-npm run build  # Build for production
-npm run start  # Start production server
-npm run lint   # Run ESLint
+npm run dev             # Start development server
+npm run build           # Build for production
+npm run start           # Start production server
+npm run lint            # Run ESLint
 npm run seed:users      # Create demo auth users and profile rows
 npm run seed:friends    # Create demo friendships between seeded users
 npm run seed:activities # Create demo activities for seeded users
-npm run seed:all        # Run seed:users, seed:friends, and seed:activities
+npm run seed:scenarios  # Generate seeded message E2E scenarios and manifest
+npm run seed:all        # Run seed:users, seed:friends, seed:activities, and seed:scenarios
 ```
 
 ---
@@ -253,8 +254,12 @@ This repository now includes the database schema and base seed data required to 
   - Creates idempotent friendship records between seeded profiles
 - `scripts/seed-activities.mjs`
   - Creates realistic demo activities for seeded users
+- `scripts/seed-scenarios.mjs`
+  - Seeds deterministic message-page E2E scenarios and writes `tests/e2e/generated/scenario-manifest.json`
 
-The three Node seed scripts are intentionally separate from `supabase/seed.sql` because they rely on app-level Supabase access patterns instead of static SQL alone.
+The Node seed scripts are intentionally separate from `supabase/seed.sql` because they rely on app-level Supabase access patterns instead of static SQL alone.
+
+For now, deterministic E2E scenario seeding is scoped to the message page. The `seed:scenarios` script resolves environment-specific profile and room IDs, then writes them to `tests/e2e/generated/scenario-manifest.json`, which is treated as a generated file rather than a committed fixture.
 
 ---
 
@@ -363,7 +368,22 @@ This script:
 - inserts up to 20 activities per user
 - skips users who already have enough activity data
 
-### 7) Start the app
+### 7) Seed message E2E scenarios
+
+```bash
+npm run seed:scenarios
+```
+
+This script:
+
+- reads the seeded profiles created by the earlier seed steps
+- creates or reuses the message-page scenarios defined in `tests/e2e/data/scenarios.*`
+- writes `tests/e2e/generated/scenario-manifest.json`
+- is currently required for deterministic `message-page` E2E coverage
+
+If you run the message E2E tests in a fresh environment, run this step after `seed:users`, `seed:friends`, and `seed:activities`.
+
+### 8) Start the app
 
 ```bash
 npm run dev
@@ -387,6 +407,7 @@ supabase status
 npm run seed:users
 npm run seed:friends
 npm run seed:activities
+npm run seed:scenarios
 npm run dev
 ```
 
@@ -398,6 +419,7 @@ supabase seed buckets --local
 npm run seed:users
 npm run seed:friends
 npm run seed:activities
+npm run seed:scenarios
 ```
 
 ---
@@ -420,6 +442,7 @@ Then:
 3. Run `npm run seed:users`
 4. Run `npm run seed:friends` (needed for friend list and messaging demos)
 5. Run `npm run seed:activities`
+6. Run `npm run seed:scenarios` if you want deterministic `message-page` E2E data
 
 Configure storage buckets in the hosted project to match what the app expects (avatars, messages, and any buckets defined in `supabase/config.toml`), or uploads and messaging attachments may fail.
 

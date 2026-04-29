@@ -1,6 +1,6 @@
 import { expect, Page } from "@playwright/test";
 
-async function getFriendRow(page: Page, displayName: string) {
+export async function getFriendRow(page: Page, displayName: string) {
   await page.goto("/friend/friend-list");
 
   const friendRow = page
@@ -12,7 +12,7 @@ async function getFriendRow(page: Page, displayName: string) {
   return friendRow;
 }
 
-async function getRequiredHref(
+export async function getRequiredHref(
   page: Page,
   displayName: string,
   linkIndex: number,
@@ -43,4 +43,48 @@ export async function getFriendMessageHref(
   queryParams?: Record<string, string>,
 ) {
   return getRequiredHref(page, displayName, 1, queryParams);
+}
+
+import fs from "node:fs";
+import path from "node:path";
+
+type ResolvedScenario = {
+  actorProfileId: number;
+  friendProfileId: number | null;
+  roomId: number | null;
+  messageIds: number[];
+};
+
+/**
+ * @see tests/e2e/generated/scenario-manifest.json
+ */
+
+type ScenarioManifest = Record<string, ResolvedScenario>;
+
+let cachedManifest: ScenarioManifest | null = null;
+
+function loadManifest(): ScenarioManifest {
+  if (cachedManifest) {
+    return cachedManifest;
+  }
+
+  const manifestPath = path.join(
+    process.cwd(),
+    "tests/e2e/generated/scenario-manifest.json",
+  );
+
+  const raw = fs.readFileSync(manifestPath, "utf8");
+  cachedManifest = JSON.parse(raw) as ScenarioManifest;
+  return cachedManifest;
+}
+
+export function getResolvedScenario(key: string): ResolvedScenario {
+  const manifest = loadManifest();
+  const scenario = manifest[key];
+
+  if (!scenario) {
+    throw new Error(`Scenario not found in manifest: ${key}`);
+  }
+
+  return scenario;
 }
